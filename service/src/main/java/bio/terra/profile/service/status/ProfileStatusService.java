@@ -2,6 +2,7 @@ package bio.terra.profile.service.status;
 
 import bio.terra.profile.app.configuration.StatusCheckConfiguration;
 import bio.terra.profile.generated.model.ApiSystemStatusSystems;
+import bio.terra.profile.service.iam.SamService;
 import java.sql.Connection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,13 +14,18 @@ import org.springframework.stereotype.Component;
 public class ProfileStatusService extends BaseStatusService {
   private static final Logger logger = LoggerFactory.getLogger(ProfileStatusService.class);
   private final NamedParameterJdbcTemplate jdbcTemplate;
+  private final SamService samService;
 
   @Autowired
   public ProfileStatusService(
-      NamedParameterJdbcTemplate jdbcTemplate, StatusCheckConfiguration configuration) {
+      NamedParameterJdbcTemplate jdbcTemplate,
+      SamService samService,
+      StatusCheckConfiguration configuration) {
     super(configuration);
     this.jdbcTemplate = jdbcTemplate;
+    this.samService = samService;
     super.registerStatusCheck("CloudSQL", this::databaseStatus);
+    super.registerStatusCheck("Sam", this::samStatus);
   }
 
   private ApiSystemStatusSystems databaseStatus() {
@@ -34,5 +40,10 @@ public class ProfileStatusService extends BaseStatusService {
           .ok(false)
           .addMessagesItem(errorMsg + ": " + ex.getMessage());
     }
+  }
+
+  private ApiSystemStatusSystems samStatus() {
+    logger.debug("Checking Sam status");
+    return samService.status();
   }
 }

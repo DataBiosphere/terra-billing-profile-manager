@@ -5,6 +5,7 @@ import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.common.sam.SamRetry;
 import bio.terra.common.sam.exception.SamExceptionFactory;
 import bio.terra.profile.app.configuration.SamConfiguration;
+import bio.terra.profile.generated.model.ApiSystemStatusSystems;
 import bio.terra.profile.service.iam.model.SamAction;
 import bio.terra.profile.service.iam.model.SamResourceType;
 import bio.terra.profile.service.iam.model.SamRole;
@@ -20,10 +21,12 @@ import okhttp3.OkHttpClient;
 import org.broadinstitute.dsde.workbench.client.sam.ApiClient;
 import org.broadinstitute.dsde.workbench.client.sam.ApiException;
 import org.broadinstitute.dsde.workbench.client.sam.api.ResourcesApi;
+import org.broadinstitute.dsde.workbench.client.sam.api.StatusApi;
 import org.broadinstitute.dsde.workbench.client.sam.api.UsersApi;
 import org.broadinstitute.dsde.workbench.client.sam.model.AccessPolicyMembershipV2;
 import org.broadinstitute.dsde.workbench.client.sam.model.CreateResourceRequestV2;
 import org.broadinstitute.dsde.workbench.client.sam.model.ResourceAndAccessPolicy;
+import org.broadinstitute.dsde.workbench.client.sam.model.SystemStatus;
 import org.broadinstitute.dsde.workbench.client.sam.model.UserStatusInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -248,6 +251,28 @@ public class SamService {
         return;
       }
       throw SamExceptionFactory.create("Error deleting a profile in Sam", e);
+    }
+  }
+
+  public ApiSystemStatusSystems status() {
+    // No access token needed since this is an unauthenticated API.
+    StatusApi statusApi = new StatusApi(getApiClient(null));
+    try {
+      // Don't retry status check
+      SystemStatus samStatus = statusApi.getSystemStatus();
+      var result = new ApiSystemStatusSystems().ok(samStatus.getOk());
+      var samSystems = samStatus.getSystems();
+      // Populate error message if Sam status is non-ok
+      if (samStatus.getOk() == false) {
+        String errorMsg = "Sam status check failed. Messages = " + samSystems;
+        logger.error(errorMsg);
+        result.addMessagesItem(errorMsg);
+      }
+      return result;
+    } catch (Exception e) {
+      String errorMsg = "Sam status check failed";
+      logger.error(errorMsg, e);
+      return new ApiSystemStatusSystems().ok(false).messages(List.of(errorMsg));
     }
   }
 

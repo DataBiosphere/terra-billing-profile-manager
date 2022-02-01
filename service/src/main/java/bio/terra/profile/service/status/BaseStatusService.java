@@ -3,6 +3,7 @@ package bio.terra.profile.service.status;
 import bio.terra.profile.app.configuration.StatusCheckConfiguration;
 import bio.terra.profile.generated.model.ApiSystemStatus;
 import bio.terra.profile.generated.model.ApiSystemStatusSystems;
+import com.google.common.annotations.VisibleForTesting;
 import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -38,7 +39,7 @@ public class BaseStatusService {
   }
 
   @PostConstruct
-  public void startStatusChecking() {
+  private void startStatusChecking() {
     if (configuration.enabled()) {
       scheduler.scheduleAtFixedRate(
           this::checkStatus,
@@ -48,11 +49,13 @@ public class BaseStatusService {
     }
   }
 
-  public void registerStatusCheck(String name, Supplier<ApiSystemStatusSystems> checkFn) {
+  @VisibleForTesting
+  void registerStatusCheck(String name, Supplier<ApiSystemStatusSystems> checkFn) {
     statusCheckMap.put(name, checkFn);
   }
 
-  public void checkStatus() {
+  @VisibleForTesting
+  void checkStatus() {
     if (configuration.enabled()) {
       var newStatus = new ApiSystemStatus();
       try {

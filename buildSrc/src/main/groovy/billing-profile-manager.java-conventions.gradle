@@ -2,7 +2,7 @@
 plugins {
     id 'idea'
     id 'java'
-    id 'jacoco'
+//    id 'jacoco'
     id 'com.diffplug.spotless'
     id 'com.github.spotbugs'
 }
@@ -30,17 +30,17 @@ dependencyLocking {
     lockMode = LockMode.STRICT
 }
 
-jacoco {
-    toolVersion = '0.8.2'
-}
-
-jacocoTestReport {
-    reports {
-        xml.enabled = true
-        xml.destination = file("$buildDir/reports/jacoco/test/jacoco.xml")
-    }
-    dependsOn test
-}
+//jacoco {
+//    toolVersion = '0.8.2'
+//}
+//
+//jacocoTestReport {
+//    reports {
+//        xml.enabled = true
+//        xml.destination = file("$buildDir/reports/jacoco/test/jacoco.xml")
+//    }
+//    dependsOn test
+//}
 
 version = gradle.spmVersion
 group = 'bio.terra'
