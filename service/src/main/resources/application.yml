@@ -15,8 +15,13 @@ env:
   tracing:
     exportEnabled: ${CLOUD_TRACE_ENABLED:false}
     samplingRate: ${SAMPLING_PROBABILITY:0}
-  urls:
-    sam: ${SAM_ADDRESS:https://sam.dsde-dev.broadinstitute.org/}
+  sam:
+    basePath: ${SAM_ADDRESS:https://sam.dsde-dev.broadinstitute.org/}
+    adminsGroupEmail: ${SAM_ADMINS_GROUP_EMAIL:foo}
+  azure:
+    managedAppClientId: ${MANAGED_APP_CLIENT_ID}
+    managedAppClientSecret: ${MANAGED_APP_CLIENT_SECRET}
+    managedAppTenantId: ${MANAGED_APP_TENANT_ID}
 
 # Below here is non-deployment-specific
 
@@ -57,8 +62,8 @@ profile:
     timeout-seconds: 1800
 
   sam:
-    base-path: ${env.urls.sam}
-    adminsGroupEmail: BillingProfileAdmins@dev.test.firecloud.org
+    base-path: ${env.sam.basePath}
+    admins-group-email: ${env.sam.adminsGroupEmail}
 
   stairway-database:
     password: ${env.db.stairway.pass}
@@ -79,7 +84,9 @@ profile:
     username: ${env.db.profile.user}
 
   azure:
-    foo: bar
+    managed-app-clientId: ${env.azure.managedAppClientId}
+    managed-app-client-secret: ${env.azure.managedAppClientSecret}
+    managed-app-tenant-id: ${env.azure.managedAppTenantId}
 
 terra.common:
   kubernetes:

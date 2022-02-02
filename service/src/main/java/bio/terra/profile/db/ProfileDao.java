@@ -57,8 +57,8 @@ public class ProfileDao {
             + "     :tenant_id, :subscription_id, :resource_group_name, :application_deployment_name, :created_by)";
 
     String billingAccountId = profile.billingAccountId().orElse(null);
-    String tenantId = profile.tenantId().map(UUID::toString).orElse(null);
-    String subscriptionId = profile.subscriptionId().map(UUID::toString).orElse(null);
+    UUID tenantId = profile.tenantId().orElse(null);
+    UUID subscriptionId = profile.subscriptionId().orElse(null);
     String resourceGroupName = profile.resourceGroupName().orElse(null);
     String applicationDeploymentName = profile.applicationDeploymentName().orElse(null);
 
