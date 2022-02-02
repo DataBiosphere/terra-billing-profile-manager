@@ -27,18 +27,26 @@ public class WebConfig implements WebMvcConfigurer {
         "/webjars/swagger-ui-dist/4.3.0/swagger-ui-bundle.js",
         "\"response_type=token\"",
         "(t.name === \"b2c\" ? \"response_type=id_token&nonce=defaultNonce&prompt=login\" : \"response_type=token\")");
+
+    addOauth2Redirect(
+        registry, "oauth2-redirect.html", "/webjars/swagger-ui-dist/4.3.0/oauth2-redirect.html");
+  }
+
+  private void addOauth2Redirect(ResourceHandlerRegistry registry, String path, String file) {
+    final String pathMapping = String.format("%s*", path);
+    if (!registry.hasMappingForPattern(pathMapping)) {
+      registry
+          .addResourceHandler(pathMapping)
+          .addResourceLocations("classpath:/META-INF/resources%s", file);
+    }
   }
 
   private void addJsFixers(
-      ResourceHandlerRegistry registry,
-      String jsPathMapping,
-      String jsFile,
-      String find,
-      String replace) {
-    String springUiJsPath = String.format("%s*", jsPathMapping);
-    if (!registry.hasMappingForPattern(springUiJsPath)) {
+      ResourceHandlerRegistry registry, String jsPath, String jsFile, String find, String replace) {
+    String jsPathMapping = String.format("%s*", jsPath);
+    if (!registry.hasMappingForPattern(jsPathMapping)) {
       registry
-          .addResourceHandler(springUiJsPath)
+          .addResourceHandler(jsPathMapping)
           .setCachePeriod(3600)
           .addResourceLocations(String.format("classpath:/META-INF/resources%s", jsFile))
           .resourceChain(true)
