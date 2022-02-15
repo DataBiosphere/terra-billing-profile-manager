@@ -1,9 +1,10 @@
 package bio.terra.profile.service.profile.model;
 
-import bio.terra.profile.generated.model.ApiCloudPlatform;
-import bio.terra.profile.generated.model.ApiCreateProfileRequest;
-import bio.terra.profile.generated.model.ApiProfileModel;
+import bio.terra.profile.model.CloudPlatform;
+import bio.terra.profile.model.CreateProfileRequest;
+import bio.terra.profile.model.ProfileModel;
 import bio.terra.profile.service.profile.exception.MissingRequiredFieldsException;
+
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
@@ -24,12 +25,12 @@ public record BillingProfile(
     String createdBy) {
 
   /**
-   * Converts an {@link ApiCreateProfileRequest} to a BillingProfile and performs validation.
+   * Converts an {@link CreateProfileRequest} to a BillingProfile and performs validation.
    *
    * @param request the API request to covert
    * @return billing profile
    */
-  public static BillingProfile fromApiCreateProfileRequest(ApiCreateProfileRequest request) {
+  public static BillingProfile fromApiCreateProfileRequest(CreateProfileRequest request) {
     // id, display name, biller, cloud platform are required
     if (request.getId() == null
         || request.getDisplayName() == null
@@ -40,11 +41,11 @@ public record BillingProfile(
     }
 
     // check cloud-specific fields
-    if (request.getCloudPlatform().equals(ApiCloudPlatform.GCP)
+    if (request.getCloudPlatform().equals(CloudPlatform.GCP)
         && request.getBillingAccountId() == null) {
       throw new MissingRequiredFieldsException("GCP billing profile requires billingAccount");
     }
-    if (request.getCloudPlatform().equals(ApiCloudPlatform.AZURE)
+    if (request.getCloudPlatform().equals(CloudPlatform.AZURE)
         && (request.getTenantId() == null
             || request.getSubscriptionId() == null
             || request.getResourceGroupName() == null
@@ -58,7 +59,7 @@ public record BillingProfile(
         request.getDisplayName(),
         request.getDisplayName(),
         request.getBiller(),
-        CloudPlatform.fromApi(request.getCloudPlatform()),
+        request.getCloudPlatform(),
         Optional.ofNullable(request.getBillingAccountId()),
         Optional.ofNullable(request.getTenantId()),
         Optional.ofNullable(request.getSubscriptionId()),
@@ -69,17 +70,17 @@ public record BillingProfile(
   }
 
   /**
-   * Converts this billing profile to an {@link ApiProfileModel}.
+   * Converts this billing profile to an {@link ProfileModel}.
    *
    * @return ApiProfileModel
    */
-  public ApiProfileModel toApiProfileModel() {
-    return new ApiProfileModel()
+  public ProfileModel toApiProfileModel() {
+    return new ProfileModel()
         .id(id)
         .displayName(displayName)
         .description(description)
         .biller(biller)
-        .cloudPlatform(cloudPlatform.toApi())
+        .cloudPlatform(cloudPlatform)
         .billingAccountId(billingAccountId.orElse(null))
         .tenantId(tenantId.orElse(null))
         .subscriptionId(subscriptionId.orElse(null))

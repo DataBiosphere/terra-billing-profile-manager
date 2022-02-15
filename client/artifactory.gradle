@@ -1,16 +1,7 @@
-plugins {
-    id 'maven-publish'
-    id 'com.jfrog.artifactory' version '4.18.2'
-
-    // For JShell support
-    // https://gitlab.com/barfuin/gradle-taskinfo
-    id 'org.barfuin.gradle.taskinfo' version '1.1.1'
-    id "com.github.mrsarm.jshell.plugin" version "1.1.0"
-}
-
-def artifactory_repo_key = System.getenv("ARTIFACTORY_REPO_KEY") != null ? System.getenv("ARTIFACTORY_REPO_KEY") : 'libs-snapshot-local'
-def artifactory_username = System.getenv('ARTIFACTORY_USERNAME')
-def artifactory_password = System.getenv('ARTIFACTORY_PASSWORD')
+// This and the test below makes sure the build will fail reasonably if you try
+// to publish without the environment variables defined.
+def artifactory_username = System.getenv("ARTIFACTORY_USERNAME")
+def artifactory_password = System.getenv("ARTIFACTORY_PASSWORD")
 
 gradle.taskGraph.whenReady { taskGraph ->
     if (taskGraph.hasTask(artifactoryPublish) &&
@@ -19,12 +10,30 @@ gradle.taskGraph.whenReady { taskGraph ->
     }
 }
 
+java {
+    // Builds sources into the published package as part of the 'assemble' task.
+    withSourcesJar()
+}
+
+publishing {
+    publications {
+        catalogClientLibrary(MavenPublication) {
+            artifactId = "billing-profile-manager-client"
+            from components.java
+            versionMapping {
+                usage("java-runtime") {
+                    fromResolutionResult()
+                }
+            }
+        }
+    }
+}
+
 artifactory {
     publish {
         contextUrl = "https://broadinstitute.jfrog.io/broadinstitute/"
         repository {
-            repoKey = "${artifactory_repo_key}"
-            // The Artifactory repository key to publish to
+            repoKey = "libs-snapshot-local" // The Artifactory repository key to publish to
             username = "${artifactory_username}" // The publisher user name
             password = "${artifactory_password}" // The publisher password
         }
@@ -36,8 +45,4 @@ artifactory {
             publishPom = true
         }
     }
-}
-
-task minniekenny(type: Exec) {
-    commandLine 'sh', "${rootDir}/minnie-kenny.sh"
 }

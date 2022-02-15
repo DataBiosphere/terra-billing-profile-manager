@@ -8,8 +8,8 @@ import bio.terra.profile.app.common.MdcHook;
 import bio.terra.profile.app.configuration.IngressConfiguration;
 import bio.terra.profile.app.configuration.JobConfiguration;
 import bio.terra.profile.app.configuration.StairwayDatabaseConfiguration;
-import bio.terra.profile.generated.model.ApiErrorReport;
-import bio.terra.profile.generated.model.ApiJobReport;
+import bio.terra.profile.model.ErrorReport;
+import bio.terra.profile.model.JobReport;
 import bio.terra.profile.service.job.exception.DuplicateJobIdException;
 import bio.terra.profile.service.job.exception.InternalStairwayException;
 import bio.terra.profile.service.job.exception.InvalidResultStateException;
@@ -169,17 +169,17 @@ public class JobService {
             .exceptionSerializer(new StairwayExceptionSerializer(objectMapper)));
   }
 
-  public ApiJobReport mapFlightStateToApiJobReport(FlightState flightState) {
+  public JobReport mapFlightStateToApiJobReport(FlightState flightState) {
     FlightMap inputParameters = flightState.getInputParameters();
     String description = inputParameters.get(JobMapKeys.DESCRIPTION.getKeyName(), String.class);
     FlightStatus flightStatus = flightState.getFlightStatus();
     String submittedDate = flightState.getSubmitted().toString();
-    ApiJobReport.StatusEnum jobStatus = getJobStatus(flightStatus);
+    JobReport.StatusEnum jobStatus = getJobStatus(flightStatus);
 
     String completedDate = null;
     HttpStatus statusCode = HttpStatus.ACCEPTED;
 
-    if (jobStatus != ApiJobReport.StatusEnum.RUNNING) {
+    if (jobStatus != JobReport.StatusEnum.RUNNING) {
       // If the job is completed, the JobReport should include a result code indicating success or
       // failure. For failed jobs, this code is the error code. For successful jobs, this is the
       // code specified by the flight if present, or a default of 200 if not.
@@ -209,8 +209,8 @@ public class JobService {
       }
     }
 
-    ApiJobReport jobReport =
-        new ApiJobReport()
+    JobReport jobReport =
+        new JobReport()
             .id(flightState.getFlightId())
             .description(description)
             .status(jobStatus)
@@ -234,20 +234,20 @@ public class JobService {
     return protocol + Path.of(ingressConfig.domainName(), resultPath).toString();
   }
 
-  private ApiJobReport.StatusEnum getJobStatus(FlightStatus flightStatus) {
+  private JobReport.StatusEnum getJobStatus(FlightStatus flightStatus) {
     switch (flightStatus) {
       case RUNNING:
-        return ApiJobReport.StatusEnum.RUNNING;
+        return JobReport.StatusEnum.RUNNING;
       case SUCCESS:
-        return ApiJobReport.StatusEnum.SUCCEEDED;
+        return JobReport.StatusEnum.SUCCEEDED;
       case ERROR:
       case FATAL:
       default:
-        return ApiJobReport.StatusEnum.FAILED;
+        return JobReport.StatusEnum.FAILED;
     }
   }
 
-  public List<ApiJobReport> enumerateJobs(
+  public List<JobReport> enumerateJobs(
       int offset, int limit, AuthenticatedUserRequest userRequest) {
 
     List<FlightState> flightStateList;
@@ -260,16 +260,16 @@ public class JobService {
       throw new InternalStairwayException(stairwayEx);
     }
 
-    List<ApiJobReport> jobReportList = new ArrayList<>();
+    List<JobReport> jobReportList = new ArrayList<>();
     for (FlightState flightState : flightStateList) {
-      ApiJobReport jobReport = mapFlightStateToApiJobReport(flightState);
+      JobReport jobReport = mapFlightStateToApiJobReport(flightState);
       jobReportList.add(jobReport);
     }
     return jobReportList;
   }
 
   @Traced
-  public ApiJobReport retrieveJob(String jobId, AuthenticatedUserRequest userRequest) {
+  public JobReport retrieveJob(String jobId, AuthenticatedUserRequest userRequest) {
 
     try {
       verifyUserAccess(jobId, userRequest); // jobId=flightId
@@ -327,14 +327,14 @@ public class JobService {
       String jobId, Class<T> resultClass, AuthenticatedUserRequest userRequest) {
     try {
       verifyUserAccess(jobId, userRequest); // jobId=flightId
-      ApiJobReport jobReport = retrieveJob(jobId, userRequest);
-      if (jobReport.getStatus().equals(ApiJobReport.StatusEnum.RUNNING)) {
+      JobReport jobReport = retrieveJob(jobId, userRequest);
+      if (jobReport.getStatus().equals(JobReport.StatusEnum.RUNNING)) {
         return new AsyncJobResult<T>().jobReport(jobReport);
       }
 
       JobResultOrException<T> resultOrException = retrieveJobResultWorker(jobId, resultClass);
-      final ApiErrorReport errorReport;
-      if (jobReport.getStatus().equals(ApiJobReport.StatusEnum.FAILED)) {
+      final ErrorReport errorReport;
+      if (jobReport.getStatus().equals(JobReport.StatusEnum.FAILED)) {
         errorReport = ErrorReportUtils.buildApiErrorReport(resultOrException.getException());
       } else {
         errorReport = null;
@@ -450,9 +450,9 @@ public class JobService {
   // The result of an asynchronous job is a ApiJobReport and exactly one of a job result
   // or an ApiErrorReport. If the job is incomplete, only jobReport will be present.
   public static class AsyncJobResult<T> {
-    private ApiJobReport jobReport;
+    private JobReport jobReport;
     private T result;
-    private ApiErrorReport errorReport;
+    private ErrorReport errorReport;
 
     public T getResult() {
       return result;
@@ -463,20 +463,20 @@ public class JobService {
       return this;
     }
 
-    public ApiErrorReport getApiErrorReport() {
+    public ErrorReport getApiErrorReport() {
       return errorReport;
     }
 
-    public AsyncJobResult<T> errorReport(ApiErrorReport errorReport) {
+    public AsyncJobResult<T> errorReport(ErrorReport errorReport) {
       this.errorReport = errorReport;
       return this;
     }
 
-    public ApiJobReport getJobReport() {
+    public JobReport getJobReport() {
       return jobReport;
     }
 
-    public AsyncJobResult<T> jobReport(ApiJobReport jobReport) {
+    public AsyncJobResult<T> jobReport(JobReport jobReport) {
       this.jobReport = jobReport;
       return this;
     }

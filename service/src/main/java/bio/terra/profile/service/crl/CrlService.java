@@ -2,12 +2,14 @@ package bio.terra.profile.service.crl;
 
 import bio.terra.cloudres.common.ClientConfig;
 import bio.terra.cloudres.google.billing.CloudBillingClientCow;
+import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.app.configuration.AzureConfiguration;
 import bio.terra.profile.service.crl.exception.CrlInternalException;
 import bio.terra.profile.service.crl.exception.CrlSecurityException;
 import com.azure.core.management.AzureEnvironment;
 import com.azure.core.management.profile.AzureProfile;
 import com.azure.resourcemanager.resources.ResourceManager;
+import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
 import java.io.IOException;
 import java.util.UUID;
@@ -21,23 +23,20 @@ public class CrlService {
 
   private final AzureConfiguration azureConfiguration;
   private final ClientConfig clientConfig;
-  private final CloudBillingClientCow crlBillingClientCow;
 
   @Autowired
   public CrlService(AzureConfiguration azureConfiguration) {
     this.azureConfiguration = azureConfiguration;
-    var creds = getApplicationCredentials();
     this.clientConfig = buildClientConfig();
+  }
+
+  /** Returns a GCP {@link CloudBillingClientCow} which wraps Google Billing API. */
+  public CloudBillingClientCow getBillingClientCow(AuthenticatedUserRequest user) {
     try {
-      this.crlBillingClientCow = new CloudBillingClientCow(clientConfig, creds);
+      return new CloudBillingClientCow(clientConfig, getUserCredentials(user.getToken()));
     } catch (IOException e) {
       throw new CrlInternalException("Error creating billing client wrapper", e);
     }
-  }
-
-  /** Returns the CRL {@link CloudBillingClientCow} which wraps Google Billing API. */
-  public CloudBillingClientCow getCloudBillingClientCow() {
-    return crlBillingClientCow;
   }
 
   /** Returns an Azure {@link ResourceManager} configured for use with CRL. */
@@ -63,5 +62,9 @@ public class CrlService {
     } catch (IOException e) {
       throw new CrlSecurityException("Failed to get credentials", e);
     }
+  }
+
+  private GoogleCredentials getUserCredentials(String token) {
+    return GoogleCredentials.newBuilder().setAccessToken(new AccessToken(token, null)).build();
   }
 }

@@ -3,27 +3,28 @@ package bio.terra.profile.app.controller;
 import bio.terra.common.exception.ValidationException;
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.common.iam.AuthenticatedUserRequestFactory;
-import bio.terra.profile.generated.controller.ProfileApi;
-import bio.terra.profile.generated.model.ApiCreateProfileRequest;
-import bio.terra.profile.generated.model.ApiCreateProfileResult;
-import bio.terra.profile.generated.model.ApiJobReport;
-import bio.terra.profile.generated.model.ApiProfileModel;
-import bio.terra.profile.generated.model.ApiProfileModelList;
+import bio.terra.profile.api.ProfileApi;
+import bio.terra.profile.model.CreateProfileRequest;
+import bio.terra.profile.model.CreateProfileResult;
+import bio.terra.profile.model.JobReport;
+import bio.terra.profile.model.ProfileModel;
+import bio.terra.profile.model.ProfileModelList;
 import bio.terra.profile.service.job.JobService;
 import bio.terra.profile.service.profile.ProfileService;
 import bio.terra.profile.service.profile.model.BillingProfile;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Controller
 public class ProfileApiController implements ProfileApi {
@@ -45,37 +46,37 @@ public class ProfileApiController implements ProfileApi {
   }
 
   @Override
-  public ResponseEntity<ApiCreateProfileResult> createProfile(
-      @RequestBody ApiCreateProfileRequest body) {
+  public ResponseEntity<CreateProfileResult> createProfile(
+      @RequestBody CreateProfileRequest body) {
     AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
     BillingProfile profile = BillingProfile.fromApiCreateProfileRequest(body);
     String jobId = profileService.createProfile(profile, user);
-    final ApiCreateProfileResult result = fetchCreateProfileResult(jobId, user);
+    final CreateProfileResult result = fetchCreateProfileResult(jobId, user);
     return new ResponseEntity<>(result, getAsyncResponseCode(result.getJobReport()));
   }
 
   @Override
-  public ResponseEntity<ApiCreateProfileResult> getCreateProfileResult(
+  public ResponseEntity<CreateProfileResult> getCreateProfileResult(
       @PathVariable("jobId") String jobId) {
     AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
-    final ApiCreateProfileResult response = fetchCreateProfileResult(jobId, user);
+    final CreateProfileResult response = fetchCreateProfileResult(jobId, user);
     return new ResponseEntity<>(response, getAsyncResponseCode(response.getJobReport()));
   }
 
   @Override
-  public ResponseEntity<ApiProfileModel> getProfile(@PathVariable("profileId") UUID profileId) {
+  public ResponseEntity<ProfileModel> getProfile(@PathVariable("profileId") UUID profileId) {
     AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
     BillingProfile profile = profileService.getProfile(profileId, user);
     return new ResponseEntity<>(profile.toApiProfileModel(), HttpStatus.OK);
   }
 
   @Override
-  public ResponseEntity<ApiProfileModelList> listProfiles(Integer offset, Integer limit) {
+  public ResponseEntity<ProfileModelList> listProfiles(Integer offset, Integer limit) {
     validatePaginationParams(offset, limit);
     AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
     List<BillingProfile> profiles = profileService.listProfiles(user, offset, limit);
     var response =
-        new ApiProfileModelList()
+        new ProfileModelList()
             .items(
                 profiles.stream()
                     .map(BillingProfile::toApiProfileModel)
@@ -90,11 +91,11 @@ public class ProfileApiController implements ProfileApi {
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
-  private ApiCreateProfileResult fetchCreateProfileResult(
+  private CreateProfileResult fetchCreateProfileResult(
       String jobId, AuthenticatedUserRequest userRequest) {
     final JobService.AsyncJobResult<BillingProfile> jobResult =
         jobService.retrieveAsyncJobResult(jobId, BillingProfile.class, userRequest);
-    return new ApiCreateProfileResult()
+    return new CreateProfileResult()
         .jobReport(jobResult.getJobReport())
         .errorReport(jobResult.getApiErrorReport())
         .profileDescription(
@@ -103,8 +104,8 @@ public class ProfileApiController implements ProfileApi {
                 .orElse(null));
   }
 
-  private static HttpStatus getAsyncResponseCode(ApiJobReport jobReport) {
-    return jobReport.getStatus() == ApiJobReport.StatusEnum.RUNNING
+  private static HttpStatus getAsyncResponseCode(JobReport jobReport) {
+    return jobReport.getStatus() == JobReport.StatusEnum.RUNNING
         ? HttpStatus.ACCEPTED
         : HttpStatus.OK;
   }

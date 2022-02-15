@@ -1,0 +1,4 @@
+plugins {
+    id 'bio.terra.profile.java-common-conventions'
+    id 'java-library'
+}

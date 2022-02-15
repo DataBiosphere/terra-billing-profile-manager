@@ -24,7 +24,7 @@ public class WebConfig implements WebMvcConfigurer {
     addJsFixers(
         registry,
         "/webjars/swagger-ui-dist/swagger-ui-bundle.js",
-        "/webjars/swagger-ui-dist/4.3.0/swagger-ui-bundle.js",
+        "/webjars/swagger-ui-dist/4.5.0/swagger-ui-bundle.js",
         "\"response_type=token\"",
         "(t.name === \"b2c\" ? \"response_type=id_token&nonce=defaultNonce&prompt=login\" : \"response_type=token\")");
 

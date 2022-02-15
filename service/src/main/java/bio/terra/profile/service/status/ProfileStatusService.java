@@ -1,14 +1,15 @@
 package bio.terra.profile.service.status;
 
 import bio.terra.profile.app.configuration.StatusCheckConfiguration;
-import bio.terra.profile.generated.model.ApiSystemStatusSystems;
+import bio.terra.profile.model.SystemStatusSystems;
 import bio.terra.profile.service.iam.SamService;
-import java.sql.Connection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Component;
+
+import java.sql.Connection;
 
 @Component
 public class ProfileStatusService extends BaseStatusService {
@@ -28,21 +29,21 @@ public class ProfileStatusService extends BaseStatusService {
     super.registerStatusCheck("Sam", this::samStatus);
   }
 
-  private ApiSystemStatusSystems databaseStatus() {
+  private SystemStatusSystems databaseStatus() {
     try {
       logger.debug("Checking database connection valid");
-      return new ApiSystemStatusSystems()
+      return new SystemStatusSystems()
           .ok(jdbcTemplate.getJdbcTemplate().execute((Connection conn) -> conn.isValid(5000)));
     } catch (Exception ex) {
       String errorMsg = "Database status check failed";
       logger.error(errorMsg, ex);
-      return new ApiSystemStatusSystems()
+      return new SystemStatusSystems()
           .ok(false)
           .addMessagesItem(errorMsg + ": " + ex.getMessage());
     }
   }
 
-  private ApiSystemStatusSystems samStatus() {
+  private SystemStatusSystems samStatus() {
     logger.debug("Checking Sam status");
     return samService.status();
   }

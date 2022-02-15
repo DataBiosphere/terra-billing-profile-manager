@@ -5,18 +5,12 @@ import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.common.sam.SamRetry;
 import bio.terra.common.sam.exception.SamExceptionFactory;
 import bio.terra.profile.app.configuration.SamConfiguration;
-import bio.terra.profile.generated.model.ApiSystemStatusSystems;
+import bio.terra.profile.model.SystemStatusSystems;
 import bio.terra.profile.service.iam.model.SamAction;
 import bio.terra.profile.service.iam.model.SamResourceType;
 import bio.terra.profile.service.iam.model.SamRole;
 import com.google.common.annotations.VisibleForTesting;
 import io.opencensus.contrib.spring.aop.Traced;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import okhttp3.OkHttpClient;
 import org.broadinstitute.dsde.workbench.client.sam.ApiClient;
 import org.broadinstitute.dsde.workbench.client.sam.ApiException;
@@ -33,6 +27,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 public class SamService {
@@ -254,13 +255,13 @@ public class SamService {
     }
   }
 
-  public ApiSystemStatusSystems status() {
+  public SystemStatusSystems status() {
     // No access token needed since this is an unauthenticated API.
     StatusApi statusApi = new StatusApi(getApiClient(null));
     try {
       // Don't retry status check
       SystemStatus samStatus = statusApi.getSystemStatus();
-      var result = new ApiSystemStatusSystems().ok(samStatus.getOk());
+      var result = new SystemStatusSystems().ok(samStatus.getOk());
       var samSystems = samStatus.getSystems();
       // Populate error message if Sam status is non-ok
       if (samStatus.getOk() == false) {
@@ -272,7 +273,7 @@ public class SamService {
     } catch (Exception e) {
       String errorMsg = "Sam status check failed";
       logger.error(errorMsg, e);
-      return new ApiSystemStatusSystems().ok(false).messages(List.of(errorMsg));
+      return new SystemStatusSystems().ok(false).messages(List.of(errorMsg));
     }
   }
 

@@ -3,10 +3,11 @@ package bio.terra.profile.db;
 import bio.terra.common.db.ReadTransaction;
 import bio.terra.common.db.WriteTransaction;
 import bio.terra.common.iam.AuthenticatedUserRequest;
+import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.service.profile.exception.ProfileInUseException;
 import bio.terra.profile.service.profile.exception.ProfileNotFoundException;
 import bio.terra.profile.service.profile.model.BillingProfile;
-import bio.terra.profile.service.profile.model.CloudPlatform;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
@@ -69,7 +70,7 @@ public class ProfileDao {
             .addValue("biller", profile.biller())
             .addValue("billing_account_id", billingAccountId)
             .addValue("description", profile.description())
-            .addValue("cloud_platform", profile.cloudPlatform().toSql())
+            .addValue("cloud_platform", profile.cloudPlatform().name())
             .addValue("tenant_id", tenantId)
             .addValue("subscription_id", subscriptionId)
             .addValue("resource_group_name", resourceGroupName)
@@ -142,7 +143,7 @@ public class ProfileDao {
           rs.getString("display_name"),
           rs.getString("description"),
           rs.getString("biller"),
-          CloudPlatform.fromSql(rs.getString("cloud_platform")),
+          CloudPlatform.fromValue(rs.getString("cloud_platform")),
           Optional.ofNullable(rs.getString("billing_account_id")),
           Optional.ofNullable(rs.getObject("tenant_id", UUID.class)),
           Optional.ofNullable(rs.getObject("subscription_id", UUID.class)),

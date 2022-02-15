@@ -2,15 +2,16 @@ package bio.terra.profile.service.profile.flight.delete;
 
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.db.ProfileDao;
-import bio.terra.profile.generated.model.ApiCloudPlatform;
+import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.service.crl.CrlService;
 import bio.terra.profile.service.iam.SamService;
 import bio.terra.profile.service.job.JobMapKeys;
 import bio.terra.profile.service.profile.flight.ProfileMapKeys;
 import bio.terra.stairway.Flight;
 import bio.terra.stairway.FlightMap;
-import java.util.UUID;
 import org.springframework.context.ApplicationContext;
+
+import java.util.UUID;
 
 public class DeleteProfileFlight extends Flight {
 
@@ -24,7 +25,7 @@ public class DeleteProfileFlight extends Flight {
 
     var profileId = inputParameters.get(ProfileMapKeys.PROFILE_ID, UUID.class);
     var platform =
-        inputParameters.get(JobMapKeys.CLOUD_PLATFORM.getKeyName(), ApiCloudPlatform.class);
+        inputParameters.get(JobMapKeys.CLOUD_PLATFORM.getKeyName(), CloudPlatform.class);
     var user =
         inputParameters.get(JobMapKeys.AUTH_USER_INFO.getKeyName(), AuthenticatedUserRequest.class);
 

@@ -1,0 +1,4 @@
+CREATE DATABASE profile_db;
+CREATE ROLE dbuser WITH LOGIN ENCRYPTED PASSWORD 'dbpwd';
+CREATE DATABASE profile_stairway;
+CREATE ROLE stairwayuser WITH LOGIN ENCRYPTED PASSWORD 'stairwaypwd';
