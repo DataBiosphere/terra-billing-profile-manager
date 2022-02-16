@@ -12,19 +12,18 @@ import bio.terra.profile.model.ProfileModelList;
 import bio.terra.profile.service.job.JobService;
 import bio.terra.profile.service.profile.ProfileService;
 import bio.terra.profile.service.profile.model.BillingProfile;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
-
-import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Controller
 public class ProfileApiController implements ProfileApi {
@@ -46,8 +45,7 @@ public class ProfileApiController implements ProfileApi {
   }
 
   @Override
-  public ResponseEntity<CreateProfileResult> createProfile(
-      @RequestBody CreateProfileRequest body) {
+  public ResponseEntity<CreateProfileResult> createProfile(@RequestBody CreateProfileRequest body) {
     AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
     BillingProfile profile = BillingProfile.fromApiCreateProfileRequest(body);
     String jobId = profileService.createProfile(profile, user);

@@ -28,21 +28,21 @@ record CreateProfileVerifyAccountStep(
             .addAllPermissions(permissionsToTest)
             .build();
 
-//    final TestIamPermissionsResponse testPermissionsResponse;
-//    try {
-//      testPermissionsResponse = billingCow.testIamPermissions(testPermissionsRequest);
-//    } catch (Exception e) {
-//      return new StepResult(StepStatus.STEP_RESULT_FAILURE_RETRY, e);
-//    }
+    final TestIamPermissionsResponse testPermissionsResponse;
+    try {
+      testPermissionsResponse = billingCow.testIamPermissions(testPermissionsRequest);
+    } catch (Exception e) {
+      return new StepResult(StepStatus.STEP_RESULT_FAILURE_RETRY, e);
+    }
 
-//    var actualPermissions = testPermissionsResponse.getPermissionsList();
-//    if (actualPermissions == null || !actualPermissions.equals(permissionsToTest)) {
-//      var message =
-//          String.format(
-//              "The user [%s] needs access to the billing account [%s] to perform the requested operation",
-//              user.getEmail(), profile.id());
-//      throw new InaccessibleBillingAccountException(message);
-//    }
+    var actualPermissions = testPermissionsResponse.getPermissionsList();
+    if (actualPermissions == null || !actualPermissions.equals(permissionsToTest)) {
+      var message =
+          String.format(
+              "The user [%s] needs access to the billing account [%s] to perform the requested operation",
+              user.getEmail(), profile.id());
+      throw new InaccessibleBillingAccountException(message);
+    }
 
     return StepResult.getStepResultSuccess();
   }

@@ -4,8 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import bio.terra.profile.app.configuration.StatusCheckConfiguration;
 import bio.terra.profile.common.BaseUnitTest;
-import bio.terra.profile.generated.model.ApiSystemStatus;
-import bio.terra.profile.generated.model.ApiSystemStatusSystems;
+import bio.terra.profile.model.SystemStatus;
+import bio.terra.profile.model.SystemStatusSystems;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
@@ -20,13 +20,13 @@ public class BaseStatusServiceTest extends BaseUnitTest {
     statusService.registerStatusCheck("okcheck", this::okStatusCheck);
     statusService.checkStatus();
     assertEquals(
-        new ApiSystemStatus().ok(true).putSystemsItem("okcheck", okStatusCheck()),
+        new SystemStatus().ok(true).putSystemsItem("okcheck", okStatusCheck()),
         statusService.getCurrentStatus());
 
     statusService.registerStatusCheck("notokcheck", this::notOkStatusCheck);
     statusService.checkStatus();
     assertEquals(
-        new ApiSystemStatus()
+        new SystemStatus()
             .ok(false)
             .putSystemsItem("okcheck", okStatusCheck())
             .putSystemsItem("notokcheck", notOkStatusCheck()),
@@ -39,18 +39,18 @@ public class BaseStatusServiceTest extends BaseUnitTest {
     statusService.registerStatusCheck("okcheck", this::okStatusCheck);
     statusService.checkStatus();
     TimeUnit.SECONDS.sleep(STALENESS + 2);
-    assertEquals(new ApiSystemStatus().ok(false), statusService.getCurrentStatus());
+    assertEquals(new SystemStatus().ok(false), statusService.getCurrentStatus());
     statusService.checkStatus();
     assertEquals(
-        new ApiSystemStatus().ok(true).putSystemsItem("okcheck", okStatusCheck()),
+        new SystemStatus().ok(true).putSystemsItem("okcheck", okStatusCheck()),
         statusService.getCurrentStatus());
   }
 
-  private ApiSystemStatusSystems okStatusCheck() {
-    return new ApiSystemStatusSystems().ok(true);
+  private SystemStatusSystems okStatusCheck() {
+    return new SystemStatusSystems().ok(true);
   }
 
-  private ApiSystemStatusSystems notOkStatusCheck() {
-    return new ApiSystemStatusSystems().ok(false).addMessagesItem("not ok");
+  private SystemStatusSystems notOkStatusCheck() {
+    return new SystemStatusSystems().ok(false).addMessagesItem("not ok");
   }
 }

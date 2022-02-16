@@ -33,14 +33,12 @@ record CreateProfileVerifyDeployedApplicationStep(
       var applicationDeployment = resourceManager.genericResources().getById(applicationResourceId);
       var properties =
           (Map<String, Map<String, Map<String, String>>>) applicationDeployment.properties();
-      // TODO uncomment once managed app definition is updated
-      //      canAccess =
-      //          properties
-      //              .get("parameters")
-      //              .get("authorizedTerraUser")
-      //              .get("value")
-      //              .equalsIgnoreCase(user.getEmail());
-      canAccess = user.getEmail().contains("rtitle");
+      canAccess =
+          properties
+              .get("parameters")
+              .get("authorizedTerraUser")
+              .get("value")
+              .equalsIgnoreCase(user.getEmail());
     } catch (Exception e) {
       return new StepResult(StepStatus.STEP_RESULT_FAILURE_RETRY, e);
     }

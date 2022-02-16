@@ -7,7 +7,6 @@ import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.service.profile.exception.ProfileInUseException;
 import bio.terra.profile.service.profile.exception.ProfileNotFoundException;
 import bio.terra.profile.service.profile.model.BillingProfile;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;

@@ -4,10 +4,6 @@ import bio.terra.profile.app.configuration.StatusCheckConfiguration;
 import bio.terra.profile.model.SystemStatus;
 import bio.terra.profile.model.SystemStatusSystems;
 import com.google.common.annotations.VisibleForTesting;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.PostConstruct;
 import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,6 +13,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import javax.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BaseStatusService {
   private static final Logger logger = LoggerFactory.getLogger(BaseStatusService.class);

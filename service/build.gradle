@@ -21,10 +21,17 @@ dependencies {
 	implementation platform('com.google.cloud:libraries-bom:20.9.0')
 
 	// Cloud Resource Library
-	implementation platform('bio.terra.cloud-resource-lib:platform:0.7.0')
+	implementation platform('bio.terra.cloud-resource-lib:platform:0.8.0')
 	implementation group: 'bio.terra.cloud-resource-lib', name: 'google-billing'
 	implementation group: 'bio.terra.cloud-resource-lib', name: 'azure-resourcemanager-common'
 
 	// Sam
 	implementation group: "org.broadinstitute.dsde.workbench", name: "sam-client_2.12", version: "0.1-61135c7"
+
+	// Test deps
+	testImplementation('org.springframework.boot:spring-boot-starter-test') {
+		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+	}
+	// Allows us to mock final classes
+	testImplementation 'org.mockito:mockito-inline:2.13.0'
 }

@@ -17,11 +17,11 @@ env:
     samplingRate: ${SAMPLING_PROBABILITY:0}
   sam:
     basePath: ${SAM_ADDRESS:https://sam.dsde-dev.broadinstitute.org/}
-    adminsGroupEmail: ${SAM_ADMINS_GROUP_EMAIL:foo}
+    adminsGroupEmail: ${SAM_ADMINS_GROUP_EMAIL:admin-group}
   azure:
-    managedAppClientId: ${MANAGED_APP_CLIENT_ID}
-    managedAppClientSecret: ${MANAGED_APP_CLIENT_SECRET}
-    managedAppTenantId: ${MANAGED_APP_TENANT_ID}
+    managedAppClientId: ${MANAGED_APP_CLIENT_ID:app-client}
+    managedAppClientSecret: ${MANAGED_APP_CLIENT_SECRET:app-secret}
+    managedAppTenantId: ${MANAGED_APP_TENANT_ID:app-tenant}
 
 # Below here is non-deployment-specific
 

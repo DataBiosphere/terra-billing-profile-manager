@@ -4,7 +4,6 @@ import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.model.CreateProfileRequest;
 import bio.terra.profile.model.ProfileModel;
 import bio.terra.profile.service.profile.exception.MissingRequiredFieldsException;
-
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;

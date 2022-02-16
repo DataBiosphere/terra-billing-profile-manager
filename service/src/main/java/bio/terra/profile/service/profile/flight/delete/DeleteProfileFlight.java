@@ -9,9 +9,8 @@ import bio.terra.profile.service.job.JobMapKeys;
 import bio.terra.profile.service.profile.flight.ProfileMapKeys;
 import bio.terra.stairway.Flight;
 import bio.terra.stairway.FlightMap;
-import org.springframework.context.ApplicationContext;
-
 import java.util.UUID;
+import org.springframework.context.ApplicationContext;
 
 public class DeleteProfileFlight extends Flight {
 
@@ -24,8 +23,7 @@ public class DeleteProfileFlight extends Flight {
     SamService samService = appContext.getBean(SamService.class);
 
     var profileId = inputParameters.get(ProfileMapKeys.PROFILE_ID, UUID.class);
-    var platform =
-        inputParameters.get(JobMapKeys.CLOUD_PLATFORM.getKeyName(), CloudPlatform.class);
+    var platform = inputParameters.get(JobMapKeys.CLOUD_PLATFORM.getKeyName(), CloudPlatform.class);
     var user =
         inputParameters.get(JobMapKeys.AUTH_USER_INFO.getKeyName(), AuthenticatedUserRequest.class);
 

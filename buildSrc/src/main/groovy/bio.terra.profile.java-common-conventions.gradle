@@ -34,6 +34,7 @@ repositories {
     maven {
         url 'https://broadinstitute.jfrog.io/broadinstitute/libs-snapshot-local/'
     }
+    mavenLocal()
 }
 
 dependencies {
@@ -49,8 +50,11 @@ dependencies {
     implementation 'bio.terra:terra-common-lib:0.0.53-SNAPSHOT'
 }
 
+// Modify the standard :test task to only include unit-tagged tests.
 tasks.named('test') {
-    useJUnitPlatform()
+    useJUnitPlatform() {
+        includeTags 'unit'
+    }
 }
 
 version = gradle.releaseVersion
@@ -58,15 +62,13 @@ group = 'bio.terra'
 
 spotless {
     java {
-        target project.fileTree(project.rootDir) {
-            include 'src/**/*.java'
-        }
+        targetExclude "${buildDir}/**"
         googleJavaFormat()
     }
 }
 
 // Run spotless check when running in github actions, otherwise run spotless apply.
-compileJava {
+build {
     if (isCiServer) {
         dependsOn(spotlessCheck)
     } else {

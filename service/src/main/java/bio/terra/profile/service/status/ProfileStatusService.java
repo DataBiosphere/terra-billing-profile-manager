@@ -3,13 +3,12 @@ package bio.terra.profile.service.status;
 import bio.terra.profile.app.configuration.StatusCheckConfiguration;
 import bio.terra.profile.model.SystemStatusSystems;
 import bio.terra.profile.service.iam.SamService;
+import java.sql.Connection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Component;
-
-import java.sql.Connection;
 
 @Component
 public class ProfileStatusService extends BaseStatusService {
@@ -37,9 +36,7 @@ public class ProfileStatusService extends BaseStatusService {
     } catch (Exception ex) {
       String errorMsg = "Database status check failed";
       logger.error(errorMsg, ex);
-      return new SystemStatusSystems()
-          .ok(false)
-          .addMessagesItem(errorMsg + ": " + ex.getMessage());
+      return new SystemStatusSystems().ok(false).addMessagesItem(errorMsg + ": " + ex.getMessage());
     }
   }
 
