@@ -34,7 +34,7 @@ repositories {
     maven {
         url 'https://broadinstitute.jfrog.io/broadinstitute/libs-snapshot-local/'
     }
-    mavenLocal()
+    //mavenLocal()
 }
 
 dependencies {
@@ -63,6 +63,7 @@ group = 'bio.terra'
 spotless {
     java {
         targetExclude "${buildDir}/**"
+        targetExclude "**/swagger-code/**"
         googleJavaFormat()
     }
 }

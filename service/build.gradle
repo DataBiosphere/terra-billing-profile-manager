@@ -21,7 +21,8 @@ dependencies {
 	implementation platform('com.google.cloud:libraries-bom:20.9.0')
 
 	// Cloud Resource Library
-	implementation platform('bio.terra.cloud-resource-lib:platform:0.8.0')
+	// TODO: remove SNAPSHOT once https://github.com/DataBiosphere/terra-cloud-resource-lib/pull/109 is merged
+	implementation platform('bio.terra.cloud-resource-lib:platform:0.8.2-SNAPSHOT')
 	implementation group: 'bio.terra.cloud-resource-lib', name: 'google-billing'
 	implementation group: 'bio.terra.cloud-resource-lib', name: 'azure-resourcemanager-common'
 
