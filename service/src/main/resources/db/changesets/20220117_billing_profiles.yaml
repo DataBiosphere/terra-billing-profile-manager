@@ -1,0 +1,77 @@
+databaseChangeLog:
+  - changeSet:
+      id: billing_profile_table
+      author: rtitle
+      changes:
+        - createTable:
+            tableName: billing_profile
+            columns:
+              - column:
+                  name: id
+                  type: ${uuid_type}
+                  defaultValueComputed: ${uuid_function}
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: display_name
+                  type: varchar(64)
+                  constraints:
+                    nullable: false
+                  remarks: |
+                    Display name to be used for the profile.
+              - column:
+                  name: description
+                  type: ${description_type}
+                  remarks: |
+                    Free text that describes the profile.
+              - column:
+                  name: created_date
+                  type: timestamptz
+                  defaultValueComputed: now()
+                  remarks: |
+                    Date the profile was created.
+              - column:
+                  name: created_by
+                  type: text
+                  remarks: |
+                    Identity of the user who originally created the profile.
+              - column:
+                  name: biller
+                  type: varchar(32)
+                  constraints:
+                    nullable: true
+                  remarks: |
+                    Either "direct" or the reseller of the sub-account that sends the bill.
+              - column:
+                  name: cloud_platform
+                  type: ${identifier_type}
+                  constraints:
+                    nullable: false
+                  remarks: |
+                    Either "azure" or "gcp".
+              - column:
+                  name: billing_account_id
+                  type: varchar(32)
+                  remarks: |
+                    Unique identifier of the billing account from GCP.
+              - column:
+                  name: tenant_id
+                  type: ${uuid_type}
+                  remarks: |
+                    Unique identifier of the Azure tenant.
+              - column:
+                  name: subscription_id
+                  type: ${uuid_type}
+                  remarks: |
+                    Unique identifier of the Azure subscription.
+              - column:
+                  name: resource_group_name
+                  type: ${identifier_type}
+                  remarks: |
+                    Unique identifier of the Azure resource group containing the managed app.
+              - column:
+                  name: application_deployment_name
+                  type: text
+                  remarks: |
+                    Name of the Azure managed app deployment.

@@ -1,0 +1,135 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore: [ '*.md' ]
+  pull_request:
+    branches: [ '**' ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Gradle cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: v1-${{ runner.os }}-gradle-${{ github.ref }}-${{ github.sha }}
+          restore-keys: v1-${{ runner.os }}-gradle-${{ github.ref }}
+
+      - name: Gradle build service
+        run: ./gradlew --build-cache :service:build -x test
+
+      - name: Upload spotbugs results
+        uses: github/codeql-action/upload-sarif@main
+        with:
+          sarif_file: service/build/reports/spotbugs/main.sarif
+
+  jib:
+    needs: [ build ]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Gradle cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: v1-${{ runner.os }}-gradle-${{ github.ref }}-${{ github.sha }}
+
+      - name: Build image locally with jib
+        # build the docker image to make sure it does not error
+        run: |
+          ./gradlew --build-cache :service:jibDockerBuild \
+          -Djib.console=plain
+
+  unit-tests:
+    needs: [ build ]
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: [ "5432:5432" ]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Gradle cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: v1-${{ runner.os }}-gradle-${{ github.ref }}-${{ github.sha }}
+
+      - name: Make sure Postgres is ready and init
+        env:
+          PGPASSWORD: postgres
+        run: |
+          pg_isready -h localhost -t 10
+          psql -h localhost -U postgres -f ./service/local-dev/local-postgres-init.sql
+
+      - name: Test with coverage
+        run: ./gradlew --build-cache jacocoTestReport
+
+      - name: Codecov
+        uses: codecov/codecov-action@v2.0.2
+        with:
+          files: ./service/build/reports/jacoco/test/jacocoTestReport.xml
+
+  notify-slack:
+    needs: [ build, jib, unit-tests ]
+    runs-on: ubuntu-latest
+
+    if: failure() && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Notify slack on failure
+        uses: broadinstitute/action-slack@v3.8.0
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.CATALOG_WEBHOOK_URL }}
+        with:
+          channel: '#terra-billing-profile-manager'
+          status: failure
+          author_name: Build on dev
+          fields: workflow,message
+          text: 'Build failed :sadpanda:'
+
+  dispatch-tag:
+    needs: [ build, jib, unit-tests ]
+    runs-on: ubuntu-latest
+
+    if: success() && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Fire off tag action
+        uses: broadinstitute/workflow-dispatch@v1
+        with:
+          workflow: Tag
+          token: ${{ secrets.BROADBOT_TOKEN }}

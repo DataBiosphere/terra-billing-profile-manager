@@ -1,0 +1,493 @@
+openapi: 3.0.3
+info:
+  title: Terra Billing Profile Manager
+  description: |
+    Manages billing profiles
+  version: 0.1.0
+
+security:
+  - bearerAuth: []
+  - b2c: [openid, email, profile]
+  - legacy: [openid, email, profile]
+
+paths:
+  /status:
+    get:
+      security: []
+      summary: Returns the operational status of the service.
+      operationId: serviceStatus
+      tags:
+        - Unauthenticated
+      responses:
+        '200':
+          description: Service is functional
+          $ref: '#/components/responses/StatusResponse'
+        '500':
+          description: Service is broken
+          $ref: '#/components/responses/StatusResponse'
+
+  /version:
+    get:
+      security: []
+      summary: Returns the deployed version of the service.
+      operationId: serviceVersion
+      tags:
+        - Unauthenticated
+      responses:
+        '200':
+          description: System version response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemVersion'
+
+  /api/profiles/v1:
+    post:
+      summary: Create a new billing profile.
+      operationId: createProfile
+      tags:
+        - Profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProfileRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/CreateProfileResultResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/PermissionDenied'
+        '500':
+          $ref: '#/components/responses/NotFound'
+    get:
+      summary: Returns all billing profiles a user can read.
+      operationId: listProfiles
+      tags:
+        - Profile
+      parameters:
+        - $ref: '#/components/parameters/Offset'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileModelList'
+
+  /api/profiles/v1/result/{jobId}:
+    parameters:
+      - $ref: '#/components/parameters/JobId'
+    get:
+      summary: Get the result of a async job to create a billing profile.
+      operationId: getCreateProfileResult
+      tags:
+        - Profile
+      responses:
+        '200':
+          $ref: '#/components/responses/CreateProfileResultResponse'
+        '202':
+          $ref: '#/components/responses/CreateProfileResultResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/PermissionDenied'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/profiles/v1/{profileId}:
+    parameters:
+      - $ref: '#/components/parameters/ProfileId'
+    get:
+      summary: Get an existing billing profile.
+      operationId: getProfile
+      tags:
+        - Profile
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileModel'
+        '403':
+          $ref: '#/components/responses/PermissionDenied'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    patch:
+      summary: Update an existing billing profile.
+      operationId: updateProfile
+      tags:
+        - Profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProfileRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileModel'
+        '403':
+          $ref: '#/components/responses/PermissionDenied'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    delete:
+      summary: Delete a billing profile.
+      operationId: deleteProfile
+      tags:
+        - Profile
+      responses:
+        '204':
+          description: Success
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/PermissionDenied'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+components:
+  parameters:
+    ProfileId:
+      name: profileId
+      in: path
+      description: A UUID to used to identify a billing profile
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+    JobId:
+      name: jobId
+      in: path
+      description: A String ID to used to identify a job
+      required: true
+      schema:
+        type: string
+
+    Offset:
+      name: offset
+      in: query
+      description: The number of items to skip before starting to collect the result set.
+      required: false
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+
+    Limit:
+      name: limit
+      in: query
+      description: The maximum number of items to return. Default 10
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        default: 10
+
+  schemas:
+    CreateProfileRequest:
+      type: object
+      required:
+        - id
+        - biller
+        - profileName
+      properties:
+        id:
+          type: string
+          description: The ID of the profile in Billing Profile Manager
+          format: uuid
+        biller:
+          type: string
+          description: >
+            Either "direct" or the reseller of the sub-account that sends the bill (like "on_spend")
+        displayName:
+          type: string
+          description: Display name to be used for the profile
+        description:
+          type: string
+          description: Free text that describes the profile
+        cloudPlatform:
+          $ref: '#/components/schemas/CloudPlatform'
+        billingAccountId:
+          type: string
+          description: Unique identifier of the billing account from Google
+        tenantId:
+          type: string
+          description: Unique identifier of the Azure tenant
+          format: uuid
+        subscriptionId:
+          type: string
+          description: Unique identifier of the Azure subscription
+          format: uuid
+        resourceGroupName:
+          type: string
+          description: Name of the Azure resource group
+        applicationDeploymentName:
+          type: string
+          description: Name of the Azure application deployment
+
+    UpdateProfileRequest:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          description: The ID of the profile in Billing Profile Manager
+          format: uuid
+        billingAccountId:
+          type: string
+          description: Unique identifier of the billing account from Google
+        description:
+          type: string
+          description: Free text that describes the profile
+
+    ProfileModelList:
+      type: object
+      required:
+        - total
+        - items
+      properties:
+        total:
+          type: integer
+          description: Total number of billing profiles
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProfileModel'
+      description: >
+        The total number of billing profiles available and a page of profiles
+
+    ProfileModel:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          description: The ID of the billing profile
+          type: string
+          format: uuid
+        biller:
+          type: string
+          description: >
+            Either "direct" or the reseller of the sub-account that sends the bill (like "on_spend")
+        displayName:
+          type: string
+          description: Display name to be used for the profile
+        description:
+          type: string
+          description: Free text that describes the profile
+        cloudPlatform:
+          $ref: '#/components/schemas/CloudPlatform'
+        billingAccountId:
+          type: string
+          description: Unique identifier of the billing account from Google
+        tenantId:
+          type: string
+          description: Unique identifier of the Azure tenant
+          format: uuid
+        subscriptionId:
+          type: string
+          description: Unique identifier of the Azure subscription
+          format: uuid
+        resourceGroupName:
+          type: string
+          description: Name of the Azure resource group
+        applicationDeploymentName:
+          type: string
+          description: Name of the Azure application deployment
+        createdDate:
+          type: string
+          description: Date the profile was created
+        createdBy:
+          type: string
+          description: Identity of the user who originally created the profile
+
+    CreateProfileResult:
+      type: object
+      description: |
+        The result of a call to create a billing profile. Contains
+        a JobReport detailing the async operation and either a ProfileModel
+        or an ErrorReport detailing an error.
+      required: [ jobReport ]
+      properties:
+        jobReport:
+          $ref: '#/components/schemas/JobReport'
+        profileDescription:
+          $ref: '#/components/schemas/ProfileModel'
+        errorReport:
+          $ref: '#/components/schemas/ErrorReport'
+
+    SystemStatus:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          description: status of this service
+        systems:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              ok:
+                type: boolean
+              messages:
+                type: array
+                items:
+                  type: string
+
+    SystemVersion:
+      type: object
+      required: [ gitTag, gitHash, github, build ]
+      properties:
+        gitTag:
+          type: string
+          description: Git tag of currently deployed app.
+        gitHash:
+          type: string
+          description: Git hash of currently deployed app.
+        github:
+          type: string
+          description: Github link to currently deployed commit.
+        build:
+          type: string
+          description: Version of the currently deployed app declared in build.gradle. Client and server versions are linked.
+
+    ErrorReport:
+      type: object
+      required: [message, statusCode, causes]
+      properties:
+        message:
+          type: string
+        statusCode:
+          type: integer
+        causes:
+          type: array
+          items:
+            type: string
+
+    JobReport:
+      type: object
+      required: [ id, status, statusCode, resultURL ]
+      properties:
+        id:
+          description: caller-provided unique identifier for the job
+          type: string
+        description:
+          description: caller-provided description of the job
+          type: string
+        status:
+          description: status of the job
+          type: string
+          enum: [ RUNNING, SUCCEEDED, FAILED ]
+        statusCode:
+          description: HTTP code providing status of the job.
+          type: integer
+        submitted:
+          description: timestamp when the job was submitted; in ISO-8601 format
+          type: string
+        completed:
+          description: >-
+            timestamp when the job completed - in ISO-8601 format. Present if
+            status is SUCCEEDED or FAILED.
+          type: string
+        resultURL:
+          description: >-
+            URL where the result of the job can be retrieved. Equivalent to a
+            Location header in HTTP.
+          type: string
+
+    CloudPlatform:
+      type: string
+      description: Enum representing a cloud platform type.
+      enum: [ 'AZURE', 'GCP' ]
+
+  responses:
+    CreateProfileResultResponse:
+      description: Job is complete (succeeded or failed)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CreateProfileResult'
+
+    StatusResponse:
+      description: common status response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SystemStatus'
+
+    # Error Responses
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorReport'
+    PermissionDenied:
+      description: Permission denied
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorReport'
+    NotFound:
+      description: Not found (or unauthorized)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorReport'
+    Conflict:
+      description: Request conflicts with current state
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorReport'
+    ServerError:
+      description: Server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorReport'
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+    b2c:
+      type: oauth2
+      x-tokenName: id_token
+      flows:
+        implicit:
+          authorizationUrl: https://tdrb2ctest.b2clogin.com/tdrb2ctest.onmicrosoft.com/oauth2/v2.0/authorize?p=B2C_1A_SIGNUP_SIGNIN
+          scopes:
+            openid: open id authorization
+            email: email authorization
+            profile: profile authorization
+    legacy:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: https://accounts.google.com/o/oauth2/auth
+          scopes:
+            openid: open id authorization
+            email: email authorization
+            profile: profile authorization

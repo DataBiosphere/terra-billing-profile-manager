@@ -1,0 +1,38 @@
+plugins {
+	id 'bio.terra.profile.java-spring-conventions'
+	id 'de.undercouch.download'
+	id 'com.google.cloud.tools.jib'
+
+	id 'com.gorylenko.gradle-git-properties' version '2.3.1'
+}
+
+apply from: 'generators.gradle'
+apply from: 'publishing.gradle'
+
+dependencies {
+	implementation 'bio.terra:terra-common-lib'
+	implementation 'org.apache.commons:commons-dbcp2'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.retry:spring-retry'
+	implementation group: "org.apache.commons", name: "commons-lang3"
+
+	// Google dependencies
+	implementation platform('com.google.cloud:libraries-bom:20.9.0')
+
+	// Cloud Resource Library
+	// TODO: remove SNAPSHOT once https://github.com/DataBiosphere/terra-cloud-resource-lib/pull/109 is merged
+	implementation platform('bio.terra.cloud-resource-lib:platform:0.8.2-SNAPSHOT')
+	implementation group: 'bio.terra.cloud-resource-lib', name: 'google-billing'
+	implementation group: 'bio.terra.cloud-resource-lib', name: 'azure-resourcemanager-common'
+
+	// Sam
+	implementation group: "org.broadinstitute.dsde.workbench", name: "sam-client_2.12", version: "0.1-61135c7"
+
+	// Test deps
+	testImplementation('org.springframework.boot:spring-boot-starter-test') {
+		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+	}
+	// Allows us to mock final classes
+	testImplementation 'org.mockito:mockito-inline:2.13.0'
+}
