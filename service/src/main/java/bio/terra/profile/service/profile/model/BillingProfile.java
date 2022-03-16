@@ -40,17 +40,27 @@ public record BillingProfile(
     }
 
     // check cloud-specific fields
-    if (request.getCloudPlatform().equals(CloudPlatform.GCP)
-        && request.getBillingAccountId() == null) {
-      throw new MissingRequiredFieldsException("GCP billing profile requires billingAccount");
-    }
-    if (request.getCloudPlatform().equals(CloudPlatform.AZURE)
-        && (request.getTenantId() == null
-            || request.getSubscriptionId() == null
-            || request.getResourceGroupName() == null
-            || request.getApplicationDeploymentName() == null)) {
-      throw new MissingRequiredFieldsException(
-          "Azure billing profile requires tenantId, subscriptionId, resourceGroupName, and applicationDeploymentName");
+    if (request.getCloudPlatform().equals(CloudPlatform.GCP)) {
+      if (request.getBillingAccountId() == null) {
+        throw new MissingRequiredFieldsException("GCP billing profile requires billingAccount");
+      }
+      if (request.getTenantId() != null
+          || request.getSubscriptionId() != null
+          || request.getResourceGroupName() != null
+          || request.getApplicationDeploymentName() != null) {
+        throw new MissingRequiredFieldsException("GCP billing profile must not contain Azure data");
+      }
+    } else if (request.getCloudPlatform().equals(CloudPlatform.AZURE)) {
+      if (request.getTenantId() == null
+          || request.getSubscriptionId() == null
+          || request.getResourceGroupName() == null
+          || request.getApplicationDeploymentName() == null) {
+        throw new MissingRequiredFieldsException(
+            "Azure billing profile requires tenantId, subscriptionId, resourceGroupName, and applicationDeploymentName");
+      }
+      if (request.getBillingAccountId() != null) {
+        throw new MissingRequiredFieldsException("Azure billing profile must not contain GCP data");
+      }
     }
 
     return new BillingProfile(

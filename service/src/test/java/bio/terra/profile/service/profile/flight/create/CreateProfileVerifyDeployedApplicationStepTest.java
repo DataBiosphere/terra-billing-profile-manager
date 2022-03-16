@@ -75,6 +75,7 @@ public class CreateProfileVerifyDeployedApplicationStepTest extends BaseUnitTest
             Map.of("parameters", Map.of("authorizedTerraUser", Map.of("value", user.getEmail()))));
 
     var result = step.doStep(flightContext);
+
     assertEquals(StepResult.getStepResultSuccess(), result);
   }
 

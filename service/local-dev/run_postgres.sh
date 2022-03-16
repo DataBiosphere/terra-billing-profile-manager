@@ -32,7 +32,7 @@ stop() {
     exit 0
 }
 
-CONTAINER=postgres
+CONTAINER=bpm-postgres
 COMMAND=$1
 POSTGRES_PORT=${2:-"5432"}
 

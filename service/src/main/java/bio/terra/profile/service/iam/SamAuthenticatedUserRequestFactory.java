@@ -34,6 +34,11 @@ public class SamAuthenticatedUserRequestFactory implements AuthenticatedUserRequ
     var userStatusInfo =
         SamRethrow.onInterrupted(() -> samService.getUserStatusInfo(token), "getUserStatusInfo");
 
+    // Fail if user is not enabled
+    if (!userStatusInfo.getEnabled()) {
+      throw new UnauthorizedException("unauthorized");
+    }
+
     return AuthenticatedUserRequest.builder()
         .setToken(token)
         .setEmail(userStatusInfo.getUserEmail())
