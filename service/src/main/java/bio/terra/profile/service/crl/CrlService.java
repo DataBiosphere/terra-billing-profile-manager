@@ -8,6 +8,7 @@ import bio.terra.profile.service.crl.exception.CrlInternalException;
 import bio.terra.profile.service.crl.exception.CrlSecurityException;
 import com.azure.core.management.AzureEnvironment;
 import com.azure.core.management.profile.AzureProfile;
+import com.azure.resourcemanager.managedapplications.ApplicationManager;
 import com.azure.resourcemanager.resources.ResourceManager;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -49,6 +50,13 @@ public class CrlService {
             clientConfig, ResourceManager.configure())
         .authenticate(azureConfiguration.buildManagedAppCredentials(), azureProfile)
         .withSubscription(subscriptionId.toString());
+  }
+
+  public ApplicationManager getApplicationManager(UUID subscriptionId) {
+    AzureProfile azureProfile =
+        new AzureProfile(null, subscriptionId.toString(), AzureEnvironment.AZURE);
+    return ApplicationManager.authenticate(
+        azureConfiguration.buildManagedAppCredentials(), azureProfile);
   }
 
   private ClientConfig buildClientConfig() {
