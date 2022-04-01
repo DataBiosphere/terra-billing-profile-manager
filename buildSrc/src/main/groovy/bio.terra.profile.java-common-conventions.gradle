@@ -51,11 +51,6 @@ dependencies {
     implementation 'bio.terra:terra-common-lib:0.0.53-SNAPSHOT'
 }
 
-dependencyLocking {
-    lockAllConfigurations()
-    lockMode = LockMode.STRICT
-}
-
 // https://spring.io/blog/2022/03/31/spring-framework-rce-early-announcement
 ext['spring-framework.version'] = '5.3.18'
 
