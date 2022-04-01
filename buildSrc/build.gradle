@@ -16,6 +16,6 @@ dependencies {
     implementation 'gradle.plugin.com.github.spotbugs.snom:spotbugs-gradle-plugin:4.7.2'
     implementation 'io.spring.dependency-management:io.spring.dependency-management.gradle.plugin:1.0.10.RELEASE'
     implementation 'org.hidetake.swagger.generator:org.hidetake.swagger.generator.gradle.plugin:2.19.1'
-    implementation 'org.springframework.boot:spring-boot-gradle-plugin:2.6.3'
+    implementation 'org.springframework.boot:spring-boot-gradle-plugin:2.6.5'
     implementation 'bio.terra:terra-test-runner:0.0.8-SNAPSHOT'
 }
