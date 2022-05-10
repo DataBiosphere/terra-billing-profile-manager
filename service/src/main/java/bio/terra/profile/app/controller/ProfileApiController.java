@@ -50,7 +50,6 @@ public class ProfileApiController implements ProfileApi {
     BillingProfile profile = BillingProfile.fromApiCreateProfileRequest(body);
     String jobId = profileService.createProfile(profile, user);
     final CreateProfileResult result = fetchCreateProfileResult(jobId, user);
-
     return new ResponseEntity<>(result, getAsyncResponseCode(result.getJobReport()));
   }
 
