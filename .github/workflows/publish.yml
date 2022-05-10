@@ -7,6 +7,7 @@ env:
 
 jobs:
   publish-job:
+    # only publish on new tag
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
@@ -72,7 +73,7 @@ jobs:
         uses: broadinstitute/action-slack@v3.8.0
         if: failure()
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.CATALOG_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.BPM_SLACK_WEBHOOK }}
         with:
           status: ${{ job.status }}
           author_name: Publish to dev
