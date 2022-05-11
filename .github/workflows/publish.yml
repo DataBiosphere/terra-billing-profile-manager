@@ -54,7 +54,6 @@ jobs:
           -Djib.console=plain
 
       - name: Run Trivy vulnerability scanner
-        # Link to the github location of the action https://github.com/broadinstitute/dsp-appsec-trivy-action
         uses: broadinstitute/dsp-appsec-trivy-action@v1
         with:
           image: ${{ steps.image-name.outputs.name }}
@@ -62,7 +61,7 @@ jobs:
       - name: Push GCR image
         run: docker push ${{ steps.image-name.outputs.name }}
 
-    # TODO dispatch notification to terra-helmfile once a chart is setup
+      # TODO dispatch notification to terra-helmfile once a chart is setup
 
       - name: Notify slack on failure
         uses: broadinstitute/action-slack@v3.8.0
