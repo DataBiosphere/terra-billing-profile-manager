@@ -25,7 +25,6 @@ jobs:
             ~/.gradle/caches
             ~/.gradle/wrapper
           key: v1-${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-
       - name: Parse tag
         id: tag
         run: echo ::set-output name=tag::$(git describe --tags)
@@ -61,14 +60,14 @@ jobs:
         run: docker push ${{ steps.image-name.outputs.name }}
 
     # TODO dispatch notification to terra-helmfile once a chart is setup
-
-      - name: Notify slack on failure
-        uses: broadinstitute/action-slack@v3.8.0
-        if: failure()
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.BPM_SLACK_WEBHOOK }}
-        with:
-          status: ${{ job.status }}
-          author_name: Publish to dev
-          fields: job
-          text: 'Publish failed :sadpanda:'
+#
+#      - name: Notify slack on failure
+#        uses: broadinstitute/action-slack@v3.8.0
+#        if: failure()
+#        env:
+#          SLACK_WEBHOOK_URL: ${{ secrets.BPM_SLACK_WEBHOOK }}
+#        with:
+#          status: ${{ job.status }}
+#          author_name: Publish to dev
+#          fields: job
+#          text: 'Publish failed :sadpanda:'
