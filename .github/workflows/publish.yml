@@ -24,7 +24,7 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: v1-${{ runner.os }}-gradle-refs/heads/dev-${{ github.sha }}
+          key: v1-${{ runner.os }}-gradle-refs/heads/main-${{ github.sha }}
 
       - name: Parse tag
         id: tag
