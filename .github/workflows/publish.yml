@@ -25,6 +25,9 @@ jobs:
             ~/.gradle/caches
             ~/.gradle/wrapper
           key: v1-${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            v1-${{ runner.os }}-gradle-
+
       - name: Parse tag
         id: tag
         run: echo ::set-output name=tag::$(git describe --tags)
