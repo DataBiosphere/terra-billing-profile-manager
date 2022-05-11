@@ -1,5 +1,5 @@
 name: Publish and deploy
-on: create
+on: workflow_dispatch
 
 env:
   SERVICE_NAME: ${{ github.event.repository.name }}
@@ -8,7 +8,7 @@ env:
 jobs:
   publish-job:
     # only publish on new tag
-    if: startsWith(github.ref, 'refs/tags/')
+    #if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -24,18 +24,13 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: v1-${{ runner.os }}-gradle-refs/heads/dev-${{ github.sha }}
+          key: v1-${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
 
       - name: Parse tag
         id: tag
         run: echo ::set-output name=tag::$(git describe --tags)
 
-      - name: Publish to Artifactory
-        run: ./gradlew --build-cache :client-resttemplate:artifactoryPublish
-        env:
-          ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-          ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-          ARTIFACTORY_REPO_KEY: libs-snapshot-local
+      # TODO publish client
 
       - name: Auth to GCR
         uses: google-github-actions/auth@v0
