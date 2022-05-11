@@ -48,14 +48,12 @@ jobs:
         id: image-name
         run: echo ::set-output name=name::gcr.io/${GOOGLE_PROJECT}/${SERVICE_NAME}:${{ steps.tag.outputs.tag }}
 
-      - name: Add Google Cloud Profiler to Docker Image
-        run: docker build ./service -t billingprofilemanager:local
+      # TODO add google cloud profiler
 
       - name: Build image locally with jib
         run: |
           ./gradlew --build-cache :service:jibDockerBuild \
           --image=${{ steps.image-name.outputs.name }} \
-          -Djib.from.image=docker://billingprofilemanager:local \
           -Djib.console=plain
 
       - name: Run Trivy vulnerability scanner
