@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - main
+      - arh-wor-315-tag-action
 
 jobs:
   tag-job:
