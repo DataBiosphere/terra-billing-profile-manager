@@ -21,7 +21,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.BROADBOT_TOKEN }}
           HOTFIX_BRANCHES: hotfix.*
           DEFAULT_BUMP: minor
-          RELEASE_BRANCHES: main
+          RELEASE_BRANCHES: arh-wor-315-tag-action
           VERSION_FILE_PATH: settings.gradle
           VERSION_LINE_MATCH: "^\\s*gradle.ext.releaseVersion\\s*=\\s*'.*'"
           VERSION_SUFFIX: SNAPSHOT
