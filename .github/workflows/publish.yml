@@ -61,7 +61,14 @@ jobs:
       - name: Push GCR image
         run: docker push ${{ steps.image-name.outputs.name }}
 
-      # TODO dispatch notification to terra-helmfile once a chart is setup
+      - name: Deploy to Terra Dev environment
+        if: github.event_name == 'push' && steps.skiptest.outputs.is-bump == 'no'
+        uses: broadinstitute/repository-dispatch@master
+        with:
+          token: ${{ secrets.BROADBOT_TOKEN }}
+          repository: broadinstitute/terra-helmfile
+          event-type: update-service
+          client-payload: '{"service": "bpm", "version": "${{ steps.tag.outputs.tag }}", "dev_only": false}'
 
       - name: Notify slack on failure
         uses: broadinstitute/action-slack@v3.8.0
