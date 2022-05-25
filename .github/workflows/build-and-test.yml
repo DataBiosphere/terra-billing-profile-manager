@@ -131,5 +131,5 @@ jobs:
       - name: Fire off tag action
         uses: broadinstitute/workflow-dispatch@v1
         with:
-          workflow: Tag
+          workflow: 'Tag, publish, deploy'
           token: ${{ secrets.BROADBOT_TOKEN }}
