@@ -1,7 +1,7 @@
 name: Tag
 on:
-  - workflow_dispatch
-  - workflow_call:
+  workflow_dispatch
+  workflow_call:
       outputs:
         new_tag:
           description: "Generated tag"
