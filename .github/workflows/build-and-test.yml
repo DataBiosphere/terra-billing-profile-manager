@@ -128,7 +128,7 @@ jobs:
     if: success() && github.ref == 'refs/heads/main'
 
     steps:
-      - name: Fire off tag action
+      - name: Fire off publish action
         uses: broadinstitute/workflow-dispatch@v1
         with:
           workflow: 'Tag, publish, deploy'
