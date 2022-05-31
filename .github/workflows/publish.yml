@@ -10,8 +10,6 @@ env:
 jobs:
   tag:
     uses: ./.github/workflows/tag.yml
-    with:
-      token: ${{ secrets.BROADBOT_TOKEN }}
 
   publish-job:
     needs: [ tag ]
