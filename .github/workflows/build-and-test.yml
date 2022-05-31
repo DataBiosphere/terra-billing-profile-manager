@@ -113,7 +113,7 @@ jobs:
       - name: Notify slack on failure
         uses: broadinstitute/action-slack@v3.8.0
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.CATALOG_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.BPM_SLACK_WEBHOOK }}
         with:
           channel: '#terra-billing-profile-manager'
           status: failure
