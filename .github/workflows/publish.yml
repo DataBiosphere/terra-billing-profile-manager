@@ -10,8 +10,7 @@ env:
 jobs:
   tag:
     uses: ./.github/workflows/tag.yml
-    with:
-      secrets: inherit
+    secrets: inherit
 
   publish-job:
     needs: [ tag ]

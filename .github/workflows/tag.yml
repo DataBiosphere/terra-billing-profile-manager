@@ -2,7 +2,6 @@ name: Tag
 on:
   workflow_dispatch:
   workflow_call:
-    secrets: inherit
     outputs:
       new_tag:
         description: "Generated tag"
