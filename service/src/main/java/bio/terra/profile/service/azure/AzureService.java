@@ -4,6 +4,8 @@ import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.model.AzureManagedAppModel;
 import bio.terra.profile.service.crl.CrlService;
 import com.azure.resourcemanager.managedapplications.models.Application;
+
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -16,7 +18,7 @@ public class AzureService {
   private static final Logger logger = LoggerFactory.getLogger(AzureService.class);
   private static final String AUTHORIZED_USER_KEY = "authorizedTerraUser";
   // TODO externalize this
-  private static final String TERRA_APP_PRDDUCT = "fake-terra-app-product-name";
+  private static final String TERRA_APP_PRDDUCT = "aherbst-202202024-preview";
 
   private final CrlService crlService;
 
@@ -49,10 +51,12 @@ public class AzureService {
       return false;
     }
 
-    if (app.tags() != null && app.tags().containsKey(AUTHORIZED_USER_KEY)) {
-      var authedUser = app.tags().get(AUTHORIZED_USER_KEY);
+    if (app.parameters() != null && app.parameters() instanceof HashMap rawParams) {
+      var paramValues = (HashMap) rawParams.get(AUTHORIZED_USER_KEY);
+      var authedUser = paramValues.get("value");
       return authedUser.equals(userRequest.getEmail());
     }
+
     return false;
   }
 }
