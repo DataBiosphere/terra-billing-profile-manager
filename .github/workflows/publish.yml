@@ -44,7 +44,7 @@ jobs:
 
       - name: Construct docker image name and tag
         id: image-name
-        run: echo ::set-output name=name::gcr.io/${GOOGLE_PROJECT}/${SERVICE_NAME}:${{ needs.tag.outputs.new_tag }}
+        run: echo ::set-output name=name::gcr.io/${GOOGLE_PROJECT}/${SERVICE_NAME}:${{ needs.tag.outputs.tag }}
 
       # TODO add google cloud profiler
 
@@ -68,7 +68,7 @@ jobs:
           token: ${{ secrets.BROADBOT_TOKEN }}
           repository: broadinstitute/terra-helmfile
           event-type: update-service
-          client-payload: '{"service": "bpm", "version": "${{ needs.tag.outputs.new_tag }}", "dev_only": false}'
+          client-payload: '{"service": "bpm", "version": "${{ needs.tag.outputs.tag }}", "dev_only": false}'
 
       - name: Notify slack on failure
         uses: broadinstitute/action-slack@v3.8.0
