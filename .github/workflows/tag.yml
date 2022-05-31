@@ -2,10 +2,13 @@ name: Tag
 on:
   workflow_dispatch:
   workflow_call:
-      outputs:
-        new_tag:
-          description: "Generated tag"
-          value: ${{ jobs.tag-job.outputs.new_tag }}
+    secrets:
+      BROADBOT_TOKEN:
+        required: true
+    outputs:
+      new_tag:
+        description: "Generated tag"
+        value: ${{ jobs.tag-job.outputs.new_tag }}
 
 jobs:
   tag-job:
