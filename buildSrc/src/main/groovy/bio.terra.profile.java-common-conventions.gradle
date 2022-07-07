@@ -46,8 +46,6 @@ dependencies {
 
     testImplementation 'ch.qos.logback:logback-classic:1.2.10'
     testImplementation 'org.hamcrest:hamcrest:2.2'
-
-    implementation 'bio.terra:terra-common-lib:0.0.53-SNAPSHOT'
 }
 
 // https://spring.io/blog/2022/03/31/spring-framework-rce-early-announcement
