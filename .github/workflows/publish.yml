@@ -34,7 +34,7 @@ jobs:
             v1-${{ runner.os }}-gradle-
 
       - name: Publish API client
-        run: ./gradlew --build-cache :client-resttemplate:artifactoryPublish
+        run: ./gradlew --build-cache :client:artifactoryPublish
         env:
           ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
           ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
