@@ -58,6 +58,7 @@ public class CreateProfileVerifyDeployedApplicationStepTest extends BaseUnitTest
             Optional.of("resourceGroup"),
             Optional.of("applicationDeployment"),
             Instant.now(),
+            Instant.now(),
             "creator");
     step = new CreateProfileVerifyDeployedApplicationStep(crlService, profile, user);
 

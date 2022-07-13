@@ -135,6 +135,7 @@ public class ProfileDaoTest extends BaseUnitTest {
         Optional.empty(),
         Optional.empty(),
         null,
+        null,
         null);
   }
 

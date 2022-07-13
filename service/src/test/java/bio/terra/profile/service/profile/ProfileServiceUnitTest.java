@@ -67,6 +67,7 @@ public class ProfileServiceUnitTest extends BaseUnitTest {
             Optional.empty(),
             Optional.empty(),
             Instant.now(),
+            Instant.now(),
             "creator");
   }
 
