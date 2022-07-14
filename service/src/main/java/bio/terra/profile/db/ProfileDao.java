@@ -30,7 +30,7 @@ public class ProfileDao {
   private static final String SQL_SELECT_LIST =
       "id, display_name, biller, billing_account_id, description, cloud_platform, "
           + "tenant_id, subscription_id, resource_group_name, application_deployment_name, "
-             + "created_date, created_by, last_modified";
+          + "created_date, created_by, last_modified";
 
   private static final String SQL_GET =
       "SELECT " + SQL_SELECT_LIST + " FROM billing_profile WHERE id = :id";

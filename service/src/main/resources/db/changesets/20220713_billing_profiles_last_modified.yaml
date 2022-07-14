@@ -11,4 +11,4 @@ databaseChangeLog:
                   type: timestamptz
                   defaultValueComputed: now()
                   remarks: |
-                    Date the profile was last modified.
+                    Timestamp in UTC the profile was last modified.
