@@ -135,6 +135,7 @@ public class ProfileDaoTest extends BaseUnitTest {
         Optional.empty(),
         Optional.empty(),
         null,
+        null,
         null);
   }
 
@@ -151,6 +152,7 @@ public class ProfileDaoTest extends BaseUnitTest {
     assertEquals(expected.resourceGroupName(), actual.resourceGroupName());
     assertEquals(expected.applicationDeploymentName(), actual.applicationDeploymentName());
     assertNotNull(actual.createdTime());
+    assertNotNull(actual.lastModified());
     assertEquals(user.getEmail(), actual.createdBy());
   }
 

@@ -21,6 +21,7 @@ public record BillingProfile(
     Optional<String> resourceGroupName,
     Optional<String> applicationDeploymentName,
     Instant createdTime,
+    Instant lastModified,
     String createdBy) {
 
   /**
@@ -75,6 +76,7 @@ public record BillingProfile(
         Optional.ofNullable(request.getResourceGroupName()),
         Optional.ofNullable(request.getApplicationDeploymentName()),
         null,
+        null,
         null);
   }
 
@@ -96,6 +98,7 @@ public record BillingProfile(
         .resourceGroupName(resourceGroupName.orElse(null))
         .applicationDeploymentName(applicationDeploymentName.orElse(null))
         .createdDate(createdTime.toString())
+        .lastModified(lastModified.toString())
         .createdBy(createdBy);
   }
 }

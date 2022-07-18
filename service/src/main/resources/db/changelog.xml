@@ -12,4 +12,5 @@
     <property name="description_type" value="varchar(2047)"/>
 
     <include file="changesets/20220117_billing_profiles.yaml" relativeToChangelogFile="true"/>
+    <include file="changesets/20220713_billing_profiles_last_modified.yaml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

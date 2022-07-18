@@ -7,8 +7,8 @@ import java.util.Optional;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 
 public class DaoKeyHolder extends GeneratedKeyHolder {
-  public Instant getCreatedDate() {
-    return getField("created_date", Timestamp.class).map(Timestamp::toInstant).orElse(null);
+  public Instant getInstant(String fieldName) {
+    return getField(fieldName, Timestamp.class).map(Timestamp::toInstant).orElse(null);
   }
 
   public String getString(String fieldName) {

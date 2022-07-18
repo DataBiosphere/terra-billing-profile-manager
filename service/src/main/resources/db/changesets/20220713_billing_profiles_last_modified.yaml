@@ -1,0 +1,14 @@
+databaseChangeLog:
+  - changeSet:
+      id: billing_profile_table_last_modified
+      author: ypark
+      changes:
+        - addColumn:
+            tableName: billing_profile
+            columns:
+              - column:
+                  name: last_modified
+                  type: timestamptz
+                  defaultValueComputed: now()
+                  remarks: |
+                    Timestamp in UTC the profile was last modified.

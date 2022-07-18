@@ -318,6 +318,9 @@ components:
         createdDate:
           type: string
           description: Date the profile was created
+        lastModified:
+          type: string
+          description: Timestamp in UTC the profile was last modified
         createdBy:
           type: string
           description: Identity of the user who originally created the profile

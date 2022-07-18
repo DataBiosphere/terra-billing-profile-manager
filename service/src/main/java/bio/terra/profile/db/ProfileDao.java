@@ -29,7 +29,8 @@ public class ProfileDao {
   // SQL select string constants
   private static final String SQL_SELECT_LIST =
       "id, display_name, biller, billing_account_id, description, cloud_platform, "
-          + "tenant_id, subscription_id, resource_group_name, application_deployment_name, created_date, created_by";
+          + "tenant_id, subscription_id, resource_group_name, application_deployment_name, "
+          + "created_date, created_by, last_modified";
 
   private static final String SQL_GET =
       "SELECT " + SQL_SELECT_LIST + " FROM billing_profile WHERE id = :id";
@@ -90,7 +91,8 @@ public class ProfileDao {
         profile.subscriptionId(),
         profile.resourceGroupName(),
         profile.applicationDeploymentName(),
-        keyHolder.getCreatedDate(),
+        keyHolder.getInstant("created_date"),
+        keyHolder.getInstant("last_modified"),
         keyHolder.getString("created_by"));
   }
 
@@ -149,6 +151,7 @@ public class ProfileDao {
           Optional.ofNullable(rs.getString("resource_group_name")),
           Optional.ofNullable(rs.getString("application_deployment_name")),
           rs.getTimestamp("created_date").toInstant(),
+          rs.getTimestamp("last_modified").toInstant(),
           rs.getString("created_by"));
     }
   }
