@@ -56,6 +56,7 @@ public class CreateProfileVerifyAccountStepTest extends BaseUnitTest {
             Optional.empty(),
             Optional.empty(),
             Instant.now(),
+            Instant.now(),
             "creator");
 
     step = new CreateProfileVerifyAccountStep(crlService, profile, user);

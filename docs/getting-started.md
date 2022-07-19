@@ -23,12 +23,7 @@ Ensure that you have access to the required team resources. If you encounter a
 permission error, it is likely because you are missing appropriate access.
 
 - DataBiosphere: Join the `#github` Slack channel, click the lightning bolt in
-  the channel header, and select `Join DataBiosphere`.  Once you've been granted
-  access to DataBiosphere, ask a team member to add your GitHub user to the
-  [jadeteam](https://github.com/orgs/DataBiosphere/teams/jadeteam) group. This
-  will give you access to our repositories.
-- Google Groups: Ask a team member for access to Google Groups including
-  `jade-internal` and `dsde-engineering`.
+  the channel header, and select `Join DataBiosphere`. Ask in '#dsp-devops-champions' to be added to the BroadWrite team in the DataBiosphere organization.
 
 ## 3. Connect accounts
 
@@ -42,36 +37,12 @@ Connect your GitHub account to your Broad profile:
    **My Profile** tab.
 2. Link your profile to GitHub by clicking under **Other Profiles**.
 3. [Check if the account is successfully linked](https://github.broadinstitute.org/).
-4. Open each of the following GitHub groups and **Request to join** by going to
-   the Members tab: [Broad Institute Read](https://github.com/orgs/broadinstitute/teams/broad-institute-read),
-   [Prometheus](https://github.com/orgs/broadinstitute/teams/prometheus),
-   [DSDE Engineering](https://github.com/orgs/broadinstitute/teams/dsde-engineering)
-5. To avoid being overwhelmed with notifications, [add your Broad email address](https://github.com/settings/emails),
+4. To avoid being overwhelmed with notifications, [add your Broad email address](https://github.com/settings/emails),
    [route the notifications](https://github.com/settings/notifications) to that
    email, and [unfollow projects](https://github.com/watching) that are not
    relevant to your team.
-
-## 4. Create Terra Accounts
-
-The Data Catalog and [Terra](https://terra.bio/) use [Sam](https://github.com/broadinstitute/sam)
-to abtract identity and access management. To gain access to these services,
-first create a non-Broad email address through Gmail. This email address will
-specifically be used for development purposes in our non-prod environments.
-Next, to register as a new user, click the `Sign in with Google` button in each
-of the environments with the newly created email address and follow the prompts:
-
-- [Dev](https://bvdp-saturn-dev.appspot.com/)
-- [Alpha](https://bvdp-saturn-alpha.appspot.com/)
-- [Staging](https://bvdp-saturn-staging.appspot.com/)
-
-For [production](https://app.terra.bio/), you will need to register using a
-`firecloud.org` email. In order to get an account, you must become suitable,
-which requires following [these steps](https://docs.google.com/document/d/1DRftlTe-9Q4H-R0jxanVojvyNn1IzbdIOhNKiIj9IpI/edit?usp=sharing).
-
-Ask a member of the team to add you to the admins group for each of these
-environments.
-
-## 5. Install Homebrew
+ 
+## 4. Install Homebrew
 
 [Homebrew](https://brew.sh/) is a [package manager](https://en.wikipedia.org/wiki/Package_manager)
 which enables the installation of software using a single, convenient command
@@ -127,23 +98,7 @@ gcloud auth configure-docker
 git clone https://github.com/broadinstitute/dsp-appsec-gitsecrets-client.git
 ./dsp-appsec-gitsecrets-client/gitsecrets.sh
 ```
-
-## 6. Install Postgres 12
-
-[Postgres](https://www.postgresql.org/) is an advanced open-source database.
-**Postgres.app** is used to manage a local installation of Postgres. The latest
-release can be found on the [GitHub releases](https://github.com/PostgresApp/PostgresApp/releases)
-page. For compatibility, make sure to select a version which supports all the
-older versions of Postgres including 10. After launching the application,
-create a new version 12 database as follows:
-
-1. Click the sidebar icon (bottom left-hand corner) and then click the plus sign
-2. Name the new server, making sure to select version **12**, and then
-   **Initialize** it
-3. Add `/Applications/Postgres.app/Contents/Versions/latest/bin` to your path
-   (there are multiple ways to achieve this)
-
-## 7. Create GitHub token
+## 5. Create GitHub token
 
 The GitHub token verifies team permissions. This token is necessary for the next
 step, [Login to Vault](#8-login-to-vault). To create a token:
@@ -161,7 +116,7 @@ GITHUB_TOKEN=<<GITHUB TOKEN VALUE>>
 echo $GITHUB_TOKEN > ~/.github-token
 ```
 
-## 8. Login to Vault
+## 6. Login to Vault
 
 Vault access tokens can be obtained using the GitHub token from earlier as
 follows:
@@ -173,7 +128,7 @@ vault login -method=github token=$(cat ~/.github-token)
 > Vault access tokens expire after 30 days, so if you get a `403` error trying
 to use `vault`, re-run the `vault login` command to refresh your access token.
 
-## 9. Code Checkout
+## 7. Code Checkout
 
 > It may be useful to create a folder for Broad projects in your home directory.
 

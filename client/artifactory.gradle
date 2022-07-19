@@ -17,7 +17,7 @@ java {
 
 publishing {
     publications {
-        catalogClientLibrary(MavenPublication) {
+        billingProfileManagerClientLibrary(MavenPublication) {
             artifactId = "billing-profile-manager-client"
             from components.java
             versionMapping {
