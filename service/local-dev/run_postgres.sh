@@ -34,7 +34,7 @@ stop() {
 
 CONTAINER=bpm-postgres
 COMMAND=$1
-POSTGRES_PORT=${2:-"5433"}
+POSTGRES_PORT=${2:-"5432"}
 
 if [ ${#@} == 0 ]; then
     echo "Usage: $0 stop|start"

@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import bio.terra.common.iam.AuthenticatedUserRequest;
+import bio.terra.profile.app.configuration.AzureConfiguration;
 import bio.terra.profile.common.BaseUnitTest;
 import bio.terra.profile.model.AzureManagedAppModel;
 import bio.terra.profile.service.crl.CrlService;
@@ -43,7 +44,14 @@ public class AzureServiceUnitTest extends BaseUnitTest {
     var apps2 = Arrays.asList(fakeApp1, fakeApp2, fakeApp3);
     when(appsList.stream()).thenReturn(apps2.stream());
 
-    var azureService = new AzureService(crlService);
+    var offer = new AzureConfiguration.AzureApplicationOffer();
+    offer.setName("foo");
+    offer.setAuthorizedUserKey("foo");
+
+    var offers = Map.of("foo", offer);
+    var azureService =
+        new AzureService(crlService, new AzureConfiguration("fake", "fake", "fake", offers));
+
     when(crlService.getApplicationManager(any(UUID.class))).thenReturn(appMgr);
     when(appMgr.applications()).thenReturn(apps);
 
@@ -51,7 +59,7 @@ public class AzureServiceUnitTest extends BaseUnitTest {
 
     var result = azureService.getManagedAppDeployments(UUID.randomUUID(), user);
 
-    var expected = List.of(new AzureManagedAppModel().name("fake_app_1"));
+    var expected = List.of(new AzureManagedAppModel().deploymentName("fake_app_1"));
     assertEquals(result, expected);
   }
 }

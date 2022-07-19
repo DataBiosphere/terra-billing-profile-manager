@@ -313,10 +313,21 @@ components:
     AzureManagedAppModel:
       type: object
       required:
-        - name
+        - deploymentName
+        - managedResourceGroupId
+        - subscriptionId
+        - tenantId
       properties:
-        name:
+        deploymentName:
           type: string
+        managedResourceGroupId:
+          type: string
+        subscriptionId:
+          type: string
+          format: uuid
+        tenantId:
+          type: string
+
 
     ProfileModel:
       type: object

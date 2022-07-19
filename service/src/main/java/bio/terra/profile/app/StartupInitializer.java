@@ -1,6 +1,7 @@
 package bio.terra.profile.app;
 
 import bio.terra.common.migrate.LiquibaseMigrator;
+import bio.terra.profile.app.configuration.AzureConfiguration;
 import bio.terra.profile.app.configuration.ProfileDatabaseConfiguration;
 import bio.terra.profile.service.job.JobService;
 import org.springframework.context.ApplicationContext;
@@ -14,6 +15,9 @@ public final class StartupInitializer {
     JobService jobService = applicationContext.getBean(JobService.class);
     ProfileDatabaseConfiguration profileDatabaseConfiguration =
         applicationContext.getBean(ProfileDatabaseConfiguration.class);
+    AzureConfiguration azureConfiguration =
+            applicationContext.getBean(AzureConfiguration.class);
+    azureConfiguration.logOffers();
 
     // Migrate the database
     if (profileDatabaseConfiguration.isInitializeOnStart()) {
