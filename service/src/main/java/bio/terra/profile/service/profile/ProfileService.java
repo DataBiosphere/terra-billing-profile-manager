@@ -50,13 +50,13 @@ public class ProfileService {
             profile.id(), profile.cloudPlatform());
     logger.info(description);
     var createJob =
-      jobService
-        .newJob()
-        .description(description)
-        .flightClass(CreateProfileFlight.class)
-        .request(profile)
-        .userRequest(user);
-   return createJob.submitAndWait(BillingProfile.class);
+        jobService
+            .newJob()
+            .description(description)
+            .flightClass(CreateProfileFlight.class)
+            .request(profile)
+            .userRequest(user);
+    return createJob.submitAndWait(BillingProfile.class);
   }
 
   /**
