@@ -56,7 +56,6 @@ public class ProfileService {
         .flightClass(CreateProfileFlight.class)
         .request(profile)
         .userRequest(user);
-        //.submit()
    return createJob.submitAndWait(BillingProfile.class);
   }
 
