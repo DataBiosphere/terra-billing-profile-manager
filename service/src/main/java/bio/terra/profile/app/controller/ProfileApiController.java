@@ -45,12 +45,11 @@ public class ProfileApiController implements ProfileApi {
   }
 
   @Override
-  public ResponseEntity<CreateProfileResult> createProfile(@RequestBody CreateProfileRequest body) {
+  public ResponseEntity<ProfileModel> createProfile(@RequestBody CreateProfileRequest body) {
     AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
     BillingProfile profile = BillingProfile.fromApiCreateProfileRequest(body);
-    String jobId = profileService.createProfile(profile, user);
-    final CreateProfileResult result = fetchCreateProfileResult(jobId, user);
-    return new ResponseEntity<>(result, getAsyncResponseCode(result.getJobReport()));
+    BillingProfile result = profileService.createProfile(profile, user);
+    return new ResponseEntity<>(result.toApiProfileModel(), HttpStatus.CREATED);
   }
 
   @Override

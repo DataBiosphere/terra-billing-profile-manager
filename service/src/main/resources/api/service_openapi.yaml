@@ -54,8 +54,12 @@ paths:
             schema:
               $ref: '#/components/schemas/CreateProfileRequest'
       responses:
-        '200':
-          $ref: '#/components/responses/CreateProfileResultResponse'
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileModel'
         '400':
           $ref: '#/components/responses/BadRequest'
         '403':

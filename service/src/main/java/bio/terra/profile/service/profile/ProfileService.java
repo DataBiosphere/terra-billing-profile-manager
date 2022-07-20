@@ -43,19 +43,21 @@ public class ProfileService {
    * @param user authenticated user
    * @return jobId of the submitted Stairway job
    */
-  public String createProfile(BillingProfile profile, AuthenticatedUserRequest user) {
+  public BillingProfile createProfile(BillingProfile profile, AuthenticatedUserRequest user) {
     String description =
         String.format(
             "Create billing profile id [%s] on cloud platform [%s]",
             profile.id(), profile.cloudPlatform());
     logger.info(description);
-    return jobService
+    var createJob =
+      jobService
         .newJob()
         .description(description)
         .flightClass(CreateProfileFlight.class)
         .request(profile)
-        .userRequest(user)
-        .submit();
+        .userRequest(user);
+        //.submit()
+   return createJob.submitAndWait(BillingProfile.class);
   }
 
   /**

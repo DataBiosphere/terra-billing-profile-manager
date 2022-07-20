@@ -83,9 +83,12 @@ public class ProfileServiceUnitTest extends BaseUnitTest {
     when(jobBuilder.request(eq(profile))).thenReturn(jobBuilder);
     when(jobBuilder.userRequest(eq(user))).thenReturn(jobBuilder);
 
-    String result = profileService.createProfile(profile, user);
-    verify(jobBuilder).submit();
-    assertEquals(result, jobId);
+    // String result = profileService.createProfile(profile, user);
+    profileService.createProfile(profile, user);
+
+    // verify(jobBuilder).submit();
+    verify(jobBuilder).submitAndWait(any());
+    // assertEquals(result, jobId);
   }
 
   @Test
