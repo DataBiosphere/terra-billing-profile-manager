@@ -19,10 +19,9 @@ env:
     basePath: ${SAM_ADDRESS:https://sam.dsde-dev.broadinstitute.org/}
     adminsGroupEmail: ${SAM_ADMINS_GROUP_EMAIL:admin-group}
   azure:
-    managed-app-clientId: ${env.azure.managedAppClientId}
-    managed-app-client-secret: ${env.azure.managedAppClientSecret}
-    managed-app-tenant-id: ${env.azure.managedAppTenantId}
-
+    managedAppClientId: ${MANAGED_APP_CLIENT_ID:app-client}
+    managedAppClientSecret: ${MANAGED_APP_CLIENT_SECRET:app-secret}
+    managedAppTenantId: ${MANAGED_APP_TENANT_ID:app-tenant}
 
 # Below here is non-deployment-specific
 
@@ -85,12 +84,12 @@ profile:
     username: ${env.db.profile.user}
 
   azure:
-    managedAppClientId: ${MANAGED_APP_CLIENT_ID:app-client}
-    managedAppClientSecret: ${MANAGED_APP_CLIENT_SECRET:app-secret}
-    managedAppTenantId: ${MANAGED_APP_TENANT_ID:app-tenant}
+    managed-app-clientId: ${env.azure.managedAppClientId}
+    managed-app-client-secret: ${env.azure.managedAppClientSecret}
+    managed-app-tenant-id: ${env.azure.managedAppTenantId}
 
     application-offers:
-      aherbst-202202024-preview:
+      fake-terra-app:
         authorized-user-key: authorizedTerraUser
 
 
