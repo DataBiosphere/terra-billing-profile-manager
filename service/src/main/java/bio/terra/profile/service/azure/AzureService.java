@@ -5,15 +5,14 @@ import bio.terra.profile.app.configuration.AzureConfiguration;
 import bio.terra.profile.model.AzureManagedAppModel;
 import bio.terra.profile.service.crl.CrlService;
 import com.azure.resourcemanager.managedapplications.models.Application;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
 public class AzureService {
@@ -39,12 +38,12 @@ public class AzureService {
     var appMgr = this.crlService.getApplicationManager(subscriptionId);
     return appMgr.applications().list().stream()
         .filter(app -> isAuthedTerraManagedApp(userRequest, app))
-        .map(app -> new AzureManagedAppModel()
-                .deploymentName(app.name())
-                .subscriptionId(subscriptionId)
-                .managedResourceGroupId(app.managedResourceGroupId())
-
-        )
+        .map(
+            app ->
+                new AzureManagedAppModel()
+                    .deploymentName(app.name())
+                    .subscriptionId(subscriptionId)
+                    .managedResourceGroupId(app.managedResourceGroupId()))
         .toList();
   }
 
@@ -61,7 +60,10 @@ public class AzureService {
     var authedUserKey = offer.getAuthorizedUserKey();
     if (app.parameters() != null && app.parameters() instanceof HashMap rawParams) {
       if (!rawParams.containsKey(authedUserKey)) {
-        logger.warn("Terra app deployment with no authorized user key {} [mrg_id={}]", authedUserKey, app.managedResourceGroupId());
+        logger.warn(
+            "Terra app deployment with no authorized user key {} [mrg_id={}]",
+            authedUserKey,
+            app.managedResourceGroupId());
         return false;
       }
       var paramValues = (HashMap) rawParams.get(authedUserKey);

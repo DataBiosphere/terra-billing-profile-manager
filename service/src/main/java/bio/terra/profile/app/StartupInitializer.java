@@ -15,8 +15,7 @@ public final class StartupInitializer {
     JobService jobService = applicationContext.getBean(JobService.class);
     ProfileDatabaseConfiguration profileDatabaseConfiguration =
         applicationContext.getBean(ProfileDatabaseConfiguration.class);
-    AzureConfiguration azureConfiguration =
-            applicationContext.getBean(AzureConfiguration.class);
+    AzureConfiguration azureConfiguration = applicationContext.getBean(AzureConfiguration.class);
     azureConfiguration.logOffers();
 
     // Migrate the database
