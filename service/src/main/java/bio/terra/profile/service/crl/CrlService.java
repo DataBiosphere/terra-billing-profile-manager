@@ -65,7 +65,6 @@ public class CrlService {
     return ClientConfig.Builder.newBuilder().setClient(CLIENT_NAME).build();
   }
 
-
   private GoogleCredentials getApplicationCredentials() {
     try {
       return GoogleCredentials.getApplicationDefault();

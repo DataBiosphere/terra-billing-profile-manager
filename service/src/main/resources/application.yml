@@ -19,12 +19,10 @@ env:
     basePath: ${SAM_ADDRESS:https://sam.dsde-dev.broadinstitute.org/}
     adminsGroupEmail: ${SAM_ADMINS_GROUP_EMAIL:admin-group}
   azure:
-#    client-id           a4491577-fe87-4c21-86e5-9d8ca82a5b61
-#    client-secret       ylJ7Q~XJ0_TH6Rzy16CbpYdlv46FslxtcLe1x
-#    tenant-id           fad90753-2022-4456-9b0a-c7e5b934e408
-    managedAppClientId: "a4491577-fe87-4c21-86e5-9d8ca82a5b61"
-    managedAppClientSecret: "ylJ7Q~XJ0_TH6Rzy16CbpYdlv46FslxtcLe1x"
-    managedAppTenantId: "fad90753-2022-4456-9b0a-c7e5b934e408"
+    managed-app-clientId: ${env.azure.managedAppClientId}
+    managed-app-client-secret: ${env.azure.managedAppClientSecret}
+    managed-app-tenant-id: ${env.azure.managedAppTenantId}
+
 
 # Below here is non-deployment-specific
 
