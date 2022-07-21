@@ -12,10 +12,11 @@ import com.azure.resourcemanager.managedapplications.ApplicationManager;
 import com.azure.resourcemanager.resources.ResourceManager;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
-import java.io.IOException;
-import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.io.IOException;
+import java.util.UUID;
 
 @Component
 public class CrlService {
@@ -63,6 +64,7 @@ public class CrlService {
     // Billing profile manager does not create any cloud resources, so no need to use Janitor.
     return ClientConfig.Builder.newBuilder().setClient(CLIENT_NAME).build();
   }
+
 
   private GoogleCredentials getApplicationCredentials() {
     try {

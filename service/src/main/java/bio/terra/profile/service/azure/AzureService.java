@@ -5,17 +5,15 @@ import bio.terra.profile.app.configuration.AzureConfiguration;
 import bio.terra.profile.model.AzureManagedAppModel;
 import bio.terra.profile.service.crl.CrlService;
 import com.azure.resourcemanager.managedapplications.models.Application;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
-import com.azure.resourcemanager.resources.fluent.SubscriptionsClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
 public class AzureService {
@@ -39,7 +37,6 @@ public class AzureService {
   public List<AzureManagedAppModel> getManagedAppDeployments(
       UUID subscriptionId, AuthenticatedUserRequest userRequest) {
     var appMgr = this.crlService.getApplicationManager(subscriptionId);
-
     return appMgr.applications().list().stream()
         .filter(app -> isAuthedTerraManagedApp(userRequest, app))
         .map(app -> new AzureManagedAppModel()

@@ -87,9 +87,9 @@ profile:
     username: ${env.db.profile.user}
 
   azure:
-    managed-app-clientId: a4491577-fe87-4c21-86e5-9d8ca82a5b61
-    managed-app-client-secret: ylJ7Q~XJ0_TH6Rzy16CbpYdlv46FslxtcLe1x
-    managed-app-tenant-id: fad90753-2022-4456-9b0a-c7e5b934e408
+    managedAppClientId: ${MANAGED_APP_CLIENT_ID:app-client}
+    managedAppClientSecret: ${MANAGED_APP_CLIENT_SECRET:app-secret}
+    managedAppTenantId: ${MANAGED_APP_TENANT_ID:app-tenant}
 
     application-offers:
       aherbst-202202024-preview:

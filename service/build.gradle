@@ -22,7 +22,9 @@ dependencies {
 	implementation platform('com.google.cloud:libraries-bom:20.9.0')
 
 	// Cloud Resource Library
-	implementation  group: "com.azure.resourcemanager", name: "azure-resourcemanager-managedapplications", version: "1.0.0-beta.1"
+	implementation group: "com.azure.resourcemanager", name: "azure-resourcemanager-managedapplications", version: "1.0.0-beta.1"
+	implementation group: "com.azure.resourcemanager", name: "azure-resourcemanager-subscription", version: "1.0.0-beta.1"
+
 
 	// TODO: remove SNAPSHOT once https://github.com/DataBiosphere/terra-cloud-resource-lib/pull/109 is merged
 	implementation platform('bio.terra.cloud-resource-lib:platform:0.8.2-SNAPSHOT')
