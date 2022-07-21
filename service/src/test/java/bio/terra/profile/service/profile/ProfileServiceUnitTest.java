@@ -74,18 +74,18 @@ public class ProfileServiceUnitTest extends BaseUnitTest {
   @Test
   public void createProfile() {
     var jobBuilder = mock(JobBuilder.class);
-    String jobId = "jobId";
 
     when(jobService.newJob()).thenReturn(jobBuilder);
-    when(jobBuilder.submit()).thenReturn(jobId);
     when(jobBuilder.description(anyString())).thenReturn(jobBuilder);
     when(jobBuilder.flightClass(eq(CreateProfileFlight.class))).thenReturn(jobBuilder);
     when(jobBuilder.request(eq(profile))).thenReturn(jobBuilder);
     when(jobBuilder.userRequest(eq(user))).thenReturn(jobBuilder);
+    when(jobBuilder.submitAndWait(BillingProfile.class)).thenReturn(profile);
 
-    String result = profileService.createProfile(profile, user);
-    verify(jobBuilder).submit();
-    assertEquals(result, jobId);
+    BillingProfile result = profileService.createProfile(profile, user);
+
+    verify(jobBuilder).submitAndWait(any());
+    assertEquals(profile, result);
   }
 
   @Test
