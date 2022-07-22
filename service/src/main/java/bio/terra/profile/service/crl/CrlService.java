@@ -10,6 +10,7 @@ import com.azure.core.management.AzureEnvironment;
 import com.azure.core.management.profile.AzureProfile;
 import com.azure.resourcemanager.managedapplications.ApplicationManager;
 import com.azure.resourcemanager.resources.ResourceManager;
+import com.azure.resourcemanager.resources.fluent.SubscriptionClient;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
 import java.io.IOException;
@@ -55,8 +56,20 @@ public class CrlService {
   public ApplicationManager getApplicationManager(UUID subscriptionId) {
     AzureProfile azureProfile =
         new AzureProfile(null, subscriptionId.toString(), AzureEnvironment.AZURE);
+
     return ApplicationManager.authenticate(
         azureConfiguration.buildManagedAppCredentials(), azureProfile);
+  }
+
+  public UUID getTenantForSubscription(UUID subscriptionId) {
+    // we are using the SubscriptionClient interface here instead of Subscriptions as the latter
+    // does not give us tenantId
+    var resourceManager =
+        getResourceManager(
+            UUID.fromString(azureConfiguration.managedAppTenantId()), subscriptionId);
+    SubscriptionClient sc = resourceManager.subscriptionClient();
+    var subscription = sc.getSubscriptions().get(subscriptionId.toString());
+    return UUID.fromString(subscription.tenantId());
   }
 
   private ClientConfig buildClientConfig() {

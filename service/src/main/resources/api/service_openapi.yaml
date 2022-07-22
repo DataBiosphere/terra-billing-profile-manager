@@ -160,6 +160,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AzureManagedAppsResponseModel'
+        '403':
+          $ref: '#/components/responses/PermissionDenied'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
 
 components:
   parameters:
@@ -299,15 +305,20 @@ components:
         - subscriptionId
         - tenantId
       properties:
-        deploymentName:
+        applicationDeploymentName:
           type: string
+          description: Name of the Azure application deployment
         managedResourceGroupId:
           type: string
+          description: Managed resource group corresponding to the Terra app deployment
         subscriptionId:
           type: string
           format: uuid
+          description: Azure subscription ID containing the Terra app deployment
         tenantId:
           type: string
+          format: uuid
+          description: Azure tenant ID containing the Terra app deployment
 
 
     ProfileModel:
