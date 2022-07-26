@@ -88,6 +88,11 @@ profile:
     managed-app-client-secret: ${env.azure.managedAppClientSecret}
     managed-app-tenant-id: ${env.azure.managedAppTenantId}
 
+    application-offers:
+      fake-terra-app:
+        authorized-user-key: authorizedTerraUser
+
+
 terra.common:
   kubernetes:
     in-kubernetes: false

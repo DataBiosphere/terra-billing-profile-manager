@@ -145,8 +145,39 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
 
+  /api/azure/v1/managedApps:
+    get:
+      parameters:
+        - $ref: '#/components/parameters/AzureSubscriptionId'
+      summary: Gets the Azure managed app deployments the caller has access to
+      operationId: getManagedAppDeployments
+      tags:
+        - Azure
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AzureManagedAppsResponseModel'
+        '403':
+          $ref: '#/components/responses/PermissionDenied'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
 components:
   parameters:
+    AzureSubscriptionId:
+      name: azureSubscriptionId
+      in: query
+      description: A UUID used to identify an Azure subscription
+      required: true
+      schema:
+        type: string
+        format: uuid
+
     ProfileId:
       name: profileId
       in: path
@@ -257,6 +288,38 @@ components:
             $ref: '#/components/schemas/ProfileModel'
       description: >
         The total number of billing profiles available and a page of profiles
+
+    AzureManagedAppsResponseModel:
+      type: object
+      properties:
+        managedApps:
+          type: array
+          items:
+            $ref: '#/components/schemas/AzureManagedAppModel'
+
+    AzureManagedAppModel:
+      type: object
+      required:
+        - deploymentName
+        - managedResourceGroupId
+        - subscriptionId
+        - tenantId
+      properties:
+        applicationDeploymentName:
+          type: string
+          description: Name of the Azure application deployment
+        managedResourceGroupId:
+          type: string
+          description: Managed resource group corresponding to the Terra app deployment
+        subscriptionId:
+          type: string
+          format: uuid
+          description: Azure subscription ID containing the Terra app deployment
+        tenantId:
+          type: string
+          format: uuid
+          description: Azure tenant ID containing the Terra app deployment
+
 
     ProfileModel:
       type: object
