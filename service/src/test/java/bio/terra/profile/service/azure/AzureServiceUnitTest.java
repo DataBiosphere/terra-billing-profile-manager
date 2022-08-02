@@ -39,6 +39,7 @@ public class AzureServiceUnitTest extends BaseUnitTest {
                 "authorizedTerraUser",
                 Map.of("value", String.format("%s,other@example.com", authedUserEmail))));
     when(authedTerraApp.managedResourceGroupId()).thenReturn("mrg_fake1");
+    when(authedTerraApp.id()).thenReturn("fake/azure/api/abc/123");
     when(authedTerraApp.name()).thenReturn("fake_app_1");
 
     var unauthedTerraApp = mock(Application.class);
@@ -46,11 +47,14 @@ public class AzureServiceUnitTest extends BaseUnitTest {
     when(unauthedTerraApp.parameters())
         .thenReturn(Map.of("authorizedTerraUser", Map.of("value", "other@example.com")));
     when(unauthedTerraApp.managedResourceGroupId()).thenReturn("mrg_fake2");
+    when(unauthedTerraApp.id()).thenReturn("fake/azure/api/abc/123");
+
     when(unauthedTerraApp.name()).thenReturn("fake_app_2");
 
     var otherNonTerraApp = mock(Application.class);
     when(otherNonTerraApp.plan()).thenReturn(new Plan().withProduct("other_offer"));
     when(otherNonTerraApp.managedResourceGroupId()).thenReturn("mrg_fake3");
+    when(otherNonTerraApp.id()).thenReturn("fake/azure/api/abc/123");
     when(otherNonTerraApp.name()).thenReturn("fake_app_3");
 
     var appsList = Stream.of(authedTerraApp, unauthedTerraApp, otherNonTerraApp);
@@ -74,7 +78,9 @@ public class AzureServiceUnitTest extends BaseUnitTest {
                 .applicationDeploymentName("fake_app_1")
                 .tenantId(tenantId)
                 .managedResourceGroupId("mrg_fake1")
-                .subscriptionId(subId));
+                .subscriptionId(subId)
+                .resourceGroupName("123")
+        );
     assertEquals(result, expected);
   }
 }
