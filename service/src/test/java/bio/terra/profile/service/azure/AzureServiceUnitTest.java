@@ -79,8 +79,7 @@ public class AzureServiceUnitTest extends BaseUnitTest {
                 .tenantId(tenantId)
                 .managedResourceGroupId("mrg_fake1")
                 .subscriptionId(subId)
-                .resourceGroupName("123")
-        );
+                .resourceGroupName("123"));
     assertEquals(result, expected);
   }
 }

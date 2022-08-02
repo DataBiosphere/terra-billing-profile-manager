@@ -47,8 +47,7 @@ public class AzureService {
                     .applicationDeploymentName(app.name())
                     .subscriptionId(subscriptionId)
                     .managedResourceGroupId(
-                        normalizeManagedResourceGroupId(app.managedResourceGroupId())
-                    )
+                        normalizeManagedResourceGroupId(app.managedResourceGroupId()))
                     .resourceGroupName(resourceGroupNameFromApp(app.id()))
                     .tenantId(tenantId))
         .toList();
