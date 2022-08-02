@@ -47,7 +47,9 @@ public class AzureService {
                     .applicationDeploymentName(app.name())
                     .subscriptionId(subscriptionId)
                     .managedResourceGroupId(
-                        normalizeManagedResourceGroupId(app.managedResourceGroupId()))
+                        normalizeManagedResourceGroupId(app.managedResourceGroupId())
+                    )
+                    .resourceGroupName(resourceGroupNameFromApp(app.id()))
                     .tenantId(tenantId))
         .toList();
   }
@@ -55,6 +57,14 @@ public class AzureService {
   private String normalizeManagedResourceGroupId(String mrgId) {
     var tokens = mrgId.split("/");
     return tokens[tokens.length - 1];
+  }
+
+  private String resourceGroupNameFromApp(String appId) {
+    var tokens = appId.split("/");
+    if (tokens.length < 5) {
+      throw new InvalidAzureResourceGroupNameException("Unable to parse resource group name");
+    }
+    return tokens[4];
   }
 
   private boolean isAuthedTerraManagedApp(AuthenticatedUserRequest userRequest, Application app) {
