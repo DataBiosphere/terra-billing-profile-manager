@@ -7,7 +7,6 @@ import static org.mockito.Mockito.when;
 
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.app.configuration.AzureConfiguration;
-import bio.terra.profile.common.BaseSpringUnitTest;
 import bio.terra.profile.common.BaseUnitTest;
 import bio.terra.profile.model.AzureManagedAppModel;
 import com.azure.resourcemanager.managedapplications.models.Application;

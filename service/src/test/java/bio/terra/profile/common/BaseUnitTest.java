@@ -5,4 +5,4 @@ import org.springframework.test.context.ActiveProfiles;
 
 @Tag("unit")
 @ActiveProfiles({"test", "unit"})
-public class BaseUnitTest { }
+public class BaseUnitTest {}
