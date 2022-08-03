@@ -2,40 +2,32 @@ package bio.terra.profile.service.profile.flight.create;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
 
 import bio.terra.common.iam.AuthenticatedUserRequest;
-import bio.terra.profile.common.BaseUnitTest;
+import bio.terra.profile.common.BaseSpringUnitTest;
 import bio.terra.profile.model.CloudPlatform;
-import bio.terra.profile.service.crl.CrlService;
+import bio.terra.profile.service.azure.AzureService;
 import bio.terra.profile.service.profile.exception.InaccessibleApplicationDeploymentException;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.stairway.FlightContext;
 import bio.terra.stairway.StepResult;
-import com.azure.resourcemanager.resources.ResourceManager;
-import com.azure.resourcemanager.resources.models.GenericResource;
-import com.azure.resourcemanager.resources.models.GenericResources;
 import java.time.Instant;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
-public class CreateProfileVerifyDeployedApplicationStepTest extends BaseUnitTest {
+public class CreateProfileVerifyDeployedApplicationStepTest extends BaseSpringUnitTest {
 
   @Mock private FlightContext flightContext;
-  @Mock private CrlService crlService;
-  @Mock private ResourceManager resourceManager;
-  @Mock private GenericResources genericResources;
-  @Mock private GenericResource genericResource;
+  @Mock private AzureService azureService;
 
   private AuthenticatedUserRequest user;
   private BillingProfile profile;
   private CreateProfileVerifyDeployedApplicationStep step;
+
+  public CreateProfileVerifyDeployedApplicationStepTest() {}
 
   @BeforeEach
   public void before() {
@@ -55,25 +47,15 @@ public class CreateProfileVerifyDeployedApplicationStepTest extends BaseUnitTest
             Optional.empty(),
             Optional.of(UUID.randomUUID()),
             Optional.of(UUID.randomUUID()),
-            Optional.of("resourceGroup"),
-            Optional.of("applicationDeployment"),
+            Optional.of("managedResourceGroupId"),
             Instant.now(),
             Instant.now(),
             "creator");
-    step = new CreateProfileVerifyDeployedApplicationStep(crlService, profile, user);
-
-    when(crlService.getResourceManager(
-            eq(profile.tenantId().get()), eq(profile.subscriptionId().get())))
-        .thenReturn(resourceManager);
-    when(resourceManager.genericResources()).thenReturn(genericResources);
-    when(genericResources.getById(anyString())).thenReturn(genericResource);
+    step = new CreateProfileVerifyDeployedApplicationStep(azureService, profile, user);
   }
 
   @Test
   public void verifyManagedApp() {
-    when(genericResource.properties())
-        .thenReturn(
-            Map.of("parameters", Map.of("authorizedTerraUser", Map.of("value", user.getEmail()))));
 
     var result = step.doStep(flightContext);
 
@@ -82,11 +64,6 @@ public class CreateProfileVerifyDeployedApplicationStepTest extends BaseUnitTest
 
   @Test
   public void verifyManagedAppNoAccess() {
-    when(genericResource.properties())
-        .thenReturn(
-            Map.of(
-                "parameters",
-                Map.of("authorizedTerraUser", Map.of("value", "somebody@gmail.com"))));
 
     assertThrows(
         InaccessibleApplicationDeploymentException.class, () -> step.doStep(flightContext));

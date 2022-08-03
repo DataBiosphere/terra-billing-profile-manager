@@ -14,7 +14,7 @@ import static org.mockito.Mockito.when;
 import bio.terra.common.exception.ForbiddenException;
 import bio.terra.common.exception.UnauthorizedException;
 import bio.terra.common.iam.AuthenticatedUserRequest;
-import bio.terra.profile.common.BaseUnitTest;
+import bio.terra.profile.common.BaseSpringUnitTest;
 import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.service.iam.SamService;
@@ -35,7 +35,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
-public class ProfileServiceUnitTest extends BaseUnitTest {
+public class ProfileServiceUnitTest extends BaseSpringUnitTest {
 
   @Mock private ProfileDao profileDao;
   @Mock private SamService samService;
@@ -62,7 +62,6 @@ public class ProfileServiceUnitTest extends BaseUnitTest {
             "direct",
             CloudPlatform.GCP,
             Optional.of("billingAccount"),
-            Optional.empty(),
             Optional.empty(),
             Optional.empty(),
             Optional.empty(),

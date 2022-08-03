@@ -7,14 +7,14 @@ import static org.mockito.Mockito.when;
 
 import bio.terra.common.exception.UnauthorizedException;
 import bio.terra.common.iam.AuthenticatedUserRequest;
-import bio.terra.profile.common.BaseUnitTest;
+import bio.terra.profile.common.BaseSpringUnitTest;
 import org.broadinstitute.dsde.workbench.client.sam.model.UserStatusInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.mock.web.MockHttpServletRequest;
 
-public class SamAuthenticatedUserRequestFactoryTest extends BaseUnitTest {
+public class SamAuthenticatedUserRequestFactoryTest extends BaseSpringUnitTest {
   private static final String EMAIL = "billing@unit.com";
   private static final String SUBJECT = "12345";
   private static final String TOKEN = "not-a-real-token";

@@ -7,7 +7,7 @@ import static org.mockito.Mockito.when;
 
 import bio.terra.cloudres.google.billing.CloudBillingClientCow;
 import bio.terra.common.iam.AuthenticatedUserRequest;
-import bio.terra.profile.common.BaseUnitTest;
+import bio.terra.profile.common.BaseSpringUnitTest;
 import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.service.crl.CrlService;
 import bio.terra.profile.service.profile.exception.InaccessibleBillingAccountException;
@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 
-public class CreateProfileVerifyAccountStepTest extends BaseUnitTest {
+public class CreateProfileVerifyAccountStepTest extends BaseSpringUnitTest {
 
   @Mock private FlightContext flightContext;
   @Mock private CrlService crlService;
@@ -51,7 +51,6 @@ public class CreateProfileVerifyAccountStepTest extends BaseUnitTest {
             "direct",
             CloudPlatform.GCP,
             Optional.of("billingAccount"),
-            Optional.empty(),
             Optional.empty(),
             Optional.empty(),
             Optional.empty(),

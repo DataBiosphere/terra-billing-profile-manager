@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import bio.terra.common.iam.AuthenticatedUserRequest;
-import bio.terra.profile.common.BaseUnitTest;
+import bio.terra.profile.common.BaseSpringUnitTest;
 import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.service.profile.exception.ProfileNotFoundException;
@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 
-public class ProfileDaoTest extends BaseUnitTest {
+public class ProfileDaoTest extends BaseSpringUnitTest {
   @Autowired private ProfileDao profileDao;
   private AuthenticatedUserRequest user;
   private List<UUID> profileIds;
@@ -133,7 +133,6 @@ public class ProfileDaoTest extends BaseUnitTest {
         Optional.empty(),
         Optional.empty(),
         Optional.empty(),
-        Optional.empty(),
         null,
         null,
         null);
@@ -149,8 +148,7 @@ public class ProfileDaoTest extends BaseUnitTest {
     assertEquals(expected.billingAccountId(), actual.billingAccountId());
     assertEquals(expected.tenantId(), actual.tenantId());
     assertEquals(expected.subscriptionId(), actual.subscriptionId());
-    assertEquals(expected.resourceGroupName(), actual.resourceGroupName());
-    assertEquals(expected.applicationDeploymentName(), actual.applicationDeploymentName());
+    assertEquals(expected.managedResourceGroupId(), actual.managedResourceGroupId());
     assertNotNull(actual.createdTime());
     assertNotNull(actual.lastModified());
     assertEquals(user.getEmail(), actual.createdBy());

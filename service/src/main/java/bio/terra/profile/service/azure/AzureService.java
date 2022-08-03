@@ -33,7 +33,7 @@ public class AzureService {
    * @param userRequest Authorized user request
    * @return List of Terra Azure managed applications the user has access to
    */
-  public List<AzureManagedAppModel> getManagedAppDeployments(
+  public List<AzureManagedAppModel> getAuthorizedManagedAppDeployments(
       UUID subscriptionId, AuthenticatedUserRequest userRequest) {
     var tenantId = appService.getTenantForSubscription(subscriptionId);
 
@@ -49,6 +49,7 @@ public class AzureService {
                     .managedResourceGroupId(
                         normalizeManagedResourceGroupId(app.managedResourceGroupId()))
                     .tenantId(tenantId))
+        .distinct()
         .toList();
   }
 

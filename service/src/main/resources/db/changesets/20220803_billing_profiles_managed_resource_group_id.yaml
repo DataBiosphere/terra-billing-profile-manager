@@ -1,0 +1,23 @@
+databaseChangeLog:
+  - changeSet:
+      id: billing_profile_managed_app_coords
+      author: aherbst
+      changes:
+        - addColumn:
+            tableName: billing_profile
+            columns:
+              - column:
+                  name: managed_resource_group_id
+                  type: text
+                  constraints:
+                    nullable: true
+                  remarks: |
+                    Azure Managed Resource Group ID for the Terra deployment
+        - dropColumn:
+            tableName: billing_profile
+            columns:
+              - column:
+                  name: resource_group_name
+              - column:
+                  name: application_deployment_name
+

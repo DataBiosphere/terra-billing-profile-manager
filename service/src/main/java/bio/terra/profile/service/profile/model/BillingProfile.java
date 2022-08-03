@@ -18,8 +18,7 @@ public record BillingProfile(
     Optional<String> billingAccountId,
     Optional<UUID> tenantId,
     Optional<UUID> subscriptionId,
-    Optional<String> resourceGroupName,
-    Optional<String> applicationDeploymentName,
+    Optional<String> managedResourceGroupId,
     Instant createdTime,
     Instant lastModified,
     String createdBy) {
@@ -47,17 +46,15 @@ public record BillingProfile(
       }
       if (request.getTenantId() != null
           || request.getSubscriptionId() != null
-          || request.getResourceGroupName() != null
-          || request.getApplicationDeploymentName() != null) {
+          || request.getManagedResourceGroupId() != null) {
         throw new MissingRequiredFieldsException("GCP billing profile must not contain Azure data");
       }
     } else if (request.getCloudPlatform().equals(CloudPlatform.AZURE)) {
       if (request.getTenantId() == null
           || request.getSubscriptionId() == null
-          || request.getResourceGroupName() == null
-          || request.getApplicationDeploymentName() == null) {
+          || request.getManagedResourceGroupId() == null) {
         throw new MissingRequiredFieldsException(
-            "Azure billing profile requires tenantId, subscriptionId, resourceGroupName, and applicationDeploymentName");
+            "Azure billing profile requires tenantId, subscriptionId, managedResourceGroupId");
       }
       if (request.getBillingAccountId() != null) {
         throw new MissingRequiredFieldsException("Azure billing profile must not contain GCP data");
@@ -73,8 +70,7 @@ public record BillingProfile(
         Optional.ofNullable(request.getBillingAccountId()),
         Optional.ofNullable(request.getTenantId()),
         Optional.ofNullable(request.getSubscriptionId()),
-        Optional.ofNullable(request.getResourceGroupName()),
-        Optional.ofNullable(request.getApplicationDeploymentName()),
+        Optional.ofNullable(request.getManagedResourceGroupId()),
         null,
         null,
         null);
@@ -95,8 +91,7 @@ public record BillingProfile(
         .billingAccountId(billingAccountId.orElse(null))
         .tenantId(tenantId.orElse(null))
         .subscriptionId(subscriptionId.orElse(null))
-        .resourceGroupName(resourceGroupName.orElse(null))
-        .applicationDeploymentName(applicationDeploymentName.orElse(null))
+        .managedResourceGroupId(managedResourceGroupId.orElse(null))
         .createdDate(createdTime.toString())
         .lastModified(lastModified.toString())
         .createdBy(createdBy);

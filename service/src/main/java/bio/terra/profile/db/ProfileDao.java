@@ -29,7 +29,7 @@ public class ProfileDao {
   // SQL select string constants
   private static final String SQL_SELECT_LIST =
       "id, display_name, biller, billing_account_id, description, cloud_platform, "
-          + "tenant_id, subscription_id, resource_group_name, application_deployment_name, "
+          + "tenant_id, subscription_id, managed_resource_group_id, "
           + "created_date, created_by, last_modified";
 
   private static final String SQL_GET =
@@ -53,15 +53,14 @@ public class ProfileDao {
     String sql =
         "INSERT INTO billing_profile"
             + " (id, display_name, biller, billing_account_id, description, cloud_platform, "
-            + "     tenant_id, subscription_id, resource_group_name, application_deployment_name, created_by) VALUES "
+            + "     tenant_id, subscription_id, managed_resource_group_id, created_by) VALUES "
             + " (:id, :display_name, :biller, :billing_account_id, :description, :cloud_platform, "
-            + "     :tenant_id, :subscription_id, :resource_group_name, :application_deployment_name, :created_by)";
+            + "     :tenant_id, :subscription_id, :managed_resource_group_id, :created_by)";
 
     String billingAccountId = profile.billingAccountId().orElse(null);
     UUID tenantId = profile.tenantId().orElse(null);
     UUID subscriptionId = profile.subscriptionId().orElse(null);
-    String resourceGroupName = profile.resourceGroupName().orElse(null);
-    String applicationDeploymentName = profile.applicationDeploymentName().orElse(null);
+    String managedResourceGroupId = profile.managedResourceGroupId().orElse(null);
 
     MapSqlParameterSource params =
         new MapSqlParameterSource()
@@ -73,8 +72,7 @@ public class ProfileDao {
             .addValue("cloud_platform", profile.cloudPlatform().name())
             .addValue("tenant_id", tenantId)
             .addValue("subscription_id", subscriptionId)
-            .addValue("resource_group_name", resourceGroupName)
-            .addValue("application_deployment_name", applicationDeploymentName)
+            .addValue("managed_resource_group_id", managedResourceGroupId)
             .addValue("created_by", user.getEmail());
 
     var keyHolder = new DaoKeyHolder();
@@ -89,8 +87,7 @@ public class ProfileDao {
         profile.billingAccountId(),
         profile.tenantId(),
         profile.subscriptionId(),
-        profile.resourceGroupName(),
-        profile.applicationDeploymentName(),
+        profile.managedResourceGroupId(),
         keyHolder.getInstant("created_date"),
         keyHolder.getInstant("last_modified"),
         keyHolder.getString("created_by"));
@@ -148,8 +145,7 @@ public class ProfileDao {
           Optional.ofNullable(rs.getString("billing_account_id")),
           Optional.ofNullable(rs.getObject("tenant_id", UUID.class)),
           Optional.ofNullable(rs.getObject("subscription_id", UUID.class)),
-          Optional.ofNullable(rs.getString("resource_group_name")),
-          Optional.ofNullable(rs.getString("application_deployment_name")),
+          Optional.ofNullable(rs.getString("managed_resource_group_id")),
           rs.getTimestamp("created_date").toInstant(),
           rs.getTimestamp("last_modified").toInstant(),
           rs.getString("created_by"));
