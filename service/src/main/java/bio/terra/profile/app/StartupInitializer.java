@@ -38,9 +38,9 @@ public final class StartupInitializer {
       logger.info("No Sentry DSN found. Starting up without it.");
     } else {
       Sentry.init(
-              options -> {
-                options.setDsn(sentryConfiguration.dsn());
-              });
+          options -> {
+            options.setDsn(sentryConfiguration.dsn());
+          });
     }
     // TODO: Fill in this method with any other initialization that needs to happen
     //  between the point of having the entire application initialized and
