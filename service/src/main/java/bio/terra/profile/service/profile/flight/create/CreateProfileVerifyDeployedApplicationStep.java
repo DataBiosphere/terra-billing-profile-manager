@@ -21,7 +21,7 @@ record CreateProfileVerifyDeployedApplicationStep(
     try {
       var apps =
           azureService.getAuthorizedManagedAppDeployments(profile.subscriptionId().get(), user);
-      var matchingApps =
+      canAccess =
           apps.stream()
               .filter(
                   app ->
@@ -29,8 +29,7 @@ record CreateProfileVerifyDeployedApplicationStep(
                               app.getManagedResourceGroupId(),
                               profile.managedResourceGroupId().get())
                           && app.getSubscriptionId() == profile.subscriptionId().get())
-              .toList();
-      canAccess = matchingApps.size() == 1;
+                  .count() == 1;
     } catch (Exception e) {
       return new StepResult(StepStatus.STEP_RESULT_FAILURE_RETRY, e);
     }

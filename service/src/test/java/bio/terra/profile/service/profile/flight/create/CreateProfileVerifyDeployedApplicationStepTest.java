@@ -2,9 +2,11 @@ package bio.terra.profile.service.profile.flight.create;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
 
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.common.BaseSpringUnitTest;
+import bio.terra.profile.model.AzureManagedAppModel;
 import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.service.azure.AzureService;
 import bio.terra.profile.service.profile.exception.InaccessibleApplicationDeploymentException;
@@ -12,6 +14,7 @@ import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.stairway.FlightContext;
 import bio.terra.stairway.StepResult;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -56,7 +59,12 @@ public class CreateProfileVerifyDeployedApplicationStepTest extends BaseSpringUn
 
   @Test
   public void verifyManagedApp() {
-
+    when(azureService.getAuthorizedManagedAppDeployments(profile.subscriptionId().get(), user))
+            .thenReturn(List.of(
+                    new AzureManagedAppModel()
+                            .subscriptionId(profile.subscriptionId().get())
+                            .tenantId(profile.tenantId().get())
+                            .managedResourceGroupId(profile.managedResourceGroupId().get())));
     var result = step.doStep(flightContext);
 
     assertEquals(StepResult.getStepResultSuccess(), result);
