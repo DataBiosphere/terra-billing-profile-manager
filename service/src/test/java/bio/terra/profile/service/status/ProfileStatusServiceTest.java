@@ -3,7 +3,7 @@ package bio.terra.profile.service.status;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.doReturn;
 
-import bio.terra.profile.common.BaseUnitTest;
+import bio.terra.profile.common.BaseSpringUnitTest;
 import bio.terra.profile.model.SystemStatus;
 import bio.terra.profile.model.SystemStatusSystems;
 import bio.terra.profile.service.iam.SamService;
@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
-public class ProfileStatusServiceTest extends BaseUnitTest {
+public class ProfileStatusServiceTest extends BaseSpringUnitTest {
   @Autowired private ProfileStatusService statusService;
 
   @MockBean private SamService mockSamService;

@@ -3,13 +3,13 @@ package bio.terra.profile.service.status;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import bio.terra.profile.app.configuration.StatusCheckConfiguration;
-import bio.terra.profile.common.BaseUnitTest;
+import bio.terra.profile.common.BaseSpringUnitTest;
 import bio.terra.profile.model.SystemStatus;
 import bio.terra.profile.model.SystemStatusSystems;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
-public class BaseStatusServiceTest extends BaseUnitTest {
+public class BaseStatusServiceTest extends BaseSpringUnitTest {
   private static final int STALENESS = 7;
   private static final StatusCheckConfiguration configuration =
       new StatusCheckConfiguration(true, 5, 1, STALENESS);

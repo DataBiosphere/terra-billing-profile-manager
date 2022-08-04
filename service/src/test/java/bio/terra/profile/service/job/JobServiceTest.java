@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 
 import bio.terra.common.iam.AuthenticatedUserRequest;
-import bio.terra.profile.common.BaseUnitTest;
+import bio.terra.profile.common.BaseSpringUnitTest;
 import bio.terra.profile.model.JobReport;
 import bio.terra.profile.service.iam.SamService;
 import bio.terra.profile.service.job.exception.InvalidJobIdException;
@@ -26,7 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 
-class JobServiceTest extends BaseUnitTest {
+class JobServiceTest extends BaseSpringUnitTest {
   private final AuthenticatedUserRequest testUser =
       AuthenticatedUserRequest.builder()
           .setSubjectId("StairwayUnit")

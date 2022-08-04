@@ -250,12 +250,9 @@ components:
           type: string
           description: Unique identifier of the Azure subscription
           format: uuid
-        resourceGroupName:
+        managedResourceGroupId:
           type: string
-          description: Name of the Azure resource group
-        applicationDeploymentName:
-          type: string
-          description: Name of the Azure application deployment
+          description: ID of the Azure managed resource group, of the form mrg-terra-integration-test-20211118
 
     UpdateProfileRequest:
       type: object
@@ -353,12 +350,9 @@ components:
           type: string
           description: Unique identifier of the Azure subscription
           format: uuid
-        resourceGroupName:
+        managedResourceGroupId:
           type: string
-          description: Name of the Azure resource group
-        applicationDeploymentName:
-          type: string
-          description: Name of the Azure application deployment
+          description: Managed resource group ID of the Terra deployment
         createdDate:
           type: string
           description: Date the profile was created
