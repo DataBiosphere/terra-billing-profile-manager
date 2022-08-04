@@ -60,11 +60,12 @@ public class CreateProfileVerifyDeployedApplicationStepTest extends BaseSpringUn
   @Test
   public void verifyManagedApp() {
     when(azureService.getAuthorizedManagedAppDeployments(profile.subscriptionId().get(), user))
-            .thenReturn(List.of(
-                    new AzureManagedAppModel()
-                            .subscriptionId(profile.subscriptionId().get())
-                            .tenantId(profile.tenantId().get())
-                            .managedResourceGroupId(profile.managedResourceGroupId().get())));
+        .thenReturn(
+            List.of(
+                new AzureManagedAppModel()
+                    .subscriptionId(profile.subscriptionId().get())
+                    .tenantId(profile.tenantId().get())
+                    .managedResourceGroupId(profile.managedResourceGroupId().get())));
     var result = step.doStep(flightContext);
 
     assertEquals(StepResult.getStepResultSuccess(), result);

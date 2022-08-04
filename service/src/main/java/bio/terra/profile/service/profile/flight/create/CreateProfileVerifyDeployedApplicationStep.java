@@ -23,13 +23,14 @@ record CreateProfileVerifyDeployedApplicationStep(
           azureService.getAuthorizedManagedAppDeployments(profile.subscriptionId().get(), user);
       canAccess =
           apps.stream()
-              .filter(
-                  app ->
-                      Objects.equals(
-                              app.getManagedResourceGroupId(),
-                              profile.managedResourceGroupId().get())
-                          && app.getSubscriptionId() == profile.subscriptionId().get())
-                  .count() == 1;
+                  .filter(
+                      app ->
+                          Objects.equals(
+                                  app.getManagedResourceGroupId(),
+                                  profile.managedResourceGroupId().get())
+                              && app.getSubscriptionId() == profile.subscriptionId().get())
+                  .count()
+              == 1;
     } catch (Exception e) {
       return new StepResult(StepStatus.STEP_RESULT_FAILURE_RETRY, e);
     }

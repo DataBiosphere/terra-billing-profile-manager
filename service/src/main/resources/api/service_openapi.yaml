@@ -252,7 +252,7 @@ components:
           format: uuid
         managedResourceGroupId:
           type: string
-          description: ID of the Azure managed resource group
+          description: ID of the Azure managed resource group, of the form mrg-terra-integration-test-20211118
 
     UpdateProfileRequest:
       type: object
