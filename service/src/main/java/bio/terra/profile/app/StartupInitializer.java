@@ -37,6 +37,7 @@ public final class StartupInitializer {
     if (sentryConfiguration.dsn().isEmpty()) {
       logger.info("No Sentry DSN found. Starting up without it.");
     } else {
+      logger.info("Sentry DSN found. 5xx errors will be sent to Sentry.");
       Sentry.init(
           options -> {
             options.setDsn(sentryConfiguration.dsn());
