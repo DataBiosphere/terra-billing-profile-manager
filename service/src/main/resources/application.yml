@@ -22,6 +22,8 @@ env:
     managedAppClientId: ${MANAGED_APP_CLIENT_ID:app-client}
     managedAppClientSecret: ${MANAGED_APP_CLIENT_SECRET:app-secret}
     managedAppTenantId: ${MANAGED_APP_TENANT_ID:app-tenant}
+  sentry:
+    dsn: ${SENTRY_DSN:}
 
 # Below here is non-deployment-specific
 
@@ -92,6 +94,8 @@ profile:
       fake-terra-app:
         authorized-user-key: authorizedTerraUser
 
+  sentry:
+    dsn: ${env.sentry.dsn}
 
 terra.common:
   kubernetes:
