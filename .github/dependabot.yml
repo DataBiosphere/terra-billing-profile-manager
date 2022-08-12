@@ -1,0 +1,16 @@
+version: 2
+updates:
+  # Enable version updates for Gradle
+  - package-ecosystem: "gradle"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    target-branch: "main"
+    reviewers:
+      - "@DataBiosphere/broadworkspaces"
+      - "@rtitle"
+    labels:
+      - "dependency"
+      - "gradle"
+    commit-message:
+      prefix: "[No Ticket]"
