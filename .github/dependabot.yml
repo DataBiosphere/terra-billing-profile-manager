@@ -8,7 +8,6 @@ updates:
     target-branch: "main"
     reviewers:
       - "@DataBiosphere/broadworkspaces"
-      - "@rtitle"
     labels:
       - "dependency"
       - "gradle"
