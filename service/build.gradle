@@ -21,7 +21,7 @@ dependencies {
 	implementation group: "org.apache.commons", name: "commons-lang3"
 
 	// Google dependencies
-	implementation platform('com.google.cloud:libraries-bom:20.9.0')
+	implementation platform('com.google.cloud:libraries-bom:26.1.0')
 
 	// Cloud Resource Library
 	implementation group: "com.azure.resourcemanager", name: "azure-resourcemanager-managedapplications", version: "1.0.0-beta.1"
