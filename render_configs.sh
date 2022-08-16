@@ -1,19 +1,21 @@
+#!/bin/bash
+
 ENV=${1:-dev}
 VAULT_TOKEN=${2:-$(cat "$HOME"/.vault-token)}
 
 VAULT_ADDR="https://clotho.broadinstitute.org:8200"
-COMMON_VAULT_PATH="secret/dsde/terra/kernel/$ENV/common"
 
-VAULT_COMMAND="vault read"
+VAULT_DOCKER_IMAGE="vault:1.11.2"
 
-INTEGRATION_OUTPUT_LOCATION="$(dirname "$0")/integration/src/main/resources/rendered"
+LOCAL_CONFIG_OUTPUT="service/src/main/resources/generated/local-properties.yaml"
 
-if ! [ -x "$(command -v vault)" ]; then
-  VAULT_COMMAND="docker run --rm -e VAULT_TOKEN=$VAULT_TOKEN -e VAULT_ADDR=$VAULT_ADDR vault:1.7.3 $VAULT_COMMAND"
-fi
+VAULT_COMMAND="docker run --rm -e VAULT_TOKEN=$VAULT_TOKEN -e VAULT_ADDR=$VAULT_ADDR $VAULT_DOCKER_IMAGE vault read"
 
-$VAULT_COMMAND -field=data -format=json "secret/dsde/firecloud/$ENV/common/firecloud-account.json" >"$INTEGRATION_OUTPUT_LOCATION/user-delegated-sa.json"
+function azure_creds {
+  AZURE_VAULT_PATH="secret/dsde/terra/azure/dev/billingprofilemanager/managed-app-publisher"
+  $VAULT_COMMAND -format=yaml $AZURE_VAULT_PATH \
+  | yq '.out.env.azure.managedAppClientId = .data.client-id | .out.env.azure.managedAppClientSecret = .data.client-secret  | .out.env.azure.managedAppTenantId = .data.tenant-id | .out' \
+  > $LOCAL_CONFIG_OUTPUT
+}
 
-if [ $ENV == perf ]; then
-  $VAULT_COMMAND -field=key "$COMMON_VAULT_PATH/testrunner/testrunner-sa" | base64 -d > "$INTEGRATION_OUTPUT_LOCATION/testrunner-sa.json"
-fi
+azure_creds
