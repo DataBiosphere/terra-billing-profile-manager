@@ -9,6 +9,12 @@ repositories {
     gradlePluginPortal()
 }
 
+configurations {
+    all{
+        resolutionStrategy.activateDependencyLocking()
+    }
+}
+
 dependencies {
     implementation 'com.diffplug.spotless:spotless-plugin-gradle:6.2.0'
     implementation 'com.google.cloud.tools.jib:com.google.cloud.tools.jib.gradle.plugin:3.2.0'
@@ -20,6 +26,3 @@ dependencies {
     implementation 'bio.terra:terra-test-runner:0.0.8-SNAPSHOT'
 }
 
-dependencyLocking {
-    lockAllConfigurations()
-}
