@@ -10,7 +10,7 @@ repositories {
 }
 
 configurations {
-    all{
+    all {
         resolutionStrategy.activateDependencyLocking()
     }
 }
