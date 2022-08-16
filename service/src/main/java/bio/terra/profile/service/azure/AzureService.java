@@ -7,6 +7,7 @@ import com.azure.resourcemanager.managedapplications.models.Application;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
@@ -18,7 +19,7 @@ import org.springframework.stereotype.Service;
 public class AzureService {
   private static final Logger logger = LoggerFactory.getLogger(AzureService.class);
   private final ApplicationService appService;
-  private final Map<String, AzureConfiguration.AzureApplicationOffer> azureAppOffers;
+  private final Set<AzureConfiguration.AzureApplicationOffer> azureAppOffers;
 
   @Autowired
   public AzureService(ApplicationService appService, AzureConfiguration azureConfiguration) {
@@ -65,14 +66,16 @@ public class AzureService {
       return false;
     }
 
-    var offer = azureAppOffers.get(app.plan().product());
-    if (offer == null) {
+    var maybeOffer =
+        azureAppOffers.stream().filter(o -> o.getName().equals(app.plan().product())).findFirst();
+    if (maybeOffer.isEmpty()) {
       logger.debug(
           "App deployment is not a deployment of a well-known Terra offer, ignoring [mrg_id={}]",
           app.managedResourceGroupId());
       return false;
     }
 
+    var offer = maybeOffer.get();
     var authedUserKey = offer.getAuthorizedUserKey();
     if (app.parameters() != null && app.parameters() instanceof Map rawParams) {
       if (!rawParams.containsKey(authedUserKey)) {
