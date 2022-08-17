@@ -33,11 +33,14 @@ After the database is initialized, run unit tests:
 ./gradlew test
 ```
 
+To set up serrvice account credentials and other configuration for running locally:
+* Install yq `brew install yq`
+* Run `render-configs.sh`
+
 To run integration tests:
 ```sh
 ./gradlew bootRun &    # start up a local instance of the billing profile manager service
 sleep 5                # wait until service comes up
-render-configs.sh      # render service account credentials needed for tests
 ./gradlew :integration:runTest --args="suites/FullIntegration.json /tmp/test"
 ```
 
