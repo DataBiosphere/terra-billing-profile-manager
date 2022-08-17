@@ -2,7 +2,7 @@ package bio.terra.profile.app.configuration;
 
 import com.azure.core.credential.TokenCredential;
 import com.azure.identity.ClientSecretCredentialBuilder;
-import java.util.Map;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -12,7 +12,7 @@ public record AzureConfiguration(
     String managedAppClientId,
     String managedAppClientSecret,
     String managedAppTenantId,
-    Map<String, AzureApplicationOffer> applicationOffers) {
+    Set<AzureApplicationOffer> applicationOffers) {
   private static final Logger logger = LoggerFactory.getLogger(AzureConfiguration.class);
 
   /**
@@ -63,13 +63,13 @@ public record AzureConfiguration(
    * Well-known Microsoft Marketplace offers; only deployments of these offers will be allowed to
    * have billing profiles created against them
    */
-  public Map<String, AzureApplicationOffer> getApplicationOffers() {
+  public Set<AzureApplicationOffer> getApplicationOffers() {
     return applicationOffers;
   }
 
   public void logOffers() {
-    for (String offer : this.applicationOffers.keySet()) {
-      logger.info("Azure application offer {}", offer);
+    for (AzureApplicationOffer offer : this.applicationOffers()) {
+      logger.info("Azure application offer {}", offer.name);
     }
   }
 }

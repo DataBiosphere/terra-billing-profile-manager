@@ -13,6 +13,7 @@ import com.azure.resourcemanager.managedapplications.models.Application;
 import com.azure.resourcemanager.managedapplications.models.Plan;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
@@ -60,9 +61,9 @@ public class AzureServiceUnitTest extends BaseUnitTest {
     when(appService.getTenantForSubscription(subId)).thenReturn(tenantId);
 
     var offer = new AzureConfiguration.AzureApplicationOffer();
-    offer.setName("FAKE_APP_NAME");
+    offer.setName(offerName);
     offer.setAuthorizedUserKey("authorizedTerraUser");
-    var offers = Map.of(offerName, offer);
+    var offers = Set.of(offer);
     var azureService =
         new AzureService(appService, new AzureConfiguration("fake", "fake", "fake", offers));
 
@@ -106,9 +107,9 @@ public class AzureServiceUnitTest extends BaseUnitTest {
     when(appService.getTenantForSubscription(subId)).thenReturn(tenantId);
 
     var offer = new AzureConfiguration.AzureApplicationOffer();
-    offer.setName("FAKE_APP_NAME");
+    offer.setName(offerName);
     offer.setAuthorizedUserKey("authorizedTerraUser");
-    var offers = Map.of(offerName, offer);
+    var offers = Set.of(offer);
     var azureService =
         new AzureService(appService, new AzureConfiguration("fake", "fake", "fake", offers));
 
