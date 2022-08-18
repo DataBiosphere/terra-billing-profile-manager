@@ -2,6 +2,7 @@ plugins {
 	id 'bio.terra.profile.java-spring-conventions'
 	id 'de.undercouch.download'
 	id 'com.google.cloud.tools.jib'
+	id 'org.sonarqube' version "3.3"
 
 	id 'com.gorylenko.gradle-git-properties' version '2.4.1'
 }
@@ -42,4 +43,14 @@ dependencies {
 	}
 	// Allows us to mock final classes
 	testImplementation 'org.mockito:mockito-inline:4.7.0'
+}
+
+sonarqube {
+	properties {
+		property "sonar.projectName", "terra-billing-profile-manager"
+		property "sonar.projectKey", "DataBiosphere_terra-billing-profile-manager"
+		property "sonar.organization", "broad-databiosphere"
+		property "sonar.host.url", "https://sonarcloud.io"
+		property "sonar.sources", "src/main/java"
+	}
 }
