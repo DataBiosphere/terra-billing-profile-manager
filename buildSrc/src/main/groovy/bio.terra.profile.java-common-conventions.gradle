@@ -69,6 +69,12 @@ spotless {
     }
 }
 
+task minniekenny(type:Exec) {
+    workingDir rootDir
+
+    commandLine './minnie-kenny.sh'
+}
+
 // Run spotless check when running in github actions, otherwise run spotless apply.
 build {
     if (isCiServer) {
@@ -76,6 +82,7 @@ build {
     } else {
         dependsOn(spotlessApply)
     }
+    dependsOn(minniekenny)
 }
 
 // Spotbugs configuration
