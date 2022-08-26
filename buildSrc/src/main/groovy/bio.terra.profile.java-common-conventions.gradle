@@ -6,8 +6,6 @@ plugins {
     id 'com.diffplug.spotless'
     id 'com.github.spotbugs'
     id 'org.hidetake.swagger.generator'
-
-    id 'org.sonarqube'
 }
 
 boolean isCiServer = System.getenv().containsKey("CI")
@@ -90,16 +88,6 @@ spotbugsMain {
         sarif {
             enabled = true
         }
-    }
-}
-
-sonarqube {
-    properties {
-        property "sonar.projectName", "terra-billing-profile-manager"
-        property "sonar.projectKey", "DataBiosphere_terra-billing-profile-manager"
-        property "sonar.organization", "broad-databiosphere"
-        property "sonar.host.url", "https://sonarcloud.io"
-        property "sonar.sources", "src/main/java"
     }
 }
 
