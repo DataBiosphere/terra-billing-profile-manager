@@ -1,6 +1,7 @@
 # Terra Billing Profile Manager
 
 [![Build and Test](https://github.com/DataBiosphere/terra-billing-profile-manager/actions/workflows/build-and-test.yml/badge.svg?branch=main)](https://github.com/DataBiosphere/terra-billing-profile-manager/actions/workflows/build-and-test.yml)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=DataBiosphere_terra-billing-profile-manager&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=DataBiosphere_terra-billing-profile-manager)
 
 Terra Billing Profile Manager provides an API to set up and control access to billing
 within Terra across cloud platforms.

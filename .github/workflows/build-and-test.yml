@@ -99,6 +99,13 @@ jobs:
             ~/.gradle/wrapper
           key: v1-${{ runner.os }}-gradle-${{ github.ref }}-${{ github.sha }}
 
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v2
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
       - name: Make sure Postgres is ready and init
         env:
           PGPASSWORD: postgres
@@ -107,12 +114,13 @@ jobs:
           psql -h localhost -U postgres -f ./service/local-dev/local-postgres-init.sql
 
       - name: Test with coverage
-        run: ./gradlew --build-cache jacocoTestReport
+        run: ./gradlew --build-cache test jacocoTestReport
 
-      - name: Codecov
-        uses: codecov/codecov-action@v2.0.2
-        with:
-          files: ./service/build/reports/jacoco/test/jacocoTestReport.xml
+      - name: SonarQube scan
+        run: ./gradlew --build-cache sonarqube
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   notify-slack:
     needs: [ build, jib, unit-tests ]
