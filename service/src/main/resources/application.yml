@@ -1,4 +1,4 @@
-# All env variables that are used in one place
+# All environment variables that are used in one place
 # This is for deployment-specific values, which may be managed by other teams
 env:
   db:
@@ -24,6 +24,7 @@ env:
     managedAppTenantId: ${MANAGED_APP_TENANT_ID:app-tenant}
   sentry:
     dsn: ${SENTRY_DSN:}
+    environment: ${DEPLOY_ENV:}
 
 # Below here is non-deployment-specific
 
@@ -96,6 +97,7 @@ profile:
 
   sentry:
     dsn: ${env.sentry.dsn}
+    environment: ${env.sentry.environment}
 
 terra.common:
   kubernetes:

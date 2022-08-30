@@ -41,6 +41,7 @@ public final class StartupInitializer {
       Sentry.init(
           options -> {
             options.setDsn(sentryConfiguration.dsn());
+            options.setEnvironment(sentryConfiguration.environment());
           });
     }
     // TODO: Fill in this method with any other initialization that needs to happen
