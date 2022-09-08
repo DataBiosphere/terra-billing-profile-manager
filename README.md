@@ -52,4 +52,4 @@ Automatically fix linting issues:
 ```
 
 ## Tech Stack
-BPM adheres to the [Terra Tech Stack](https://docs.google.com/document/d/1JkTrtaci7EI0TnuR-68zYgTx_mRCNu-u2eV9XhexWTI/edit#heading=h.5z6knaqygr4a). See linked document for relevant technology choices and the rationale behind there inclusion in this service. 
+BPM adheres to the [Terra Tech Stack](https://docs.google.com/document/d/1JkTrtaci7EI0TnuR-68zYgTx_mRCNu-u2eV9XhexWTI/edit#heading=h.5z6knaqygr4a). See linked document for relevant technology choices and the rationale behind their inclusion in this service. 
