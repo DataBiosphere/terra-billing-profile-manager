@@ -145,6 +145,83 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
 
+  /api/profiles/v1/{profileId}/policies:
+    parameters:
+      - $ref: '#/components/parameters/ProfileId'
+    get:
+      tags:
+        - Profile
+        - Resources
+      summary: Retrieve policies for the profile
+      operationId: getProfilePolicies
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SamPolicyModelList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/PermissionDenied'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/profiles/v1/{profileId}/policies/{policyName}/members/{memberEmail}:
+    post:
+      tags:
+        - Profile
+        - Resources
+      description: >
+        Adds a member to the specified policy for the profile.
+        NOTE: Change may take up to 60 seconds to take effect.
+      operationId: addProfilePolicyMember
+      parameters:
+        - $ref: '#/components/parameters/ProfileId'
+        - $ref: '#/components/parameters/ProfilePolicyName'
+        - $ref: '#/components/parameters/MemberEmail'
+      responses:
+        201:
+          description: Policy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/PermissionDenied'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/resources/v1/profiles/{profileId}/policies/{policyName}/members/{memberEmail}:
+    delete:
+      tags:
+        - Profile
+        - Resources
+      description: >
+        Removes a member from the specified policy for the profile.
+        NOTE: Change may take up to 60 seconds to take effect.
+      operationId: deleteProfilePolicyMember
+      parameters:
+        - $ref: '#/components/parameters/ProfileId'
+        - $ref: '#/components/parameters/ProfilePolicyName'
+        - $ref: '#/components/parameters/MemberEmail'
+      responses:
+        '200':
+          description: Policy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/PermissionDenied'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
   /api/azure/v1/managedApps:
     get:
       parameters:
@@ -186,6 +263,26 @@ components:
       schema:
         type: string
         format: uuid
+
+    ProfilePolicyName:
+      name: policyName
+      in: path
+      description: The relevant policy
+      required: true
+      schema:
+        type: string
+        enum:
+          - owner
+          - user
+          - admin
+
+    MemberEmail:
+      name: memberEmail
+      in: path
+      description: The email of the user to add or remove policies for
+      required: true
+      schema:
+        type: string
 
     JobId:
       name: jobId
@@ -286,6 +383,22 @@ components:
       description: >
         The total number of billing profiles available and a page of profiles
 
+    SamPolicyModelList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/SamPolicyModel'
+
+    PolicyResponse:
+      type: object
+      properties:
+        policies:
+          type: array
+          items:
+            $ref: '#/components/schemas/SamPolicyModel'
+
     AzureManagedAppsResponseModel:
       type: object
       properties:
@@ -317,6 +430,33 @@ components:
           format: uuid
           description: Azure tenant ID containing the Terra app deployment
 
+    ResourcePolicyModel:
+      type: object
+      properties:
+        policyEmail:
+          type: string
+        policyName:
+          type: string
+        resourceId:
+          description: Unique identifier of policy
+        resourceTypeName:
+          type: string
+
+    SamPolicyModel:
+      type: object
+      properties:
+        name:
+          type: string
+        members:
+          type: array
+          items:
+            type: string
+        memberPolicies:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResourcePolicyModel'
+      description: >
+        Describes a policy from Sam, with member policies    
 
     ProfileModel:
       type: object
@@ -448,13 +588,6 @@ components:
       enum: [ 'AZURE', 'GCP' ]
 
   responses:
-    CreateProfileResultResponse:
-      description: Job is complete (succeeded or failed)
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/CreateProfileResult'
-
     StatusResponse:
       description: common status response
       content:

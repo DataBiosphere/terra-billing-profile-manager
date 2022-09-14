@@ -4,13 +4,12 @@ import bio.terra.common.exception.ValidationException;
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.common.iam.AuthenticatedUserRequestFactory;
 import bio.terra.profile.api.ProfileApi;
-import bio.terra.profile.model.CreateProfileRequest;
-import bio.terra.profile.model.ProfileModel;
-import bio.terra.profile.model.ProfileModelList;
+import bio.terra.profile.model.*;
 import bio.terra.profile.service.job.JobService;
 import bio.terra.profile.service.profile.ProfileService;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -75,6 +74,39 @@ public class ProfileApiController implements ProfileApi {
     AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
     profileService.deleteProfile(id, user);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
+
+  @Override
+  public ResponseEntity<SamPolicyModelList> getProfilePolicies(@PathVariable("profileId") UUID id) {
+    AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
+    List<SamPolicyModel> policies = profileService.getProfilePolicies(id, user);
+    var response = new SamPolicyModelList().items(new ArrayList<>(policies));
+
+    return new ResponseEntity<>(response, HttpStatus.OK);
+  }
+
+  @Override
+  public ResponseEntity<PolicyResponse> addProfilePolicyMember(
+         @PathVariable("profileId") UUID id,
+         @PathVariable("policyName") String policyName,
+         @PathVariable("memberEmail") String memberEmail
+ ) {
+   AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
+   SamPolicyModel policy = profileService.addProfilePolicyMember(id, policyName, memberEmail, user);
+   PolicyResponse response = new PolicyResponse().policies(Collections.singletonList(policy));
+   return new ResponseEntity<>(response, HttpStatus.OK);
+ }
+
+  @Override
+  public ResponseEntity<PolicyResponse> deleteProfilePolicyMember(
+          @PathVariable("profileId") UUID id,
+          @PathVariable("policyName") String policyName,
+          @PathVariable("memberEmail") String memberEmail
+  ) {
+    AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
+    SamPolicyModel policy = profileService.deleteProfilePolicyMember(id, policyName, memberEmail, user);
+    PolicyResponse response = new PolicyResponse().policies(Collections.singletonList(policy));
+    return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
   /**

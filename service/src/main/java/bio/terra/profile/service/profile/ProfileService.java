@@ -3,6 +3,7 @@ package bio.terra.profile.service.profile;
 import bio.terra.common.exception.UnauthorizedException;
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.db.ProfileDao;
+import bio.terra.profile.model.SamPolicyModel;
 import bio.terra.profile.service.iam.SamRethrow;
 import bio.terra.profile.service.iam.SamService;
 import bio.terra.profile.service.iam.model.SamAction;
@@ -110,5 +111,25 @@ public class ProfileService {
     List<UUID> samProfileIds =
         SamRethrow.onInterrupted(() -> samService.listProfileIds(user), "listProfileIds");
     return profileDao.listBillingProfiles(offset, limit, samProfileIds);
+  }
+
+  public List<SamPolicyModel> getProfilePolicies(UUID profileId, AuthenticatedUserRequest user) {
+    List<SamPolicyModel> samPolicies =
+        SamRethrow.onInterrupted(
+            () -> samService.retrievePolicies(user, SamResourceType.PROFILE, profileId),
+            "retrievePolicies");
+    return samPolicies;
+  }
+
+  public SamPolicyModel addProfilePolicyMember(UUID profileId, String policyName, String memberEmail, AuthenticatedUserRequest user) {
+    return SamRethrow.onInterrupted(
+            () -> samService.addPolicyMember(user, SamResourceType.PROFILE, profileId, policyName, memberEmail),
+            "addPolicyMember");
+  }
+
+  public SamPolicyModel deleteProfilePolicyMember(UUID profileId, String policyName, String memberEmail, AuthenticatedUserRequest user) {
+    return SamRethrow.onInterrupted(
+            () -> samService.deletePolicyMember(user, SamResourceType.PROFILE, profileId, policyName, memberEmail),
+            "deletePolicyMember");
   }
 }

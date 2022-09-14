@@ -20,6 +20,14 @@ Then, to build the code, run:
 ./gradlew build
 ```
 
+Troubleshooting:
+* If you run into an error about `minney-kinney`, execute:
+
+```sh
+./minnie-kenny.sh --force   
+```
+* The build also runs the tests, so the tests will fail unless `postgres` is running (see next step).
+
 ## Running the tests
 
 For tests, ensure you have a local Postgres instance running. While in the
@@ -34,7 +42,7 @@ After the database is initialized, run unit tests:
 ./gradlew test
 ```
 
-To set up serrvice account credentials and other configuration for running locally:
+To set up service account credentials and other configuration for running locally:
 * Install yq `brew install yq`
 * Run `render-configs.sh`
 
@@ -45,9 +53,22 @@ sleep 5                # wait until service comes up
 ./gradlew :integration:runTest --args="suites/FullIntegration.json /tmp/test"
 ```
 
+## Running Billing Profile Manager Locally
+
+```sh
+./gradlew :service:bootRun
+```
+
+Then navigate to the Swagger: http://localhost:8080/swagger-ui.html
+
 ## Linter
 Automatically fix linting issues:
 ```
 ./gradlew spotlessApply
 ```
 
+## Generate Java classes from Swagger documentation (.yml file definition)
+
+```sh
+./gradlew generateSwaggerCode
+```
