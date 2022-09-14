@@ -87,24 +87,24 @@ public class ProfileApiController implements ProfileApi {
 
   @Override
   public ResponseEntity<PolicyResponse> addProfilePolicyMember(
-         @PathVariable("profileId") UUID id,
-         @PathVariable("policyName") String policyName,
-         @PathVariable("memberEmail") String memberEmail
- ) {
-   AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
-   SamPolicyModel policy = profileService.addProfilePolicyMember(id, policyName, memberEmail, user);
-   PolicyResponse response = new PolicyResponse().policies(Collections.singletonList(policy));
-   return new ResponseEntity<>(response, HttpStatus.OK);
- }
+      @PathVariable("profileId") UUID id,
+      @PathVariable("policyName") String policyName,
+      @PathVariable("memberEmail") String memberEmail) {
+    AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
+    SamPolicyModel policy =
+        profileService.addProfilePolicyMember(id, policyName, memberEmail, user);
+    PolicyResponse response = new PolicyResponse().policies(Collections.singletonList(policy));
+    return new ResponseEntity<>(response, HttpStatus.OK);
+  }
 
   @Override
   public ResponseEntity<PolicyResponse> deleteProfilePolicyMember(
-          @PathVariable("profileId") UUID id,
-          @PathVariable("policyName") String policyName,
-          @PathVariable("memberEmail") String memberEmail
-  ) {
+      @PathVariable("profileId") UUID id,
+      @PathVariable("policyName") String policyName,
+      @PathVariable("memberEmail") String memberEmail) {
     AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
-    SamPolicyModel policy = profileService.deleteProfilePolicyMember(id, policyName, memberEmail, user);
+    SamPolicyModel policy =
+        profileService.deleteProfilePolicyMember(id, policyName, memberEmail, user);
     PolicyResponse response = new PolicyResponse().policies(Collections.singletonList(policy));
     return new ResponseEntity<>(response, HttpStatus.OK);
   }

@@ -121,15 +121,21 @@ public class ProfileService {
     return samPolicies;
   }
 
-  public SamPolicyModel addProfilePolicyMember(UUID profileId, String policyName, String memberEmail, AuthenticatedUserRequest user) {
+  public SamPolicyModel addProfilePolicyMember(
+      UUID profileId, String policyName, String memberEmail, AuthenticatedUserRequest user) {
     return SamRethrow.onInterrupted(
-            () -> samService.addPolicyMember(user, SamResourceType.PROFILE, profileId, policyName, memberEmail),
-            "addPolicyMember");
+        () ->
+            samService.addPolicyMember(
+                user, SamResourceType.PROFILE, profileId, policyName, memberEmail),
+        "addPolicyMember");
   }
 
-  public SamPolicyModel deleteProfilePolicyMember(UUID profileId, String policyName, String memberEmail, AuthenticatedUserRequest user) {
+  public SamPolicyModel deleteProfilePolicyMember(
+      UUID profileId, String policyName, String memberEmail, AuthenticatedUserRequest user) {
     return SamRethrow.onInterrupted(
-            () -> samService.deletePolicyMember(user, SamResourceType.PROFILE, profileId, policyName, memberEmail),
-            "deletePolicyMember");
+        () ->
+            samService.deletePolicyMember(
+                user, SamResourceType.PROFILE, profileId, policyName, memberEmail),
+        "deletePolicyMember");
   }
 }
