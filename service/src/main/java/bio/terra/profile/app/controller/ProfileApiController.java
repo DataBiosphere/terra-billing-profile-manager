@@ -9,7 +9,6 @@ import bio.terra.profile.service.job.JobService;
 import bio.terra.profile.service.profile.ProfileService;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -86,27 +85,25 @@ public class ProfileApiController implements ProfileApi {
   }
 
   @Override
-  public ResponseEntity<PolicyResponse> addProfilePolicyMember(
+  public ResponseEntity<SamPolicyModel> addProfilePolicyMember(
       @PathVariable("profileId") UUID id,
       @PathVariable("policyName") String policyName,
       @PathVariable("memberEmail") String memberEmail) {
     AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
     SamPolicyModel policy =
         profileService.addProfilePolicyMember(id, policyName, memberEmail, user);
-    PolicyResponse response = new PolicyResponse().policies(Collections.singletonList(policy));
-    return new ResponseEntity<>(response, HttpStatus.OK);
+    return new ResponseEntity<>(policy, HttpStatus.OK);
   }
 
   @Override
-  public ResponseEntity<PolicyResponse> deleteProfilePolicyMember(
+  public ResponseEntity<SamPolicyModel> deleteProfilePolicyMember(
       @PathVariable("profileId") UUID id,
       @PathVariable("policyName") String policyName,
       @PathVariable("memberEmail") String memberEmail) {
     AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
     SamPolicyModel policy =
         profileService.deleteProfilePolicyMember(id, policyName, memberEmail, user);
-    PolicyResponse response = new PolicyResponse().policies(Collections.singletonList(policy));
-    return new ResponseEntity<>(response, HttpStatus.OK);
+    return new ResponseEntity<>(policy, HttpStatus.OK);
   }
 
   /**

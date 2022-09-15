@@ -185,7 +185,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PolicyResponse'
+                $ref: '#/components/schemas/SamPolicyModel'
         '400':
           $ref: '#/components/responses/BadRequest'
         '403':
@@ -211,7 +211,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PolicyResponse'
+                $ref: '#/components/schemas/SamPolicyModel'
         '400':
           $ref: '#/components/responses/BadRequest'
         '403':
@@ -383,14 +383,6 @@ components:
       type: object
       properties:
         items:
-          type: array
-          items:
-            $ref: '#/components/schemas/SamPolicyModel'
-
-    PolicyResponse:
-      type: object
-      properties:
-        policies:
           type: array
           items:
             $ref: '#/components/schemas/SamPolicyModel'
