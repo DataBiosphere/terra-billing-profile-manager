@@ -12,11 +12,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import bio.terra.common.exception.ForbiddenException;
+import bio.terra.common.exception.NotFoundException;
 import bio.terra.common.exception.UnauthorizedException;
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.common.BaseSpringUnitTest;
 import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.model.CloudPlatform;
+import bio.terra.profile.model.SamPolicyModel;
 import bio.terra.profile.service.iam.SamService;
 import bio.terra.profile.service.iam.model.SamAction;
 import bio.terra.profile.service.iam.model.SamResourceType;
@@ -44,6 +46,9 @@ public class ProfileServiceUnitTest extends BaseSpringUnitTest {
   private ProfileService profileService;
   private AuthenticatedUserRequest user;
   private BillingProfile profile;
+  private List<SamPolicyModel> profilePolicies;
+  private SamPolicyModel userPolicy;
+  private SamPolicyModel ownerPolicy;
 
   @BeforeEach
   public void before() {
@@ -68,6 +73,10 @@ public class ProfileServiceUnitTest extends BaseSpringUnitTest {
             Instant.now(),
             Instant.now(),
             "creator");
+
+    userPolicy = new SamPolicyModel().name("user").members(List.of("user@unit.com"));
+    ownerPolicy = new SamPolicyModel().name("owner").members(List.of("owner@unit.com"));
+    profilePolicies = List.of(userPolicy, ownerPolicy);
   }
 
   @Test
@@ -144,5 +153,92 @@ public class ProfileServiceUnitTest extends BaseSpringUnitTest {
         .thenReturn(List.of(profile));
     var result = profileService.listProfiles(user, 0, 0);
     assertEquals(List.of(profile), result);
+  }
+
+  @Test
+  public void getProfilePolicies() throws InterruptedException {
+    when(samService.retrieveProfilePolicies(eq(user), eq(profile.id())))
+        .thenReturn(profilePolicies);
+    var result = profileService.getProfilePolicies(profile.id(), user);
+    assertEquals(profilePolicies, result);
+  }
+
+  @Test
+  public void getProfilePolicies403() throws InterruptedException {
+    doThrow(ForbiddenException.class)
+        .when(samService)
+        .retrieveProfilePolicies(eq(user), eq(profile.id()));
+    assertThrows(
+        ForbiddenException.class, () -> profileService.getProfilePolicies(profile.id(), user));
+  }
+
+  @Test
+  public void getProfilePolicies404() throws InterruptedException {
+    doThrow(NotFoundException.class)
+        .when(samService)
+        .retrieveProfilePolicies(eq(user), eq(profile.id()));
+    assertThrows(
+        NotFoundException.class, () -> profileService.getProfilePolicies(profile.id(), user));
+  }
+
+  @Test
+  public void addProfilePolicyMember() throws InterruptedException {
+    when(samService.addProfilePolicyMember(
+            eq(user), eq(profile.id()), eq("user"), eq("user@unit.com")))
+        .thenReturn(userPolicy);
+    var result = profileService.addProfilePolicyMember(profile.id(), "user", "user@unit.com", user);
+    assertEquals(userPolicy, result);
+  }
+
+  @Test
+  public void addProfilePolicyMember403() throws InterruptedException {
+    doThrow(ForbiddenException.class)
+        .when(samService)
+        .addProfilePolicyMember(eq(user), eq(profile.id()), eq("user"), eq("user@unit.com"));
+    assertThrows(
+        ForbiddenException.class,
+        () -> profileService.addProfilePolicyMember(profile.id(), "user", "user@unit.com", user));
+  }
+
+  @Test
+  public void addProfilePolicyMember404() throws InterruptedException {
+    doThrow(NotFoundException.class)
+        .when(samService)
+        .addProfilePolicyMember(eq(user), eq(profile.id()), eq("user"), eq("user@unit.com"));
+    assertThrows(
+        NotFoundException.class,
+        () -> profileService.addProfilePolicyMember(profile.id(), "user", "user@unit.com", user));
+  }
+
+  @Test
+  public void deleteProfilePolicyMember() throws InterruptedException {
+    when(samService.deleteProfilePolicyMember(
+            eq(user), eq(profile.id()), eq("owner"), eq("leaving@unit.com")))
+        .thenReturn(ownerPolicy);
+    var result =
+        profileService.deleteProfilePolicyMember(profile.id(), "owner", "leaving@unit.com", user);
+    assertEquals(ownerPolicy, result);
+  }
+
+  @Test
+  public void deleteProfilePolicyMember403() throws InterruptedException {
+    doThrow(ForbiddenException.class)
+        .when(samService)
+        .deleteProfilePolicyMember(eq(user), eq(profile.id()), eq("user"), eq("user@unit.com"));
+    assertThrows(
+        ForbiddenException.class,
+        () ->
+            profileService.deleteProfilePolicyMember(profile.id(), "user", "user@unit.com", user));
+  }
+
+  @Test
+  public void deleteProfilePolicyMember404() throws InterruptedException {
+    doThrow(NotFoundException.class)
+        .when(samService)
+        .deleteProfilePolicyMember(eq(user), eq(profile.id()), eq("user"), eq("user@unit.com"));
+    assertThrows(
+        NotFoundException.class,
+        () ->
+            profileService.deleteProfilePolicyMember(profile.id(), "user", "user@unit.com", user));
   }
 }

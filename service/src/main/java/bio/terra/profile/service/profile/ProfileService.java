@@ -114,28 +114,21 @@ public class ProfileService {
   }
 
   public List<SamPolicyModel> getProfilePolicies(UUID profileId, AuthenticatedUserRequest user) {
-    List<SamPolicyModel> samPolicies =
-        SamRethrow.onInterrupted(
-            () -> samService.retrievePolicies(user, SamResourceType.PROFILE, profileId),
-            "retrievePolicies");
-    return samPolicies;
+    return SamRethrow.onInterrupted(
+        () -> samService.retrieveProfilePolicies(user, profileId), "retrieveProfilePolicies");
   }
 
   public SamPolicyModel addProfilePolicyMember(
       UUID profileId, String policyName, String memberEmail, AuthenticatedUserRequest user) {
     return SamRethrow.onInterrupted(
-        () ->
-            samService.addPolicyMember(
-                user, SamResourceType.PROFILE, profileId, policyName, memberEmail),
-        "addPolicyMember");
+        () -> samService.addProfilePolicyMember(user, profileId, policyName, memberEmail),
+        "addProfilePolicyMember");
   }
 
   public SamPolicyModel deleteProfilePolicyMember(
       UUID profileId, String policyName, String memberEmail, AuthenticatedUserRequest user) {
     return SamRethrow.onInterrupted(
-        () ->
-            samService.deletePolicyMember(
-                user, SamResourceType.PROFILE, profileId, policyName, memberEmail),
+        () -> samService.deleteProfilePolicyMember(user, profileId, policyName, memberEmail),
         "deletePolicyMember");
   }
 }

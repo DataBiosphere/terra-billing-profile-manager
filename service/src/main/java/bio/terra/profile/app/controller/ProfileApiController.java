@@ -80,7 +80,7 @@ public class ProfileApiController implements ProfileApi {
   public ResponseEntity<SamPolicyModelList> getProfilePolicies(@PathVariable("profileId") UUID id) {
     AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
     List<SamPolicyModel> policies = profileService.getProfilePolicies(id, user);
-    var response = new SamPolicyModelList().items(new ArrayList<>(policies));
+    var response = new SamPolicyModelList().items(policies);
 
     return new ResponseEntity<>(response, HttpStatus.OK);
   }

@@ -163,104 +163,81 @@ public class SamService {
     }
   }
 
-  public List<SamPolicyModel> retrievePolicies(
-      AuthenticatedUserRequest userReq, SamResourceType iamResourceType, UUID resourceId)
-      throws InterruptedException {
+  public List<SamPolicyModel> retrieveProfilePolicies(
+      AuthenticatedUserRequest userRequest, UUID resourceId) throws InterruptedException {
+    ResourcesApi resourceApi = samResourcesApi(userRequest.getToken());
     try {
-      return SamRetry.retry(() -> retrievePoliciesInner(userReq, iamResourceType, resourceId));
-    } catch (ApiException e) {
-      throw SamExceptionFactory.create("Error retrieving policies from Sam", e);
-    }
-  }
-
-  private List<SamPolicyModel> retrievePoliciesInner(
-      AuthenticatedUserRequest userReq, SamResourceType iamResourceType, UUID resourceId)
-      throws ApiException {
-    ResourcesApi samResourceApi = samResourcesApi(userReq.getToken());
-    try (Stream<AccessPolicyResponseEntryV2> resultStream =
-        samResourceApi
-            .listResourcePoliciesV2(iamResourceType.toString(), resourceId.toString())
-            .stream()) {
-      return resultStream
+      List<AccessPolicyResponseEntryV2> policies =
+          SamRetry.retry(
+              () ->
+                  resourceApi.listResourcePoliciesV2(
+                      SamResourceType.PROFILE.getSamResourceName(), resourceId.toString()));
+      return policies.stream()
           .map(
               entry ->
                   new SamPolicyModel()
                       .name(entry.getPolicyName())
                       .members(entry.getPolicy().getMemberEmails()))
           .collect(Collectors.toList());
+    } catch (ApiException e) {
+      throw SamExceptionFactory.create("Error retrieving profile policies from Sam", e);
     }
   }
 
-  public SamPolicyModel addPolicyMember(
-      AuthenticatedUserRequest userReq,
-      SamResourceType iamResourceType,
-      UUID resourceId,
-      String policyName,
-      String userEmail)
+  public SamPolicyModel addProfilePolicyMember(
+      AuthenticatedUserRequest userReq, UUID resourceId, String policyName, String userEmail)
       throws InterruptedException {
     try {
       return SamRetry.retry(
-          () -> addPolicyMemberInner(userReq, iamResourceType, resourceId, policyName, userEmail));
+          () -> addProfilePolicyMemberInner(userReq, resourceId, policyName, userEmail));
     } catch (ApiException e) {
-      throw SamExceptionFactory.create("Error adding policy member in Sam", e);
+      throw SamExceptionFactory.create("Error adding profile policy member in Sam", e);
     }
   }
 
-  private SamPolicyModel addPolicyMemberInner(
-      AuthenticatedUserRequest userReq,
-      SamResourceType iamResourceType,
-      UUID resourceId,
-      String policyName,
-      String userEmail)
+  private SamPolicyModel addProfilePolicyMemberInner(
+      AuthenticatedUserRequest userReq, UUID resourceId, String policyName, String userEmail)
       throws ApiException {
     ResourcesApi samResourceApi = samResourcesApi(userReq.getToken());
+    String samResourceName = SamResourceType.PROFILE.getSamResourceName();
     logger.debug(
-        "addUserPolicy resourceType {} resourceId {} policyName {} userEmail {}",
-        iamResourceType.toString(),
+        "addUserToPolicyV2 resourceType {} resourceId {} policyName {} userEmail {}",
+        samResourceName,
         resourceId.toString(),
         policyName,
         userEmail);
-    samResourceApi.addUserToPolicyV2(
-        iamResourceType.toString(), resourceId.toString(), policyName, userEmail);
+    samResourceApi.addUserToPolicyV2(samResourceName, resourceId.toString(), policyName, userEmail);
     AccessPolicyMembershipV2 result =
-        samResourceApi.getPolicyV2(iamResourceType.toString(), resourceId.toString(), policyName);
+        samResourceApi.getPolicyV2(samResourceName, resourceId.toString(), policyName);
     return new SamPolicyModel().name(policyName).members(result.getMemberEmails());
   }
 
-  public SamPolicyModel deletePolicyMember(
-      AuthenticatedUserRequest userReq,
-      SamResourceType iamResourceType,
-      UUID resourceId,
-      String policyName,
-      String userEmail)
+  public SamPolicyModel deleteProfilePolicyMember(
+      AuthenticatedUserRequest userReq, UUID resourceId, String policyName, String userEmail)
       throws InterruptedException {
     try {
       return SamRetry.retry(
-          () ->
-              deletePolicyMemberInner(userReq, iamResourceType, resourceId, policyName, userEmail));
+          () -> deleteProfilePolicyMemberInner(userReq, resourceId, policyName, userEmail));
     } catch (ApiException e) {
-      throw SamExceptionFactory.create("Error deleting policy member in Sam", e);
+      throw SamExceptionFactory.create("Error deleting profile policy member in Sam", e);
     }
   }
 
-  private SamPolicyModel deletePolicyMemberInner(
-      AuthenticatedUserRequest userReq,
-      SamResourceType iamResourceType,
-      UUID resourceId,
-      String policyName,
-      String userEmail)
+  private SamPolicyModel deleteProfilePolicyMemberInner(
+      AuthenticatedUserRequest userReq, UUID resourceId, String policyName, String userEmail)
       throws ApiException {
     ResourcesApi samResourceApi = samResourcesApi(userReq.getToken());
+    String samResourceName = SamResourceType.PROFILE.getSamResourceName();
     logger.debug(
-        "removeUserPolicy resourceType {} resourceId {} policyName {} userEmail {}",
-        iamResourceType.toString(),
+        "removeUserFromPolicyV2 resourceType {} resourceId {} policyName {} userEmail {}",
+        samResourceName,
         resourceId.toString(),
         policyName,
         userEmail);
     samResourceApi.removeUserFromPolicyV2(
-        iamResourceType.toString(), resourceId.toString(), policyName, userEmail);
+        samResourceName, resourceId.toString(), policyName, userEmail);
     AccessPolicyMembershipV2 result =
-        samResourceApi.getPolicyV2(iamResourceType.toString(), resourceId.toString(), policyName);
+        samResourceApi.getPolicyV2(samResourceName, resourceId.toString(), policyName);
     return new SamPolicyModel().name(policyName).members(result.getMemberEmails());
   }
 

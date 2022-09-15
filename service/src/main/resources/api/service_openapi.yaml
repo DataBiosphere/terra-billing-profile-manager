@@ -151,7 +151,6 @@ paths:
     get:
       tags:
         - Profile
-        - Resources
       summary: Retrieve policies for the profile
       operationId: getProfilePolicies
       responses:
@@ -172,7 +171,6 @@ paths:
     post:
       tags:
         - Profile
-        - Resources
       description: >
         Adds a member to the specified policy for the profile.
         NOTE: Change may take up to 60 seconds to take effect.
@@ -199,7 +197,6 @@ paths:
     delete:
       tags:
         - Profile
-        - Resources
       description: >
         Removes a member from the specified policy for the profile.
         NOTE: Change may take up to 60 seconds to take effect.
