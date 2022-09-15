@@ -173,7 +173,6 @@ paths:
         - Profile
       description: >
         Adds a member to the specified policy for the profile.
-        NOTE: Change may take up to 60 seconds to take effect.
       operationId: addProfilePolicyMember
       parameters:
         - $ref: '#/components/parameters/ProfileId'
@@ -199,7 +198,6 @@ paths:
         - Profile
       description: >
         Removes a member from the specified policy for the profile.
-        NOTE: Change may take up to 60 seconds to take effect.
       operationId: deleteProfilePolicyMember
       parameters:
         - $ref: '#/components/parameters/ProfileId'

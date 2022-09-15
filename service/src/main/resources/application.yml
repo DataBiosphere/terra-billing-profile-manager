@@ -92,7 +92,7 @@ profile:
     managed-app-tenant-id: ${env.azure.managedAppTenantId}
 
     application-offers:
-      - name: aherbst-202202024-preview
+      - name: terra-dev-preview
         authorized-user-key: authorizedTerraUser
 
   sentry:
