@@ -5,6 +5,7 @@ import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.common.sam.SamRetry;
 import bio.terra.common.sam.exception.SamExceptionFactory;
 import bio.terra.profile.app.configuration.SamConfiguration;
+import bio.terra.profile.model.SamPolicyModel;
 import bio.terra.profile.model.SystemStatusSystems;
 import bio.terra.profile.service.iam.model.SamAction;
 import bio.terra.profile.service.iam.model.SamResourceType;
@@ -23,11 +24,7 @@ import org.broadinstitute.dsde.workbench.client.sam.ApiException;
 import org.broadinstitute.dsde.workbench.client.sam.api.ResourcesApi;
 import org.broadinstitute.dsde.workbench.client.sam.api.StatusApi;
 import org.broadinstitute.dsde.workbench.client.sam.api.UsersApi;
-import org.broadinstitute.dsde.workbench.client.sam.model.AccessPolicyMembershipV2;
-import org.broadinstitute.dsde.workbench.client.sam.model.CreateResourceRequestV2;
-import org.broadinstitute.dsde.workbench.client.sam.model.ResourceAndAccessPolicy;
-import org.broadinstitute.dsde.workbench.client.sam.model.SystemStatus;
-import org.broadinstitute.dsde.workbench.client.sam.model.UserStatusInfo;
+import org.broadinstitute.dsde.workbench.client.sam.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -124,7 +121,7 @@ public class SamService {
       return SamRetry.retry(
           () ->
               resourceApi
-                      .resourceActions(resourceType.getSamResourceName(), resourceId.toString())
+                      .resourceActionsV2(resourceType.getSamResourceName(), resourceId.toString())
                       .size()
                   > 0);
     } catch (ApiException e) {
@@ -144,10 +141,10 @@ public class SamService {
       throws InterruptedException {
     ResourcesApi resourceApi = samResourcesApi(userRequest.getToken());
     try {
-      List<ResourceAndAccessPolicy> resourceAndPolicies =
+      List<UserResourcesResponse> resourceAndPolicies =
           SamRetry.retry(
               () ->
-                  resourceApi.listResourcesAndPolicies(
+                  resourceApi.listResourcesAndPoliciesV2(
                       SamResourceType.PROFILE.getSamResourceName()));
       return resourceAndPolicies.stream()
           .flatMap(
@@ -164,6 +161,100 @@ public class SamService {
     } catch (ApiException e) {
       throw SamExceptionFactory.create("Error listing profile ids in Sam", e);
     }
+  }
+
+  /**
+   * Retrieves the Sam policies for the specified profile.
+   *
+   * @param userRequest authenticated user
+   * @param resourceId resourceId profile in question
+   * @return list of policies
+   * @throws InterruptedException
+   */
+  public List<SamPolicyModel> retrieveProfilePolicies(
+      AuthenticatedUserRequest userRequest, UUID resourceId) throws InterruptedException {
+    ResourcesApi resourceApi = samResourcesApi(userRequest.getToken());
+    try {
+      List<AccessPolicyResponseEntryV2> policies =
+          SamRetry.retry(
+              () ->
+                  resourceApi.listResourcePoliciesV2(
+                      SamResourceType.PROFILE.getSamResourceName(), resourceId.toString()));
+      return policies.stream()
+          .map(
+              entry ->
+                  new SamPolicyModel()
+                      .name(entry.getPolicyName())
+                      .members(entry.getPolicy().getMemberEmails()))
+          .collect(Collectors.toList());
+    } catch (ApiException e) {
+      throw SamExceptionFactory.create("Error retrieving profile policies from Sam", e);
+    }
+  }
+
+  /**
+   * Adds a user via their email to the specified profile policy.
+   *
+   * @param userRequest authenticated user
+   * @param resourceId resourceId profile in question
+   * @param policyName the name of the Sam policy
+   * @param userEmail the email of the user to add
+   * @return the policy details after the update
+   * @throws InterruptedException
+   */
+  public SamPolicyModel addProfilePolicyMember(
+      AuthenticatedUserRequest userRequest, UUID resourceId, String policyName, String userEmail)
+      throws InterruptedException {
+    try {
+      return SamRetry.retry(
+          () -> addProfilePolicyMemberInner(userRequest, resourceId, policyName, userEmail));
+    } catch (ApiException e) {
+      throw SamExceptionFactory.create("Error adding profile policy member in Sam", e);
+    }
+  }
+
+  private SamPolicyModel addProfilePolicyMemberInner(
+      AuthenticatedUserRequest userRequest, UUID resourceId, String policyName, String userEmail)
+      throws ApiException {
+    ResourcesApi samResourceApi = samResourcesApi(userRequest.getToken());
+    String samResourceName = SamResourceType.PROFILE.getSamResourceName();
+    samResourceApi.addUserToPolicyV2(samResourceName, resourceId.toString(), policyName, userEmail);
+    AccessPolicyMembershipV2 result =
+        samResourceApi.getPolicyV2(samResourceName, resourceId.toString(), policyName);
+    return new SamPolicyModel().name(policyName).members(result.getMemberEmails());
+  }
+
+  /**
+   * Removes a user via their email from the specified profile policy.
+   *
+   * @param userRequest authenticated user
+   * @param resourceId resourceId profile in question
+   * @param policyName the name of the Sam policy
+   * @param userEmail the email of the user to remove
+   * @return the policy details after the update
+   * @throws InterruptedException
+   */
+  public SamPolicyModel deleteProfilePolicyMember(
+      AuthenticatedUserRequest userRequest, UUID resourceId, String policyName, String userEmail)
+      throws InterruptedException {
+    try {
+      return SamRetry.retry(
+          () -> deleteProfilePolicyMemberInner(userRequest, resourceId, policyName, userEmail));
+    } catch (ApiException e) {
+      throw SamExceptionFactory.create("Error deleting profile policy member in Sam", e);
+    }
+  }
+
+  private SamPolicyModel deleteProfilePolicyMemberInner(
+      AuthenticatedUserRequest userRequest, UUID resourceId, String policyName, String userEmail)
+      throws ApiException {
+    ResourcesApi samResourceApi = samResourcesApi(userRequest.getToken());
+    String samResourceName = SamResourceType.PROFILE.getSamResourceName();
+    samResourceApi.removeUserFromPolicyV2(
+        samResourceName, resourceId.toString(), policyName, userEmail);
+    AccessPolicyMembershipV2 result =
+        samResourceApi.getPolicyV2(samResourceName, resourceId.toString(), policyName);
+    return new SamPolicyModel().name(policyName).members(result.getMemberEmails());
   }
 
   /**
@@ -241,7 +332,7 @@ public class SamService {
     try {
       SamRetry.retry(
           () ->
-              resourcesApi.deleteResource(
+              resourcesApi.deleteResourceV2(
                   SamResourceType.PROFILE.getSamResourceName(), profileId.toString()));
       logger.info("Deleted Sam resource for profile {}", profileId);
     } catch (ApiException e) {
