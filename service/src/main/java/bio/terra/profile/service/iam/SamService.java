@@ -5,7 +5,6 @@ import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.common.sam.SamRetry;
 import bio.terra.common.sam.exception.SamExceptionFactory;
 import bio.terra.profile.app.configuration.SamConfiguration;
-import bio.terra.profile.model.ResourcePolicyModel;
 import bio.terra.profile.model.SamPolicyModel;
 import bio.terra.profile.model.SystemStatusSystems;
 import bio.terra.profile.service.iam.model.SamAction;
@@ -187,18 +186,8 @@ public class SamService {
               entry ->
                   new SamPolicyModel()
                       .name(entry.getPolicyName())
-                      .members(entry.getPolicy().getMemberEmails())
-                      .memberPolicies(
-                          entry.getPolicy().getMemberPolicies().stream()
-                              .map(
-                                  pid ->
-                                      new ResourcePolicyModel()
-                                          .policyName(pid.getPolicyName())
-                                          .policyEmail(pid.getPolicyEmail())
-                                          .resourceId(UUID.fromString(pid.getResourceId()))
-                                          .resourceTypeName(pid.getResourceTypeName()))
-                              .collect(Collectors.toList())))
-          .collect(Collectors.toList());
+                      .members(entry.getPolicy().getMemberEmails()))
+              .collect(Collectors.toList());
     }
   }
 

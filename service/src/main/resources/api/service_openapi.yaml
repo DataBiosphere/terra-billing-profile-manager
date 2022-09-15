@@ -274,7 +274,6 @@ components:
         enum:
           - owner
           - user
-          - admin
 
     MemberEmail:
       name: memberEmail
@@ -430,18 +429,6 @@ components:
           format: uuid
           description: Azure tenant ID containing the Terra app deployment
 
-    ResourcePolicyModel:
-      type: object
-      properties:
-        policyEmail:
-          type: string
-        policyName:
-          type: string
-        resourceId:
-          description: Unique identifier of policy
-        resourceTypeName:
-          type: string
-
     SamPolicyModel:
       type: object
       properties:
@@ -451,12 +438,8 @@ components:
           type: array
           items:
             type: string
-        memberPolicies:
-          type: array
-          items:
-            $ref: '#/components/schemas/ResourcePolicyModel'
       description: >
-        Describes a policy from Sam, with member policies    
+        Describes a policy from Sam
 
     ProfileModel:
       type: object
