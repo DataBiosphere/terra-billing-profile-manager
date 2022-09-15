@@ -63,7 +63,7 @@ Then navigate to the Swagger: http://localhost:8080/swagger-ui.html
 
 ## Linter
 Automatically fix linting issues:
-```
+```sh
 ./gradlew spotlessApply
 ```
 
@@ -72,3 +72,7 @@ Automatically fix linting issues:
 ```sh
 ./gradlew generateSwaggerCode
 ```
+
+## Tech Stack
+BPM adheres to the [Terra Tech Stack](https://docs.google.com/document/d/1JkTrtaci7EI0TnuR-68zYgTx_mRCNu-u2eV9XhexWTI/edit#heading=h.5z6knaqygr4a). See linked document for relevant technology choices and the rationale behind their inclusion in this service. 
+
