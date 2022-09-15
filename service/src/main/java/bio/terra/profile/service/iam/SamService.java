@@ -187,7 +187,7 @@ public class SamService {
                   new SamPolicyModel()
                       .name(entry.getPolicyName())
                       .members(entry.getPolicy().getMemberEmails()))
-              .collect(Collectors.toList());
+          .collect(Collectors.toList());
     }
   }
 
