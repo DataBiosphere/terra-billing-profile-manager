@@ -88,10 +88,10 @@ public class ProfileApiController implements ProfileApi {
   public ResponseEntity<SamPolicyModel> addProfilePolicyMember(
       @PathVariable("profileId") UUID id,
       @PathVariable("policyName") String policyName,
-      @PathVariable("memberEmail") String memberEmail) {
+      @RequestBody PolicyMemberRequest requestBody) {
     AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
     SamPolicyModel policy =
-        profileService.addProfilePolicyMember(id, policyName, memberEmail, user);
+        profileService.addProfilePolicyMember(id, policyName, requestBody.getEmail(), user);
     return new ResponseEntity<>(policy, HttpStatus.OK);
   }
 
