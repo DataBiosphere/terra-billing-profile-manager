@@ -167,7 +167,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/profiles/v1/{profileId}/policies/{policyName}/members/{memberEmail}:
+  /api/profiles/v1/{profileId}/policies/{policyName}/members:
     post:
       tags:
         - Profile
@@ -177,7 +177,12 @@ paths:
       parameters:
         - $ref: '#/components/parameters/ProfileId'
         - $ref: '#/components/parameters/ProfilePolicyName'
-        - $ref: '#/components/parameters/MemberEmail'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PolicyMemberRequest'
       responses:
         201:
           description: Policy
@@ -273,7 +278,7 @@ components:
     MemberEmail:
       name: memberEmail
       in: path
-      description: The email of the user to add or remove policies for
+      description: The email of the user to remove policies for
       required: true
       schema:
         type: string
@@ -427,6 +432,15 @@ components:
             type: string
       description: >
         Describes a policy from Sam
+
+    PolicyMemberRequest:
+      required:
+        - email
+      type: object
+      properties:
+        email:
+          description: The email of the user to add policies for
+          type: string
 
     ProfileModel:
       type: object
