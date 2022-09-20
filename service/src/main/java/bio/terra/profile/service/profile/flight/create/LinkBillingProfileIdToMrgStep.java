@@ -1,7 +1,6 @@
 package bio.terra.profile.service.profile.flight.create;
 
 import bio.terra.common.iam.AuthenticatedUserRequest;
-import bio.terra.profile.service.azure.AzureService;
 import bio.terra.profile.service.crl.CrlService;
 import bio.terra.profile.service.profile.exception.DuplicateProfileException;
 import bio.terra.profile.service.profile.exception.MissingRequiredFieldsException;
@@ -12,20 +11,11 @@ import bio.terra.stairway.StepResult;
 import bio.terra.stairway.StepStatus;
 import bio.terra.stairway.exception.RetryException;
 import java.util.HashMap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-/**
- * Add a tag that associates a billing profile ID with an azure managed resource group
- */
+/** Add a tag that associates a billing profile ID with an azure managed resource group */
 public record LinkBillingProfileIdToMrgStep(
-    CrlService crlService,
-    AzureService azureService,
-    BillingProfile profile,
-    AuthenticatedUserRequest user)
-    implements Step {
+    CrlService crlService, BillingProfile profile, AuthenticatedUserRequest user) implements Step {
   private static final String BILLING_PROFILE_ID_TAG = "terra.billingProfileId";
-  private static final Logger logger = LoggerFactory.getLogger(LinkBillingProfileIdToMrgStep.class);
 
   @Override
   public StepResult doStep(FlightContext context) throws InterruptedException, RetryException {
