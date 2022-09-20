@@ -17,8 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 
 @Controller
 public class ProfileApiController implements ProfileApi {
@@ -40,7 +38,7 @@ public class ProfileApiController implements ProfileApi {
   }
 
   @Override
-  public ResponseEntity<ProfileModel> createProfile(@RequestBody CreateProfileRequest body) {
+  public ResponseEntity<ProfileModel> createProfile(CreateProfileRequest body) {
     AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
     BillingProfile profile = BillingProfile.fromApiCreateProfileRequest(body);
     BillingProfile result = profileService.createProfile(profile, user);
@@ -48,7 +46,7 @@ public class ProfileApiController implements ProfileApi {
   }
 
   @Override
-  public ResponseEntity<ProfileModel> getProfile(@PathVariable("profileId") UUID profileId) {
+  public ResponseEntity<ProfileModel> getProfile(UUID profileId) {
     AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
     BillingProfile profile = profileService.getProfile(profileId, user);
     return new ResponseEntity<>(profile.toApiProfileModel(), HttpStatus.OK);
@@ -69,14 +67,14 @@ public class ProfileApiController implements ProfileApi {
   }
 
   @Override
-  public ResponseEntity<Void> deleteProfile(@PathVariable("profileId") UUID id) {
+  public ResponseEntity<Void> deleteProfile(UUID id) {
     AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
     profileService.deleteProfile(id, user);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
   @Override
-  public ResponseEntity<SamPolicyModelList> getProfilePolicies(@PathVariable("profileId") UUID id) {
+  public ResponseEntity<SamPolicyModelList> getProfilePolicies(UUID id) {
     AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
     List<SamPolicyModel> policies = profileService.getProfilePolicies(id, user);
     var response = new SamPolicyModelList().items(policies);
@@ -86,9 +84,9 @@ public class ProfileApiController implements ProfileApi {
 
   @Override
   public ResponseEntity<SamPolicyModel> addProfilePolicyMember(
-      @PathVariable("profileId") UUID id,
-      @PathVariable("policyName") String policyName,
-      @RequestBody PolicyMemberRequest requestBody) {
+      UUID id,
+      String policyName,
+      PolicyMemberRequest requestBody) {
     AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
     SamPolicyModel policy =
         profileService.addProfilePolicyMember(id, policyName, requestBody.getEmail(), user);
@@ -97,9 +95,9 @@ public class ProfileApiController implements ProfileApi {
 
   @Override
   public ResponseEntity<SamPolicyModel> deleteProfilePolicyMember(
-      @PathVariable("profileId") UUID id,
-      @PathVariable("policyName") String policyName,
-      @PathVariable("memberEmail") String memberEmail) {
+      UUID id,
+      String policyName,
+      String memberEmail) {
     AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
     SamPolicyModel policy =
         profileService.deleteProfilePolicyMember(id, policyName, memberEmail, user);
