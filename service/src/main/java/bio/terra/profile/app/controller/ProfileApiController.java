@@ -84,9 +84,7 @@ public class ProfileApiController implements ProfileApi {
 
   @Override
   public ResponseEntity<SamPolicyModel> addProfilePolicyMember(
-      UUID id,
-      String policyName,
-      PolicyMemberRequest requestBody) {
+      UUID id, String policyName, PolicyMemberRequest requestBody) {
     AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
     SamPolicyModel policy =
         profileService.addProfilePolicyMember(id, policyName, requestBody.getEmail(), user);
@@ -95,9 +93,7 @@ public class ProfileApiController implements ProfileApi {
 
   @Override
   public ResponseEntity<SamPolicyModel> deleteProfilePolicyMember(
-      UUID id,
-      String policyName,
-      String memberEmail) {
+      UUID id, String policyName, String memberEmail) {
     AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
     SamPolicyModel policy =
         profileService.deleteProfilePolicyMember(id, policyName, memberEmail, user);
