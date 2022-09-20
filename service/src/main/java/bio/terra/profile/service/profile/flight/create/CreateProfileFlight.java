@@ -35,6 +35,7 @@ public class CreateProfileFlight extends Flight {
         break;
       case AZURE:
         addStep(new CreateProfileVerifyDeployedApplicationStep(azureService, profile, user));
+        addStep(new LinkBillingProfileIdToMrgStep(crlService, azureService, profile, user));
         break;
     }
     addStep(new CreateProfileAuthzIamStep(samService, profile, user));
