@@ -58,8 +58,8 @@ public class ApplicationService {
     if (existing != null) {
       throw new DuplicateTagException(
           String.format(
-              "MRG has existing tag [mrg_id = %s, existing tag = %s]",
-              managedResourceGroupId, existing));
+              "MRG has existing tag [mrg_id = %s, existing tag = %s, value = %s]",
+              managedResourceGroupId, tag, existing));
     }
 
     // dupe existing tags to a mutable hashmap

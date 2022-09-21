@@ -37,6 +37,7 @@ public record LinkBillingProfileIdToMrgStep(
           profile.managedResourceGroupId().get(),
           BILLING_PROFILE_ID_TAG,
           profile.id().toString());
+
       return StepResult.getStepResultSuccess();
     } catch (Exception ex) {
       return new StepResult(StepStatus.STEP_RESULT_FAILURE_FATAL, ex);
