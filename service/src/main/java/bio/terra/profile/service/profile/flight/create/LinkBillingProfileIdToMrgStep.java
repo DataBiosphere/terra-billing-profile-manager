@@ -21,11 +21,11 @@ public record LinkBillingProfileIdToMrgStep(
     try {
       if (profile.tenantId().isEmpty()) {
         throw new MissingRequiredFieldsException(
-                "No tenant ID on billing profile ID " + profile.id());
+            "No tenant ID on billing profile ID " + profile.id());
       }
       if (profile.subscriptionId().isEmpty()) {
         throw new MissingRequiredFieldsException(
-                "No subscription ID on billing profile ID " + profile.id());
+            "No subscription ID on billing profile ID " + profile.id());
       }
       if (profile.managedResourceGroupId().isEmpty()) {
         throw new MissingRequiredFieldsException("No MRG ID on billing profile ID " + profile.id());
