@@ -26,7 +26,7 @@ public class ApplicationServiceUnitTest extends BaseUnitTest {
 
     applicationService.addTagToMrg(tenantId, subId, mrgId, "fake_tag", "fake_value");
 
-    verify(crlService, times(1))
+    verify(crlService)
         .updateTagsForResource(
             eq(tenantId), eq(subId), eq(mrgId), eq(Map.of("fake_tag", "fake_value")));
   }
