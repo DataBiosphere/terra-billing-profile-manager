@@ -19,24 +19,30 @@ public record LinkBillingProfileIdToMrgStep(
   @Override
   public StepResult doStep(FlightContext context) throws InterruptedException, RetryException {
     try {
-      if (profile.tenantId().isEmpty()) {
-        throw new MissingRequiredFieldsException(
-            "No tenant ID on billing profile ID " + profile.id());
-      }
-      if (profile.subscriptionId().isEmpty()) {
-        throw new MissingRequiredFieldsException(
-            "No subscription ID on billing profile ID " + profile.id());
-      }
-      if (profile.managedResourceGroupId().isEmpty()) {
-        throw new MissingRequiredFieldsException("No MRG ID on billing profile ID " + profile.id());
-      }
+      var tenantId =
+          profile
+              .tenantId()
+              .orElseThrow(
+                  () ->
+                      new MissingRequiredFieldsException(
+                          "No tenant ID on billing profile ID " + profile.id()));
+      var subscriptionId =
+          profile
+              .subscriptionId()
+              .orElseThrow(
+                  () ->
+                      new MissingRequiredFieldsException(
+                          "No subscription ID on billing profile ID " + profile.id()));
+      var mrgId =
+          profile
+              .managedResourceGroupId()
+              .orElseThrow(
+                  () ->
+                      new MissingRequiredFieldsException(
+                          "No MRG ID on billing profile ID " + profile.id()));
 
       applicationService.addTagToMrg(
-          profile.tenantId().get(),
-          profile.subscriptionId().get(),
-          profile.managedResourceGroupId().get(),
-          BILLING_PROFILE_ID_TAG,
-          profile.id().toString());
+          tenantId, subscriptionId, mrgId, BILLING_PROFILE_ID_TAG, profile.id().toString());
 
       return StepResult.getStepResultSuccess();
     } catch (Exception ex) {
