@@ -11,9 +11,11 @@ import com.azure.core.management.profile.AzureProfile;
 import com.azure.resourcemanager.managedapplications.ApplicationManager;
 import com.azure.resourcemanager.resources.ResourceManager;
 import com.azure.resourcemanager.resources.fluent.SubscriptionClient;
+import com.azure.resourcemanager.resources.models.ResourceGroup;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
 import java.io.IOException;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -70,6 +72,17 @@ public class CrlService {
     SubscriptionClient sc = resourceManager.subscriptionClient();
     var subscription = sc.getSubscriptions().get(subscriptionId.toString());
     return UUID.fromString(subscription.tenantId());
+  }
+
+  public ResourceGroup getResourceGroup(UUID tenantId, UUID subscriptionId, String resourceId) {
+    var resourceManager = getResourceManager(tenantId, subscriptionId);
+    return resourceManager.resourceGroups().getByName(resourceId);
+  }
+
+  public void updateTagsForResource(
+      UUID tenantId, UUID subscriptionId, String resourceId, Map<String, String> tags) {
+    var resourceManager = getResourceManager(tenantId, subscriptionId);
+    resourceManager.tagOperations().updateTags(resourceId, tags);
   }
 
   private ClientConfig buildClientConfig() {

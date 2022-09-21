@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class AzureService {
   private static final Logger logger = LoggerFactory.getLogger(AzureService.class);
+
   private final ApplicationService appService;
   private final Set<AzureConfiguration.AzureApplicationOffer> azureAppOffers;
 
