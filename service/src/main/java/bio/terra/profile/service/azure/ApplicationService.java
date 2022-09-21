@@ -65,6 +65,6 @@ public class ApplicationService {
     // dupe existing tags to a mutable hashmap
     HashMap<String, String> tags = new HashMap<>(mrgResource.tags());
     tags.put(tag, value);
-    crlService.updateTagsForResource(tenantId, subscriptionId, managedResourceGroupId, tags);
+    crlService.updateTagsForResource(tenantId, subscriptionId, mrgResource.id(), tags);
   }
 }
