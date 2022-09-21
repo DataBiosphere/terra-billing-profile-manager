@@ -3,7 +3,11 @@ package bio.terra.profile.service.azure;
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.app.configuration.AzureConfiguration;
 import bio.terra.profile.model.AzureManagedAppModel;
+import bio.terra.profile.service.crl.CrlService;
 import com.azure.resourcemanager.managedapplications.models.Application;
+import com.azure.resourcemanager.resources.models.Provider;
+import com.azure.resourcemanager.resources.models.Providers;
+import com.google.common.collect.ImmutableList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -18,11 +22,16 @@ import org.springframework.stereotype.Service;
 @Service
 public class AzureService {
   private static final Logger logger = LoggerFactory.getLogger(AzureService.class);
+  private static final List<String> REQUIRED_PROVIDERS = ImmutableList.of("Microsoft.Storage");
+
   private final ApplicationService appService;
+  private final CrlService crlService;
   private final Set<AzureConfiguration.AzureApplicationOffer> azureAppOffers;
 
   @Autowired
-  public AzureService(ApplicationService appService, AzureConfiguration azureConfiguration) {
+  public AzureService(
+      CrlService crlService, ApplicationService appService, AzureConfiguration azureConfiguration) {
+    this.crlService = crlService;
     this.appService = appService;
     this.azureAppOffers = azureConfiguration.getApplicationOffers();
   }
@@ -52,6 +61,26 @@ public class AzureService {
                     .tenantId(tenantId))
         .distinct()
         .toList();
+  }
+
+  public List<String> getResourceProvidersForSubscription(
+      UUID tenantId,
+      UUID subscriptionId,
+      Set<String> acceptableNamespaces,
+      Set<ProviderRegistrationState> acceptableRegistrationStates) {
+
+    var resourceManager = crlService.getResourceManager(tenantId, subscriptionId);
+    Providers providers = resourceManager.providers();
+    List<String> filteredProviders =
+        providers.list().stream()
+            .filter(
+                provider ->
+                    acceptableRegistrationStates.contains(
+                            ProviderRegistrationState.fromValue(provider.registrationState()))
+                        && acceptableNamespaces.contains(provider.namespace()))
+            .map(Provider::namespace)
+            .toList();
+    return filteredProviders;
   }
 
   private String normalizeManagedResourceGroupId(String mrgId) {

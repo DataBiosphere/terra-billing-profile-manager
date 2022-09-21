@@ -9,6 +9,7 @@ import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.app.configuration.AzureConfiguration;
 import bio.terra.profile.common.BaseUnitTest;
 import bio.terra.profile.model.AzureManagedAppModel;
+import bio.terra.profile.service.crl.CrlService;
 import com.azure.resourcemanager.managedapplications.models.Application;
 import com.azure.resourcemanager.managedapplications.models.Plan;
 import java.util.List;
@@ -60,12 +61,15 @@ public class AzureServiceUnitTest extends BaseUnitTest {
     when(appService.getApplicationsForSubscription(eq(subId))).thenReturn(appsList);
     when(appService.getTenantForSubscription(subId)).thenReturn(tenantId);
 
+    var crlService = mock(CrlService.class);
+
     var offer = new AzureConfiguration.AzureApplicationOffer();
     offer.setName(offerName);
     offer.setAuthorizedUserKey("authorizedTerraUser");
     var offers = Set.of(offer);
     var azureService =
-        new AzureService(appService, new AzureConfiguration("fake", "fake", "fake", offers));
+        new AzureService(
+            crlService, appService, new AzureConfiguration("fake", "fake", "fake", offers));
 
     var result = azureService.getAuthorizedManagedAppDeployments(subId, user);
 
@@ -91,6 +95,8 @@ public class AzureServiceUnitTest extends BaseUnitTest {
             .build();
     var offerName = "known_terra_offer";
 
+    var crlService = mock(CrlService.class);
+
     var authedTerraApp = mock(Application.class);
     when(authedTerraApp.plan()).thenReturn(new Plan().withProduct(offerName));
     when(authedTerraApp.parameters())
@@ -111,7 +117,8 @@ public class AzureServiceUnitTest extends BaseUnitTest {
     offer.setAuthorizedUserKey("authorizedTerraUser");
     var offers = Set.of(offer);
     var azureService =
-        new AzureService(appService, new AzureConfiguration("fake", "fake", "fake", offers));
+        new AzureService(
+            crlService, appService, new AzureConfiguration("fake", "fake", "fake", offers));
 
     var result = azureService.getAuthorizedManagedAppDeployments(subId, user);
 

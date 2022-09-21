@@ -2,12 +2,14 @@ package bio.terra.profile.service.profile.flight.create;
 
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.service.azure.AzureService;
+import bio.terra.profile.service.azure.ProviderRegistrationState;
 import bio.terra.profile.service.profile.exception.InaccessibleApplicationDeploymentException;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.stairway.FlightContext;
 import bio.terra.stairway.Step;
 import bio.terra.stairway.StepResult;
 import bio.terra.stairway.StepStatus;
+import com.google.common.collect.ImmutableSet;
 import java.util.Objects;
 
 /** Step to verify the user has access to an Azure profile's managed resource group. */
@@ -31,6 +33,14 @@ record CreateProfileVerifyDeployedApplicationStep(
                               && app.getSubscriptionId() == profile.subscriptionId().get())
                   .count()
               == 1;
+      var providers =
+          azureService.getResourceProvidersForSubscription(
+              profile.tenantId().get(),
+              profile.subscriptionId().get(),
+              ImmutableSet.of("Microsoft.Storage"),
+              ImmutableSet.of(
+                  ProviderRegistrationState.REGISTERED, ProviderRegistrationState.REGISTERING));
+
     } catch (Exception e) {
       return new StepResult(StepStatus.STEP_RESULT_FAILURE_RETRY, e);
     }
