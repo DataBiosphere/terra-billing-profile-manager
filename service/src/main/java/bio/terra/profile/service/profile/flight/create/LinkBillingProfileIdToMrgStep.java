@@ -12,7 +12,7 @@ import bio.terra.stairway.exception.RetryException;
 
 /** Add a tag that associates a billing profile ID with an azure managed resource group */
 public record LinkBillingProfileIdToMrgStep(
-    ApplicationService applicationService, BillingProfile profile, AuthenticatedUserRequest user)
+    ApplicationService applicationService, BillingProfile profile)
     implements Step {
   private static final String BILLING_PROFILE_ID_TAG = "terra.billingProfileId";
 
