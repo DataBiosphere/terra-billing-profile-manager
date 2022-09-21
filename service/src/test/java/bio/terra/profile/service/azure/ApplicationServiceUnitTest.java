@@ -20,13 +20,15 @@ class ApplicationServiceUnitTest extends BaseUnitTest {
     var mrgId = "fake_mrg_id";
     var crlService = mock(CrlService.class);
     var resourceGroup = mock(ResourceGroup.class);
+    var resourceGroupId = UUID.randomUUID().toString();
+    when(resourceGroup.id()).thenReturn(resourceGroupId);
     when(crlService.getResourceGroup(tenantId, subId, mrgId)).thenReturn(resourceGroup);
     var applicationService = new ApplicationService(crlService);
 
     applicationService.addTagToMrg(tenantId, subId, mrgId, "fake_tag", "fake_value");
 
     verify(crlService)
-        .updateTagsForResource(tenantId, subId, mrgId, Map.of("fake_tag", "fake_value"));
+        .updateTagsForResource(tenantId, subId, resourceGroupId, Map.of("fake_tag", "fake_value"));
   }
 
   @Test
