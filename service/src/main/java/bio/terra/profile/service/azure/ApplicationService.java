@@ -40,14 +40,14 @@ public class ApplicationService {
   }
 
   /**
-   * Adds a tag to the MRG associated with a given profile. If the tag is already present, * throws
-   * a DuplicateTagException.
+   * Adds a tag to the MRG associated with a given profile.
    *
    * @param tenantId Tenant ID associated with the MRG
    * @param subscriptionId Subscription ID associated with the MRG
    * @param managedResourceGroupId ID for the MRG
    * @param tag Tag name
    * @param value Tag value
+   * @throws DuplicateTagException if the tag is already present.
    */
   public void addTagToMrg(
       UUID tenantId, UUID subscriptionId, String managedResourceGroupId, String tag, String value) {
