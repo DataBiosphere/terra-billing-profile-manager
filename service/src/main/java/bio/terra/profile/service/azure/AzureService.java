@@ -63,7 +63,7 @@ public class AzureService {
         .toList();
   }
 
-  public List<String> getResourceProvidersForSubscription(
+  public List<String> getFilteredResourceProvidersForSubscription(
       UUID tenantId,
       UUID subscriptionId,
       Set<String> acceptableNamespaces,

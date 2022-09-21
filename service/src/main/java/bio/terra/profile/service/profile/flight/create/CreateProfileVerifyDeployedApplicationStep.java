@@ -4,18 +4,25 @@ import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.service.azure.AzureService;
 import bio.terra.profile.service.azure.ProviderRegistrationState;
 import bio.terra.profile.service.profile.exception.InaccessibleApplicationDeploymentException;
+import bio.terra.profile.service.profile.exception.MissingRequiredProvidersException;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.stairway.FlightContext;
 import bio.terra.stairway.Step;
 import bio.terra.stairway.StepResult;
 import bio.terra.stairway.StepStatus;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 /** Step to verify the user has access to an Azure profile's managed resource group. */
 record CreateProfileVerifyDeployedApplicationStep(
     AzureService azureService, BillingProfile profile, AuthenticatedUserRequest user)
     implements Step {
+
+  private static final Set<String> REQUIRED_PROVIDER_NAMESPACES = ImmutableSet.of("Microsoft.Storage");
 
   @Override
   public StepResult doStep(FlightContext context) {
@@ -34,12 +41,15 @@ record CreateProfileVerifyDeployedApplicationStep(
                   .count()
               == 1;
       var providers =
-          azureService.getResourceProvidersForSubscription(
+          azureService.getFilteredResourceProvidersForSubscription(
               profile.tenantId().get(),
               profile.subscriptionId().get(),
-              ImmutableSet.of("Microsoft.Storage"),
+              REQUIRED_PROVIDER_NAMESPACES,
               ImmutableSet.of(
                   ProviderRegistrationState.REGISTERED, ProviderRegistrationState.REGISTERING));
+      if (!providers.containsAll(REQUIRED_PROVIDER_NAMESPACES)) {
+        throw new MissingRequiredProvidersException();
+      }
 
     } catch (Exception e) {
       return new StepResult(StepStatus.STEP_RESULT_FAILURE_RETRY, e);
