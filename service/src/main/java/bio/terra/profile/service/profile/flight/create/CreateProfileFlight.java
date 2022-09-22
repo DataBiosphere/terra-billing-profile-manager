@@ -1,6 +1,7 @@
 package bio.terra.profile.service.profile.flight.create;
 
 import bio.terra.common.iam.AuthenticatedUserRequest;
+import bio.terra.profile.app.configuration.AzureConfiguration;
 import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.service.azure.AzureService;
 import bio.terra.profile.service.crl.CrlService;
@@ -21,6 +22,7 @@ public class CreateProfileFlight extends Flight {
     CrlService crlService = appContext.getBean(CrlService.class);
     SamService samService = appContext.getBean(SamService.class);
     AzureService azureService = appContext.getBean(AzureService.class);
+    AzureConfiguration azureConfiguration = appContext.getBean(AzureConfiguration.class);
 
     BillingProfile profile =
         inputParameters.get(JobMapKeys.REQUEST.getKeyName(), BillingProfile.class);
@@ -34,7 +36,9 @@ public class CreateProfileFlight extends Flight {
         addStep(new CreateProfileVerifyAccountStep(crlService, profile, user));
         break;
       case AZURE:
-        addStep(new CreateProfileVerifyDeployedApplicationStep(azureService, profile, user));
+        addStep(
+            new CreateProfileVerifyDeployedApplicationStep(
+                azureService, profile, azureConfiguration, user));
         break;
     }
     addStep(new CreateProfileAuthzIamStep(samService, profile, user));

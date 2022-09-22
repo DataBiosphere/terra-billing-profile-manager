@@ -12,6 +12,7 @@ import bio.terra.profile.model.AzureManagedAppModel;
 import bio.terra.profile.service.crl.CrlService;
 import com.azure.resourcemanager.managedapplications.models.Application;
 import com.azure.resourcemanager.managedapplications.models.Plan;
+import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -69,7 +70,9 @@ public class AzureServiceUnitTest extends BaseUnitTest {
     var offers = Set.of(offer);
     var azureService =
         new AzureService(
-            crlService, appService, new AzureConfiguration("fake", "fake", "fake", offers));
+            crlService,
+            appService,
+            new AzureConfiguration("fake", "fake", "fake", offers, ImmutableSet.of()));
 
     var result = azureService.getAuthorizedManagedAppDeployments(subId, user);
 
@@ -118,7 +121,9 @@ public class AzureServiceUnitTest extends BaseUnitTest {
     var offers = Set.of(offer);
     var azureService =
         new AzureService(
-            crlService, appService, new AzureConfiguration("fake", "fake", "fake", offers));
+            crlService,
+            appService,
+            new AzureConfiguration("fake", "fake", "fake", offers, ImmutableSet.of()));
 
     var result = azureService.getAuthorizedManagedAppDeployments(subId, user);
 

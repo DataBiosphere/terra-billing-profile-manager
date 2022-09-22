@@ -95,6 +95,21 @@ profile:
       - name: terra-dev-preview
         authorized-user-key: authorizedTerraUser
 
+    required-providers:
+      - "Microsoft.Storage"
+      - "Microsoft.Compute"
+      - "Microsoft.Authorization"
+      - "Microsoft.Batch"
+      - "Microsoft.Compute"
+      - "Microsoft.OperationalInsights"
+      - "Microsoft.OperationsManagement"
+      - "microsoft.insights"
+      - "Microsoft.Network"
+      - "Microsoft.DBforPostgreSQL"
+      - "Microsoft.ContainerRegistry"
+      - "Microsoft.KeyVault"
+      - "Microsoft.ContainerService"
+
   sentry:
     dsn: ${env.sentry.dsn}
     environment: ${env.sentry.environment}

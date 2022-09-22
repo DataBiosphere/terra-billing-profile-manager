@@ -1,4 +1,11 @@
 package bio.terra.profile.service.profile.exception;
 
-public class MissingRequiredProvidersException extends RuntimeException {
+import bio.terra.common.exception.ErrorReportException;
+import java.util.List;
+import org.springframework.http.HttpStatus;
+
+public class MissingRequiredProvidersException extends ErrorReportException {
+  public MissingRequiredProvidersException(String message, List<String> missingProviders) {
+    super(message, missingProviders, HttpStatus.FAILED_DEPENDENCY);
+  }
 }

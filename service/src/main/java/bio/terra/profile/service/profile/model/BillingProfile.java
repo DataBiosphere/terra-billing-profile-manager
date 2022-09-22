@@ -96,4 +96,19 @@ public record BillingProfile(
         .lastModified(lastModified.toString())
         .createdBy(createdBy);
   }
+
+  public UUID getRequiredTenantId() {
+    return tenantId.orElseThrow(
+        () -> new MissingRequiredFieldsException("Missing azure tenant ID"));
+  }
+
+  public UUID getRequiredSubscriptionId() {
+    return subscriptionId.orElseThrow(
+        () -> new MissingRequiredFieldsException("Missing azure subscription ID"));
+  }
+
+  public String getRequiredManagedResourceGroupId() {
+    return managedResourceGroupId.orElseThrow(
+        () -> new MissingRequiredFieldsException("Missing azure managed resource group ID"));
+  }
 }

@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,24 +64,17 @@ public class AzureService {
         .toList();
   }
 
-  public List<String> getFilteredResourceProvidersForSubscription(
-      UUID tenantId,
-      UUID subscriptionId,
-      Set<String> acceptableNamespaces,
-      Set<ProviderRegistrationState> acceptableRegistrationStates) {
+  public Set<String> getResourceProvidersForSubscription(UUID tenantId, UUID subscriptionId) {
 
     var resourceManager = crlService.getResourceManager(tenantId, subscriptionId);
     Providers providers = resourceManager.providers();
-    List<String> filteredProviders =
-        providers.list().stream()
-            .filter(
-                provider ->
-                    acceptableRegistrationStates.contains(
-                            ProviderRegistrationState.fromValue(provider.registrationState()))
-                        && acceptableNamespaces.contains(provider.namespace()))
-            .map(Provider::namespace)
-            .toList();
-    return filteredProviders;
+    return providers.list().stream()
+        .filter(
+            provider ->
+                provider.registrationState().equals("Registered")
+                    || provider.registrationState().equals("Registering"))
+        .map(Provider::namespace)
+        .collect(Collectors.toSet());
   }
 
   private String normalizeManagedResourceGroupId(String mrgId) {

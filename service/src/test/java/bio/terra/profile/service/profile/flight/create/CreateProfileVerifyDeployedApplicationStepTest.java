@@ -5,14 +5,17 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 import bio.terra.common.iam.AuthenticatedUserRequest;
+import bio.terra.profile.app.configuration.AzureConfiguration;
 import bio.terra.profile.common.BaseSpringUnitTest;
 import bio.terra.profile.model.AzureManagedAppModel;
 import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.service.azure.AzureService;
 import bio.terra.profile.service.profile.exception.InaccessibleApplicationDeploymentException;
+import bio.terra.profile.service.profile.exception.MissingRequiredProvidersException;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.stairway.FlightContext;
 import bio.terra.stairway.StepResult;
+import com.google.common.collect.ImmutableSet;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -34,6 +37,7 @@ public class CreateProfileVerifyDeployedApplicationStepTest extends BaseSpringUn
 
   @BeforeEach
   public void before() {
+    var providers = ImmutableSet.of("fake-namespace");
     user =
         AuthenticatedUserRequest.builder()
             .setSubjectId("12345")
@@ -54,7 +58,15 @@ public class CreateProfileVerifyDeployedApplicationStepTest extends BaseSpringUn
             Instant.now(),
             Instant.now(),
             "creator");
-    step = new CreateProfileVerifyDeployedApplicationStep(azureService, profile, user);
+    var azureConfiguration =
+        new AzureConfiguration(
+            "fake_client", "fake_secret", "fake_tenant", ImmutableSet.of(), providers);
+    when(azureService.getResourceProvidersForSubscription(
+            profile.getRequiredTenantId(), profile.getRequiredSubscriptionId()))
+        .thenReturn(providers);
+    step =
+        new CreateProfileVerifyDeployedApplicationStep(
+            azureService, profile, azureConfiguration, user);
   }
 
   @Test
@@ -66,6 +78,7 @@ public class CreateProfileVerifyDeployedApplicationStepTest extends BaseSpringUn
                     .subscriptionId(profile.subscriptionId().get())
                     .tenantId(profile.tenantId().get())
                     .managedResourceGroupId(profile.managedResourceGroupId().get())));
+
     var result = step.doStep(flightContext);
 
     assertEquals(StepResult.getStepResultSuccess(), result);
@@ -76,5 +89,20 @@ public class CreateProfileVerifyDeployedApplicationStepTest extends BaseSpringUn
 
     assertThrows(
         InaccessibleApplicationDeploymentException.class, () -> step.doStep(flightContext));
+  }
+
+  @Test
+  public void missingProviders() {
+    when(azureService.getAuthorizedManagedAppDeployments(profile.subscriptionId().get(), user))
+        .thenReturn(
+            List.of(
+                new AzureManagedAppModel()
+                    .subscriptionId(profile.subscriptionId().get())
+                    .tenantId(profile.tenantId().get())
+                    .managedResourceGroupId(profile.managedResourceGroupId().get())));
+    when(azureService.getResourceProvidersForSubscription(
+            profile.getRequiredTenantId(), profile.getRequiredSubscriptionId()))
+        .thenReturn(ImmutableSet.of());
+    assertThrows(MissingRequiredProvidersException.class, () -> step.doStep(flightContext));
   }
 }
