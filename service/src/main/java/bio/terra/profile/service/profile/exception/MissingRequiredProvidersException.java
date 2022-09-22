@@ -6,6 +6,6 @@ import org.springframework.http.HttpStatus;
 
 public class MissingRequiredProvidersException extends ErrorReportException {
   public MissingRequiredProvidersException(String message, List<String> missingProviders) {
-    super(message, missingProviders, HttpStatus.FAILED_DEPENDENCY);
+    super(message, missingProviders, HttpStatus.CONFLICT);
   }
 }
