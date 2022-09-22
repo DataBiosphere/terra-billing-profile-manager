@@ -1,7 +1,6 @@
 package bio.terra.profile.service.profile.flight.create;
 
 import bio.terra.profile.service.azure.ApplicationService;
-import bio.terra.profile.service.profile.exception.MissingRequiredFieldsException;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.stairway.FlightContext;
 import bio.terra.stairway.Step;
@@ -17,27 +16,9 @@ public record LinkBillingProfileIdToMrgStep(
   @Override
   public StepResult doStep(FlightContext context) throws InterruptedException, RetryException {
     try {
-      var tenantId =
-          profile
-              .tenantId()
-              .orElseThrow(
-                  () ->
-                      new MissingRequiredFieldsException(
-                          "No tenant ID on billing profile ID " + profile.id()));
-      var subscriptionId =
-          profile
-              .subscriptionId()
-              .orElseThrow(
-                  () ->
-                      new MissingRequiredFieldsException(
-                          "No subscription ID on billing profile ID " + profile.id()));
-      var mrgId =
-          profile
-              .managedResourceGroupId()
-              .orElseThrow(
-                  () ->
-                      new MissingRequiredFieldsException(
-                          "No MRG ID on billing profile ID " + profile.id()));
+      var tenantId = profile.getRequiredTenantId();
+      var subscriptionId = profile.getRequiredSubscriptionId();
+      var mrgId = profile.getRequiredManagedResourceGroupId();
 
       applicationService.addTagToMrg(
           tenantId, subscriptionId, mrgId, BILLING_PROFILE_ID_TAG, profile.id().toString());

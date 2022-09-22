@@ -65,7 +65,6 @@ public class AzureService {
   }
 
   public Set<String> getResourceProvidersForSubscription(UUID tenantId, UUID subscriptionId) {
-
     var resourceManager = crlService.getResourceManager(tenantId, subscriptionId);
     Providers providers = resourceManager.providers();
     return providers.list().stream()

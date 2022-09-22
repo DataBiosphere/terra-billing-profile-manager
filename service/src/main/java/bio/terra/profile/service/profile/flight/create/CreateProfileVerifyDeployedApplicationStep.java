@@ -25,7 +25,6 @@ record CreateProfileVerifyDeployedApplicationStep(
   public StepResult doStep(FlightContext context) {
     final boolean canAccess;
     try {
-
       var apps =
           azureService.getAuthorizedManagedAppDeployments(
               profile.getRequiredSubscriptionId(), user);
@@ -60,10 +59,11 @@ record CreateProfileVerifyDeployedApplicationStep(
         azureService.getResourceProvidersForSubscription(
             profile.getRequiredTenantId(), profile.getRequiredSubscriptionId());
 
-    var result = Sets.difference(azureConfiguration.getRequiredProviders(), registeredProviders);
-    if (!result.isEmpty()) {
+    var missingProviders =
+        Sets.difference(azureConfiguration.getRequiredProviders(), registeredProviders);
+    if (!missingProviders.isEmpty()) {
       throw new MissingRequiredProvidersException(
-          "Missing required providers", result.stream().toList());
+          "Missing required providers", missingProviders.stream().toList());
     }
   }
 
