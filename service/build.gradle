@@ -11,7 +11,7 @@ apply from: 'generators.gradle'
 apply from: 'publishing.gradle'
 
 dependencies {
-	implementation 'io.sentry:sentry:6.4.1'
+	implementation 'io.sentry:sentry:6.4.2'
 
 	implementation 'bio.terra:terra-common-lib:0.0.68-SNAPSHOT'
 
@@ -22,7 +22,7 @@ dependencies {
 	implementation group: "org.apache.commons", name: "commons-lang3"
 
 	// Google dependencies
-	implementation platform('com.google.cloud:libraries-bom:26.1.1')
+	implementation platform('com.google.cloud:libraries-bom:26.1.2')
 
 	// Cloud Resource Library
 	implementation group: "com.azure.resourcemanager", name: "azure-resourcemanager-managedapplications", version: "1.0.0-beta.1"
