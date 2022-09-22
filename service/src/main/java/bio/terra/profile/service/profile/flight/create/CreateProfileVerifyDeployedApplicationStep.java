@@ -56,7 +56,7 @@ record CreateProfileVerifyDeployedApplicationStep(
 
   private void checkRegisteredProviders() {
     var registeredProviders =
-        azureService.getResourceProvidersForSubscription(
+        azureService.getRegisteredProvidersForSubscription(
             profile.getRequiredTenantId(), profile.getRequiredSubscriptionId());
 
     var missingProviders =

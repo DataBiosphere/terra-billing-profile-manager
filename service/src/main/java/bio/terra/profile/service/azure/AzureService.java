@@ -6,8 +6,6 @@ import bio.terra.profile.model.AzureManagedAppModel;
 import bio.terra.profile.service.crl.CrlService;
 import com.azure.resourcemanager.managedapplications.models.Application;
 import com.azure.resourcemanager.resources.models.Provider;
-import com.azure.resourcemanager.resources.models.Providers;
-import com.google.common.collect.ImmutableList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +21,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class AzureService {
   private static final Logger logger = LoggerFactory.getLogger(AzureService.class);
-  private static final List<String> REQUIRED_PROVIDERS = ImmutableList.of("Microsoft.Storage");
 
   private final ApplicationService appService;
   private final CrlService crlService;
@@ -64,9 +61,17 @@ public class AzureService {
         .toList();
   }
 
-  public Set<String> getResourceProvidersForSubscription(UUID tenantId, UUID subscriptionId) {
+  /**
+   * Gets the resource providers in a subscription that are in either the "Registered" or
+   * "Registering" state.
+   *
+   * @param tenantId Azure tenant ID associated with the given subscription.
+   * @param subscriptionId Azure subscription ID to be checked for providers
+   * @return Set of registered or registering resource providers.
+   */
+  public Set<String> getRegisteredProvidersForSubscription(UUID tenantId, UUID subscriptionId) {
     var resourceManager = crlService.getResourceManager(tenantId, subscriptionId);
-    Providers providers = resourceManager.providers();
+    var providers = resourceManager.providers();
     return providers.list().stream()
         .filter(
             provider ->

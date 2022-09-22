@@ -24,7 +24,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
-public class CreateProfileVerifyDeployedApplicationStepTest extends BaseSpringUnitTest {
+class CreateProfileVerifyDeployedApplicationStepTest extends BaseSpringUnitTest {
 
   @Mock private FlightContext flightContext;
   @Mock private AzureService azureService;
@@ -36,7 +36,7 @@ public class CreateProfileVerifyDeployedApplicationStepTest extends BaseSpringUn
   public CreateProfileVerifyDeployedApplicationStepTest() {}
 
   @BeforeEach
-  public void before() {
+  void before() {
     var providers = ImmutableSet.of("fake-namespace");
     user =
         AuthenticatedUserRequest.builder()
@@ -61,7 +61,7 @@ public class CreateProfileVerifyDeployedApplicationStepTest extends BaseSpringUn
     var azureConfiguration =
         new AzureConfiguration(
             "fake_client", "fake_secret", "fake_tenant", ImmutableSet.of(), providers);
-    when(azureService.getResourceProvidersForSubscription(
+    when(azureService.getRegisteredProvidersForSubscription(
             profile.getRequiredTenantId(), profile.getRequiredSubscriptionId()))
         .thenReturn(providers);
     step =
@@ -70,7 +70,7 @@ public class CreateProfileVerifyDeployedApplicationStepTest extends BaseSpringUn
   }
 
   @Test
-  public void verifyManagedApp() {
+  void verifyManagedApp() {
     when(azureService.getAuthorizedManagedAppDeployments(profile.subscriptionId().get(), user))
         .thenReturn(
             List.of(
@@ -85,14 +85,13 @@ public class CreateProfileVerifyDeployedApplicationStepTest extends BaseSpringUn
   }
 
   @Test
-  public void verifyManagedAppNoAccess() {
-
+  void verifyManagedAppNoAccess() {
     assertThrows(
         InaccessibleApplicationDeploymentException.class, () -> step.doStep(flightContext));
   }
 
   @Test
-  public void missingProviders() {
+  void missingProviders() {
     when(azureService.getAuthorizedManagedAppDeployments(profile.subscriptionId().get(), user))
         .thenReturn(
             List.of(
@@ -100,7 +99,7 @@ public class CreateProfileVerifyDeployedApplicationStepTest extends BaseSpringUn
                     .subscriptionId(profile.subscriptionId().get())
                     .tenantId(profile.tenantId().get())
                     .managedResourceGroupId(profile.managedResourceGroupId().get())));
-    when(azureService.getResourceProvidersForSubscription(
+    when(azureService.getRegisteredProvidersForSubscription(
             profile.getRequiredTenantId(), profile.getRequiredSubscriptionId()))
         .thenReturn(ImmutableSet.of());
     assertThrows(MissingRequiredProvidersException.class, () -> step.doStep(flightContext));
