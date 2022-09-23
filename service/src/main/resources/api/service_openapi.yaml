@@ -64,7 +64,7 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '409':
           description: Unsatisfied dependency when creating profile. For Azure profiles,
-            this may mean that a needed resource provider is not regsitered.
+            this may mean that a needed resource provider is not registered.
           content:
             application/json:
               schema:
