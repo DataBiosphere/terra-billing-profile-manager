@@ -61,7 +61,7 @@ class CreateProfileVerifyDeployedApplicationStepTest extends BaseSpringUnitTest 
     var azureConfiguration =
         new AzureConfiguration(
             "fake_client", "fake_secret", "fake_tenant", ImmutableSet.of(), providers);
-    when(azureService.getRegisteredProvidersForSubscription(
+    when(azureService.getRegisteredProviderNamespacesForSubscription(
             profile.getRequiredTenantId(), profile.getRequiredSubscriptionId()))
         .thenReturn(providers);
     step =
@@ -99,7 +99,7 @@ class CreateProfileVerifyDeployedApplicationStepTest extends BaseSpringUnitTest 
                     .subscriptionId(profile.subscriptionId().get())
                     .tenantId(profile.tenantId().get())
                     .managedResourceGroupId(profile.managedResourceGroupId().get())));
-    when(azureService.getRegisteredProvidersForSubscription(
+    when(azureService.getRegisteredProviderNamespacesForSubscription(
             profile.getRequiredTenantId(), profile.getRequiredSubscriptionId()))
         .thenReturn(ImmutableSet.of());
     assertThrows(MissingRequiredProvidersException.class, () -> step.doStep(flightContext));

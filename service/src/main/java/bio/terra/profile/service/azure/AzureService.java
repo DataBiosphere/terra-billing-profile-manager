@@ -62,14 +62,15 @@ public class AzureService {
   }
 
   /**
-   * Gets the resource providers in a subscription that are in either the "Registered" or
+   * Gets the resource provider namespaces in a subscription that are in either the "Registered" or
    * "Registering" state.
    *
    * @param tenantId Azure tenant ID associated with the given subscription.
    * @param subscriptionId Azure subscription ID to be checked for providers
-   * @return Set of registered or registering resource providers.
+   * @return Set of registered or registering resource providers namespaces.
    */
-  public Set<String> getRegisteredProvidersForSubscription(UUID tenantId, UUID subscriptionId) {
+  public Set<String> getRegisteredProviderNamespacesForSubscription(
+      UUID tenantId, UUID subscriptionId) {
     var resourceManager = crlService.getResourceManager(tenantId, subscriptionId);
     var providers = resourceManager.providers();
     return providers.list().stream()
