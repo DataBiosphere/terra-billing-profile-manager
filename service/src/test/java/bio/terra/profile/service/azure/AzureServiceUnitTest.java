@@ -33,7 +33,7 @@ public class AzureServiceUnitTest extends BaseUnitTest {
     var offerName = "known_terra_offer";
 
     var authedTerraApp = mock(Application.class);
-    when(authedTerraApp.plan()).thenReturn(new Plan().withProduct(offerName));
+    when(authedTerraApp.plan()).thenReturn(new Plan().withName(offerName));
     when(authedTerraApp.parameters())
         .thenReturn(
             Map.of(
@@ -43,14 +43,14 @@ public class AzureServiceUnitTest extends BaseUnitTest {
     when(authedTerraApp.name()).thenReturn("fake_app_1");
 
     var unauthedTerraApp = mock(Application.class);
-    when(unauthedTerraApp.plan()).thenReturn(new Plan().withProduct(offerName));
+    when(unauthedTerraApp.plan()).thenReturn(new Plan().withName(offerName));
     when(unauthedTerraApp.parameters())
         .thenReturn(Map.of("authorizedTerraUser", Map.of("value", "other@example.com")));
     when(unauthedTerraApp.managedResourceGroupId()).thenReturn("mrg_fake2");
     when(unauthedTerraApp.name()).thenReturn("fake_app_2");
 
     var otherNonTerraApp = mock(Application.class);
-    when(otherNonTerraApp.plan()).thenReturn(new Plan().withProduct("other_offer"));
+    when(otherNonTerraApp.plan()).thenReturn(new Plan().withName("other_offer"));
     when(otherNonTerraApp.managedResourceGroupId()).thenReturn("mrg_fake3");
     when(otherNonTerraApp.name()).thenReturn("fake_app_3");
 
@@ -92,7 +92,7 @@ public class AzureServiceUnitTest extends BaseUnitTest {
     var offerName = "known_terra_offer";
 
     var authedTerraApp = mock(Application.class);
-    when(authedTerraApp.plan()).thenReturn(new Plan().withProduct(offerName));
+    when(authedTerraApp.plan()).thenReturn(new Plan().withName(offerName));
     when(authedTerraApp.parameters())
         .thenReturn(
             Map.of(
