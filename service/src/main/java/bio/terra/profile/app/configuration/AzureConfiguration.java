@@ -12,7 +12,8 @@ public record AzureConfiguration(
     String managedAppClientId,
     String managedAppClientSecret,
     String managedAppTenantId,
-    Set<AzureApplicationOffer> applicationOffers) {
+    Set<AzureApplicationOffer> applicationOffers,
+    Set<String> requiredProviders) {
   private static final Logger logger = LoggerFactory.getLogger(AzureConfiguration.class);
 
   /**
@@ -71,5 +72,9 @@ public record AzureConfiguration(
     for (AzureApplicationOffer offer : this.applicationOffers()) {
       logger.info("Azure application offer {}", offer.name);
     }
+  }
+
+  public Set<String> getRequiredProviders() {
+    return requiredProviders;
   }
 }

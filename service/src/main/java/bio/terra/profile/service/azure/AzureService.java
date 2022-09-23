@@ -3,12 +3,15 @@ package bio.terra.profile.service.azure;
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.app.configuration.AzureConfiguration;
 import bio.terra.profile.model.AzureManagedAppModel;
+import bio.terra.profile.service.crl.CrlService;
 import com.azure.resourcemanager.managedapplications.models.Application;
+import com.azure.resourcemanager.resources.models.Provider;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,11 +21,15 @@ import org.springframework.stereotype.Service;
 @Service
 public class AzureService {
   private static final Logger logger = LoggerFactory.getLogger(AzureService.class);
+
   private final ApplicationService appService;
+  private final CrlService crlService;
   private final Set<AzureConfiguration.AzureApplicationOffer> azureAppOffers;
 
   @Autowired
-  public AzureService(ApplicationService appService, AzureConfiguration azureConfiguration) {
+  public AzureService(
+      CrlService crlService, ApplicationService appService, AzureConfiguration azureConfiguration) {
+    this.crlService = crlService;
     this.appService = appService;
     this.azureAppOffers = azureConfiguration.getApplicationOffers();
   }
@@ -52,6 +59,27 @@ public class AzureService {
                     .tenantId(tenantId))
         .distinct()
         .toList();
+  }
+
+  /**
+   * Gets the resource provider namespaces in a subscription that are in either the "Registered" or
+   * "Registering" state.
+   *
+   * @param tenantId Azure tenant ID associated with the given subscription.
+   * @param subscriptionId Azure subscription ID to be checked for providers
+   * @return Set of registered or registering resource providers namespaces.
+   */
+  public Set<String> getRegisteredProviderNamespacesForSubscription(
+      UUID tenantId, UUID subscriptionId) {
+    var resourceManager = crlService.getResourceManager(tenantId, subscriptionId);
+    var providers = resourceManager.providers();
+    return providers.list().stream()
+        .filter(
+            provider ->
+                provider.registrationState().equals("Registered")
+                    || provider.registrationState().equals("Registering"))
+        .map(Provider::namespace)
+        .collect(Collectors.toSet());
   }
 
   private String normalizeManagedResourceGroupId(String mrgId) {
