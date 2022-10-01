@@ -27,6 +27,7 @@ public record AzureConfiguration(
    */
   public static class AzureApplicationOffer {
     private String name;
+    private String publisher;
     private String authorizedUserKey;
 
     public String getName() {
@@ -35,6 +36,14 @@ public record AzureConfiguration(
 
     public void setName(String name) {
       this.name = name;
+    }
+
+    public String getPublisher() {
+      return publisher;
+    }
+
+    public void setPublisher(String publisher) {
+      this.publisher = publisher;
     }
 
     /**

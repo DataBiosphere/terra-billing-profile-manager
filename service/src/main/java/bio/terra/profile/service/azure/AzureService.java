@@ -95,7 +95,12 @@ public class AzureService {
     }
 
     var maybeOffer =
-        azureAppOffers.stream().filter(o -> o.getName().equals(app.plan().product())).findFirst();
+        azureAppOffers.stream()
+            .filter(
+                o ->
+                    o.getName().equals(app.plan().product())
+                        && o.getPublisher().equals(app.plan().publisher()))
+            .findFirst();
     if (maybeOffer.isEmpty()) {
       logger.debug(
           "App deployment is not a deployment of a well-known Terra offer, ignoring [mrg_id={}]",

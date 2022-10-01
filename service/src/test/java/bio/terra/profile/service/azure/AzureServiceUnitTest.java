@@ -33,9 +33,11 @@ public class AzureServiceUnitTest extends BaseUnitTest {
             .setToken("token")
             .build();
     var offerName = "known_terra_offer";
+    var offerPublisher = "known_terra_publisher";
 
     var authedTerraApp = mock(Application.class);
-    when(authedTerraApp.plan()).thenReturn(new Plan().withProduct(offerName));
+    when(authedTerraApp.plan())
+        .thenReturn(new Plan().withProduct(offerName).withPublisher(offerPublisher));
     when(authedTerraApp.parameters())
         .thenReturn(
             Map.of(
@@ -45,18 +47,32 @@ public class AzureServiceUnitTest extends BaseUnitTest {
     when(authedTerraApp.name()).thenReturn("fake_app_1");
 
     var unauthedTerraApp = mock(Application.class);
-    when(unauthedTerraApp.plan()).thenReturn(new Plan().withProduct(offerName));
+    when(unauthedTerraApp.plan())
+        .thenReturn(new Plan().withProduct(offerName).withPublisher(offerPublisher));
     when(unauthedTerraApp.parameters())
         .thenReturn(Map.of("authorizedTerraUser", Map.of("value", "other@example.com")));
     when(unauthedTerraApp.managedResourceGroupId()).thenReturn("mrg_fake2");
     when(unauthedTerraApp.name()).thenReturn("fake_app_2");
 
     var otherNonTerraApp = mock(Application.class);
-    when(otherNonTerraApp.plan()).thenReturn(new Plan().withProduct("other_offer"));
+    when(otherNonTerraApp.plan())
+        .thenReturn(new Plan().withProduct("other_offer").withPublisher(offerPublisher));
     when(otherNonTerraApp.managedResourceGroupId()).thenReturn("mrg_fake3");
     when(otherNonTerraApp.name()).thenReturn("fake_app_3");
 
-    var appsList = Stream.of(authedTerraApp, unauthedTerraApp, otherNonTerraApp);
+    var differentPublisherApp = mock(Application.class);
+    when(differentPublisherApp.plan())
+        .thenReturn(new Plan().withProduct(offerName).withPublisher("other_publisher"));
+    when(differentPublisherApp.parameters())
+        .thenReturn(
+            Map.of(
+                "authorizedTerraUser",
+                Map.of("value", String.format("%s,other@example.com", authedUserEmail))));
+    when(differentPublisherApp.managedResourceGroupId()).thenReturn("mrg_fake1");
+    when(differentPublisherApp.name()).thenReturn("fake_app_1");
+
+    var appsList =
+        Stream.of(authedTerraApp, unauthedTerraApp, otherNonTerraApp, differentPublisherApp);
     var appService = mock(ApplicationService.class);
     var tenantId = UUID.randomUUID();
     when(appService.getApplicationsForSubscription(eq(subId))).thenReturn(appsList);
@@ -66,6 +82,7 @@ public class AzureServiceUnitTest extends BaseUnitTest {
 
     var offer = new AzureConfiguration.AzureApplicationOffer();
     offer.setName(offerName);
+    offer.setPublisher(offerPublisher);
     offer.setAuthorizedUserKey("authorizedTerraUser");
     var offers = Set.of(offer);
     var azureService =
@@ -97,11 +114,13 @@ public class AzureServiceUnitTest extends BaseUnitTest {
             .setToken("token")
             .build();
     var offerName = "known_terra_offer";
+    var offerPublisher = "known_terra_publisher";
 
     var crlService = mock(CrlService.class);
 
     var authedTerraApp = mock(Application.class);
-    when(authedTerraApp.plan()).thenReturn(new Plan().withProduct(offerName));
+    when(authedTerraApp.plan())
+        .thenReturn(new Plan().withProduct(offerName).withPublisher(offerPublisher));
     when(authedTerraApp.parameters())
         .thenReturn(
             Map.of(
@@ -117,6 +136,7 @@ public class AzureServiceUnitTest extends BaseUnitTest {
 
     var offer = new AzureConfiguration.AzureApplicationOffer();
     offer.setName(offerName);
+    offer.setPublisher(offerPublisher);
     offer.setAuthorizedUserKey("authorizedTerraUser");
     var offers = Set.of(offer);
     var azureService =
