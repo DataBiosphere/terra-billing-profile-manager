@@ -1,5 +1,6 @@
 package bio.terra.profile.app.controller;
 
+import bio.terra.common.exception.ValidationException;
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.common.iam.AuthenticatedUserRequestFactory;
 import bio.terra.profile.api.AzureApi;
@@ -33,6 +34,9 @@ public class AzureApiController implements AzureApi {
   public ResponseEntity<AzureManagedAppsResponseModel> getManagedAppDeployments(
       UUID azureSubscriptionId) {
     final AuthenticatedUserRequest userRequest = authenticatedUserRequestFactory.from(request);
+    if (azureSubscriptionId == null) {
+      throw new ValidationException("Azure subscription ID requred");
+    }
     var managedApps =
         this.azureService.getAuthorizedManagedAppDeployments(azureSubscriptionId, userRequest);
 

@@ -5,7 +5,11 @@ import bio.terra.profile.model.ErrorReport;
 import io.sentry.Sentry;
 import java.util.List;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 /**
  * This module provides a top-level exception handler for controllers. All exceptions that rise
@@ -20,5 +24,14 @@ public class GlobalExceptionHandler extends AbstractGlobalExceptionHandler<Error
       Sentry.captureException(ex);
     }
     return new ErrorReport().message(ex.getMessage()).statusCode(statusCode.value()).causes(causes);
+  }
+
+  @ExceptionHandler({
+    MissingServletRequestParameterException.class,
+    MethodArgumentTypeMismatchException.class
+  })
+  public ResponseEntity<ErrorReport> missingParameterException(Exception exception) {
+    var errorReport = generateErrorReport(exception, HttpStatus.BAD_REQUEST, null);
+    return new ResponseEntity<>(errorReport, HttpStatus.BAD_REQUEST);
   }
 }

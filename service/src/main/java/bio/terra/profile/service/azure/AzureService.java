@@ -4,6 +4,7 @@ import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.app.configuration.AzureConfiguration;
 import bio.terra.profile.model.AzureManagedAppModel;
 import bio.terra.profile.service.crl.CrlService;
+import com.azure.core.management.exception.ManagementException;
 import com.azure.resourcemanager.managedapplications.models.Application;
 import com.azure.resourcemanager.resources.models.Provider;
 import java.util.Arrays;
@@ -43,7 +44,18 @@ public class AzureService {
    */
   public List<AzureManagedAppModel> getAuthorizedManagedAppDeployments(
       UUID subscriptionId, AuthenticatedUserRequest userRequest) {
-    var tenantId = appService.getTenantForSubscription(subscriptionId);
+    UUID tenantId;
+    try {
+      tenantId = appService.getTenantForSubscription(subscriptionId);
+    } catch (ManagementException e) {
+      if (e.getValue().getCode().equals("SubscriptionNotFound")) {
+        logger.info(
+            "Subscription ID not found when searching for managed app deployments [sub_id = {}]",
+            subscriptionId);
+        return List.of();
+      }
+      throw e;
+    }
 
     Stream<Application> applications = appService.getApplicationsForSubscription(subscriptionId);
 
