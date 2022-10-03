@@ -25,14 +25,14 @@ public class AzureService {
 
   private final ApplicationService appService;
   private final CrlService crlService;
-  private final Set<AzureConfiguration.AzureApplicationOffer> azureAppOffers;
+  private final AzureConfiguration azureConfiguration;
 
   @Autowired
   public AzureService(
       CrlService crlService, ApplicationService appService, AzureConfiguration azureConfiguration) {
     this.crlService = crlService;
     this.appService = appService;
-    this.azureAppOffers = azureConfiguration.getApplicationOffers();
+    this.azureConfiguration = azureConfiguration;
   }
 
   /**
@@ -107,7 +107,7 @@ public class AzureService {
     }
 
     var maybeOffer =
-        azureAppOffers.stream()
+        azureConfiguration.getApplicationOffers().stream()
             .filter(
                 o ->
                     o.getName().equals(app.plan().product())
