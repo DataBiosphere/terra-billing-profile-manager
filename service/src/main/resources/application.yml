@@ -93,6 +93,7 @@ profile:
 
     application-offers:
       - name: terra-dev-preview
+        publisher: thebroadinstituteinc1615909626976
         authorized-user-key: authorizedTerraUser
 
     required-providers:
