@@ -71,6 +71,5 @@ public class AzureApiControllerTest extends BaseSpringUnitTest {
                 .queryParam("azureSubscriptionId", "baduuid")
                 .header("Authorization", "Bearer " + userRequest.getToken()))
         .andExpect(status().is(HttpStatus.BAD_REQUEST.value()));
-    assert (false);
   }
 }
