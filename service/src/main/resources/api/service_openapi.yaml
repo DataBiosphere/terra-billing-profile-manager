@@ -244,6 +244,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AzureManagedAppsResponseModel'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '403':
           $ref: '#/components/responses/PermissionDenied'
         '404':
