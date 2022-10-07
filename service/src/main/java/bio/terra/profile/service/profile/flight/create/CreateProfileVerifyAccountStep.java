@@ -17,15 +17,16 @@ import java.util.List;
 record CreateProfileVerifyAccountStep(
     CrlService crlService, BillingProfile profile, AuthenticatedUserRequest user) implements Step {
 
+  public static List<String> PERMISSIONS_TO_TEST = List.of("billing.resourceAssociations.create");
+
   @Override
   public StepResult doStep(FlightContext context) throws InterruptedException {
     var billingCow = crlService.getBillingClientCow(user);
 
-    var permissionsToTest = List.of("billing.resourceAssociations.create");
     var testPermissionsRequest =
         TestIamPermissionsRequest.newBuilder()
-            .setResource(BillingAccountName.of(profile.billingAccountId().get()).toString())
-            .addAllPermissions(permissionsToTest)
+            .setResource(BillingAccountName.of(profile.getRequiredBillingAccountId()).toString())
+            .addAllPermissions(PERMISSIONS_TO_TEST)
             .build();
 
     final TestIamPermissionsResponse testPermissionsResponse;
@@ -36,7 +37,7 @@ record CreateProfileVerifyAccountStep(
     }
 
     var actualPermissions = testPermissionsResponse.getPermissionsList();
-    if (actualPermissions == null || !actualPermissions.equals(permissionsToTest)) {
+    if (actualPermissions == null || !actualPermissions.equals(PERMISSIONS_TO_TEST)) {
       var message =
           String.format(
               "The user [%s] needs access to the billing account [%s] to perform the requested operation",

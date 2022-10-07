@@ -35,7 +35,8 @@ record CreateProfileVerifyDeployedApplicationStep(
                           Objects.equals(
                                   app.getManagedResourceGroupId(),
                                   profile.getRequiredManagedResourceGroupId())
-                              && app.getSubscriptionId() == profile.getRequiredSubscriptionId())
+                              && Objects.equals(
+                                  app.getSubscriptionId(), profile.getRequiredSubscriptionId()))
                   .count()
               == 1;
     } catch (Exception e) {

@@ -4,6 +4,7 @@ import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.model.CreateProfileRequest;
 import bio.terra.profile.model.ProfileModel;
 import bio.terra.profile.service.profile.exception.MissingRequiredFieldsException;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
@@ -97,16 +98,25 @@ public record BillingProfile(
         .createdBy(createdBy);
   }
 
+  @JsonIgnore
+  public String getRequiredBillingAccountId() {
+    return billingAccountId.orElseThrow(
+        () -> new MissingRequiredFieldsException("Missing billing account ID"));
+  }
+
+  @JsonIgnore
   public UUID getRequiredTenantId() {
     return tenantId.orElseThrow(
         () -> new MissingRequiredFieldsException("Missing azure tenant ID"));
   }
 
+  @JsonIgnore
   public UUID getRequiredSubscriptionId() {
     return subscriptionId.orElseThrow(
         () -> new MissingRequiredFieldsException("Missing azure subscription ID"));
   }
 
+  @JsonIgnore
   public String getRequiredManagedResourceGroupId() {
     return managedResourceGroupId.orElseThrow(
         () -> new MissingRequiredFieldsException("Missing azure managed resource group ID"));
