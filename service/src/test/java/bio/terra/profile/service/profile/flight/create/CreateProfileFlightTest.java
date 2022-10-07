@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
-public class CreateProfileFlightTest extends BaseSpringUnitTest {
+class CreateProfileFlightTest extends BaseSpringUnitTest {
 
   @Autowired ProfileService profileService;
   @Autowired AzureConfiguration azureConfiguration;
@@ -198,11 +198,6 @@ public class CreateProfileFlightTest extends BaseSpringUnitTest {
     profileService.createProfile(profile, userRequest);
 
     verify(applicationService)
-        .addTagToMrg(
-            eq(tenantId),
-            eq(subId),
-            eq(mrgId),
-            eq("terra.billingProfileId"),
-            eq(profile.id().toString()));
+        .addTagToMrg(tenantId, subId, mrgId, "terra.billingProfileId", profile.id().toString());
   }
 }
