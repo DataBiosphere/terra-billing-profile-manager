@@ -69,7 +69,7 @@ public class CreateProfileVerifyAccountStepTest extends BaseSpringUnitTest {
     when(billingClientCow.testIamPermissions(captor.capture()))
         .thenReturn(
             TestIamPermissionsResponse.newBuilder()
-                .addAllPermissions(List.of("billing.resourceAssociations.create"))
+                .addAllPermissions(CreateProfileVerifyAccountStep.PERMISSIONS_TO_TEST)
                 .build());
 
     var result = step.doStep(flightContext);
@@ -77,7 +77,7 @@ public class CreateProfileVerifyAccountStepTest extends BaseSpringUnitTest {
     assertEquals(
         "billingAccounts/" + profile.billingAccountId().get(), captor.getValue().getResource());
     assertEquals(
-        List.of("billing.resourceAssociations.create"), captor.getValue().getPermissionsList());
+        CreateProfileVerifyAccountStep.PERMISSIONS_TO_TEST, captor.getValue().getPermissionsList());
     assertEquals(StepResult.getStepResultSuccess(), result);
   }
 
@@ -95,6 +95,6 @@ public class CreateProfileVerifyAccountStepTest extends BaseSpringUnitTest {
     assertEquals(
         "billingAccounts/" + profile.billingAccountId().get(), captor.getValue().getResource());
     assertEquals(
-        List.of("billing.resourceAssociations.create"), captor.getValue().getPermissionsList());
+        CreateProfileVerifyAccountStep.PERMISSIONS_TO_TEST, captor.getValue().getPermissionsList());
   }
 }
