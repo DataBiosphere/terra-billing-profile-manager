@@ -10,6 +10,7 @@ import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.common.BaseSpringUnitTest;
 import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.model.CloudPlatform;
+import bio.terra.profile.service.profile.exception.DuplicateManagedApplicationException;
 import bio.terra.profile.service.profile.exception.ProfileNotFoundException;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import java.util.ArrayList;
@@ -62,6 +63,54 @@ public class ProfileDaoTest extends BaseSpringUnitTest {
     var createResult = profileDao.createBillingProfile(profile, user);
     assertProfileEquals(profile, createResult);
     assertThrows(DuplicateKeyException.class, () -> profileDao.createBillingProfile(profile, user));
+  }
+
+  @Test
+  public void createProfile_duplicateManagedAppCoords() {
+    UUID tenantId = UUID.randomUUID();
+    UUID subscriptionId = UUID.randomUUID();
+    String managedResourceGroupId = "managedResourceGroupId";
+
+    UUID profileId = UUID.randomUUID();
+    profileIds.add(profileId);
+    var profile = new BillingProfile(
+            profileId,
+            "test profile",
+            "",
+            "direct",
+            CloudPlatform.AZURE,
+            Optional.empty(),
+            Optional.of(tenantId),
+            Optional.of(subscriptionId),
+            Optional.of(managedResourceGroupId),
+            null,
+            null,
+            null
+    );
+
+    var createResult = profileDao.createBillingProfile(profile, user);
+    assertProfileEquals(profile, createResult);
+
+    UUID duplicatedProfileId = UUID.randomUUID();
+    profileIds.add(duplicatedProfileId);
+    var duplicatedManagedAppCoordsProfile = new BillingProfile(
+            duplicatedProfileId,
+            "get your own managed app",
+            "",
+            "direct",
+            CloudPlatform.AZURE,
+            Optional.empty(),
+            Optional.of(tenantId),
+            Optional.of(subscriptionId),
+            Optional.of(managedResourceGroupId),
+            null,
+            null,
+            null
+    );
+
+    assertThrows(
+            DuplicateManagedApplicationException.class,
+            () -> profileDao.createBillingProfile(duplicatedManagedAppCoordsProfile, user));
   }
 
   @Test
