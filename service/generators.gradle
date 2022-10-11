@@ -39,8 +39,8 @@ compileJava.dependsOn generateSwaggerCode
 // see https://github.com/n0mer/gradle-git-properties
 gitProperties {
     keys = []
-    customProperty('catalog.version.gitTag', { it.describe(tags: true) })
-    customProperty('catalog.version.gitHash', { it.head().abbreviatedId })
-    customProperty('catalog.version.github', { "https://github.com/DataBiosphere/terra-billing-profile-manager/tree/${it.describe(tags: true)}" })
-    customProperty('catalog.version.build', version)
+    customProperty('bpm.version.gitTag', { it.describe(tags: true) })
+    customProperty('bpm.version.gitHash', { it.head().abbreviatedId })
+    customProperty('bpm.version.github', { "https://github.com/DataBiosphere/terra-billing-profile-manager/tree/${it.describe(tags: true)}" })
+    customProperty('bpm.version.build', version)
 }

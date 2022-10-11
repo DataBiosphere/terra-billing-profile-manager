@@ -5,12 +5,14 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
 
-/** Read from the version.properties file auto-generated at build time */
+/** Read from the git.properties file auto-generated at build time */
 @Configuration
-@ConfigurationProperties(prefix = "version")
+@ConfigurationProperties(prefix = "bpm.version")
+@PropertySource("classpath:git.properties")
 public class VersionConfiguration implements InitializingBean {
   private final ConfigurableEnvironment configurableEnvironment;
   private String gitHash;
