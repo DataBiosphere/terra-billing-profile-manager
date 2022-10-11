@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - changeSet:
+      id: unique_managed_application
+      author: mtalbott
+      changes:
+        - addUniqueConstraint:
+            constraint_name: unique_managed_application
+            tableName: billing_profile
+            columnNames: tenant_id, subscription_id, managed_resource_group_id
