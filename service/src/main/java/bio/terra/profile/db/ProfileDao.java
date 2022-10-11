@@ -4,6 +4,7 @@ import bio.terra.common.db.ReadTransaction;
 import bio.terra.common.db.WriteTransaction;
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.model.CloudPlatform;
+import bio.terra.profile.service.profile.exception.DuplicateManagedApplicationException;
 import bio.terra.profile.service.profile.exception.ProfileInUseException;
 import bio.terra.profile.service.profile.exception.ProfileNotFoundException;
 import bio.terra.profile.service.profile.model.BillingProfile;
@@ -16,6 +17,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -76,21 +78,29 @@ public class ProfileDao {
             .addValue("created_by", user.getEmail());
 
     var keyHolder = new DaoKeyHolder();
-    jdbcTemplate.update(sql, params, keyHolder);
+    try {
+      jdbcTemplate.update(sql, params, keyHolder);
 
-    return new BillingProfile(
-        profile.id(),
-        profile.displayName(),
-        profile.description(),
-        profile.biller(),
-        profile.cloudPlatform(),
-        profile.billingAccountId(),
-        profile.tenantId(),
-        profile.subscriptionId(),
-        profile.managedResourceGroupId(),
-        keyHolder.getInstant("created_date"),
-        keyHolder.getInstant("last_modified"),
-        keyHolder.getString("created_by"));
+      return new BillingProfile(
+              profile.id(),
+              profile.displayName(),
+              profile.description(),
+              profile.biller(),
+              profile.cloudPlatform(),
+              profile.billingAccountId(),
+              profile.tenantId(),
+              profile.subscriptionId(),
+              profile.managedResourceGroupId(),
+              keyHolder.getInstant("created_date"),
+              keyHolder.getInstant("last_modified"),
+              keyHolder.getString("created_by"));
+    } catch (DuplicateKeyException ex) {
+      if (ex.getMessage().contains("billing_profile_tenant_id_subscription_id_managed_resource__key")) {
+        throw new DuplicateManagedApplicationException("Managed application already in use.");
+      } else {
+        throw ex;
+      }
+    }
   }
 
   @ReadTransaction
