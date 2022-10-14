@@ -4,7 +4,6 @@ import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.app.configuration.AzureConfiguration;
 import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.model.AzureManagedAppModel;
-import bio.terra.profile.service.azure.model.ManagedAppCoordinates;
 import bio.terra.profile.service.crl.CrlService;
 import com.azure.resourcemanager.managedapplications.models.Application;
 import com.azure.resourcemanager.resources.models.Provider;
@@ -24,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class AzureService {
+
   private static final Logger logger = LoggerFactory.getLogger(AzureService.class);
 
   private final ApplicationService appService;
@@ -33,7 +33,10 @@ public class AzureService {
 
   @Autowired
   public AzureService(
-          CrlService crlService, ApplicationService appService, AzureConfiguration azureConfiguration, ProfileDao profileDao) {
+      CrlService crlService,
+      ApplicationService appService,
+      AzureConfiguration azureConfiguration,
+      ProfileDao profileDao) {
     this.crlService = crlService;
     this.appService = appService;
     this.azureAppOffers = azureConfiguration.getApplicationOffers();
@@ -44,16 +47,16 @@ public class AzureService {
    * Gets the Azure managed applications the user has access to in the given subscription.
    *
    * @param subscriptionId Azure subscription ID that will be checked for managed applications
-   * @param userRequest Authorized user request
+   * @param userRequest    Authorized user request
    * @return List of Terra Azure managed applications the user has access to
    */
   public List<AzureManagedAppModel> getAuthorizedManagedAppDeployments(
-      UUID subscriptionId, Boolean includeAssignedApplications, AuthenticatedUserRequest userRequest) {
+      UUID subscriptionId,
+      Boolean includeAssignedApplications,
+      AuthenticatedUserRequest userRequest) {
     var tenantId = appService.getTenantForSubscription(subscriptionId);
 
     Stream<Application> applications = appService.getApplicationsForSubscription(subscriptionId);
-
-    // todo: do we need to check if the user has access to a billing profile that is using the managed app before we filter it out? or good to just filter any out
 
     List<String> assignedManagedApplications;
     if (includeAssignedApplications) {
@@ -64,7 +67,8 @@ public class AzureService {
 
     return applications
         .filter(app -> isAuthedTerraManagedApp(userRequest, app))
-        .filter(app -> !assignedManagedApplications.contains(normalizeManagedResourceGroupId(app.managedResourceGroupId())))
+        .filter(app -> !assignedManagedApplications.contains(
+            normalizeManagedResourceGroupId(app.managedResourceGroupId())))
         .map(
             app ->
                 new AzureManagedAppModel()
@@ -81,7 +85,7 @@ public class AzureService {
    * Gets the resource provider namespaces in a subscription that are in either the "Registered" or
    * "Registering" state.
    *
-   * @param tenantId Azure tenant ID associated with the given subscription.
+   * @param tenantId       Azure tenant ID associated with the given subscription.
    * @param subscriptionId Azure subscription ID to be checked for providers
    * @return Set of registered or registering resource providers namespaces.
    */

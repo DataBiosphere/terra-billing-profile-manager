@@ -4,7 +4,6 @@ import bio.terra.common.db.ReadTransaction;
 import bio.terra.common.db.WriteTransaction;
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.model.CloudPlatform;
-import bio.terra.profile.service.azure.model.ManagedAppCoordinates;
 import bio.terra.profile.service.profile.exception.DuplicateManagedApplicationException;
 import bio.terra.profile.service.profile.exception.ProfileInUseException;
 import bio.terra.profile.service.profile.exception.ProfileNotFoundException;
@@ -29,6 +28,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public class ProfileDao {
+
   private final NamedParameterJdbcTemplate jdbcTemplate;
 
   // SQL select string constants
@@ -85,20 +85,21 @@ public class ProfileDao {
       jdbcTemplate.update(sql, params, keyHolder);
 
       return new BillingProfile(
-              profile.id(),
-              profile.displayName(),
-              profile.description(),
-              profile.biller(),
-              profile.cloudPlatform(),
-              profile.billingAccountId(),
-              profile.tenantId(),
-              profile.subscriptionId(),
-              profile.managedResourceGroupId(),
-              keyHolder.getInstant("created_date"),
-              keyHolder.getInstant("last_modified"),
-              keyHolder.getString("created_by"));
+          profile.id(),
+          profile.displayName(),
+          profile.description(),
+          profile.biller(),
+          profile.cloudPlatform(),
+          profile.billingAccountId(),
+          profile.tenantId(),
+          profile.subscriptionId(),
+          profile.managedResourceGroupId(),
+          keyHolder.getInstant("created_date"),
+          keyHolder.getInstant("last_modified"),
+          keyHolder.getString("created_by"));
     } catch (DuplicateKeyException ex) {
-      if (ex.getMessage().contains("billing_profile_tenant_id_subscription_id_managed_resource__key")) {
+      if (ex.getMessage()
+          .contains("billing_profile_tenant_id_subscription_id_managed_resource__key")) {
         throw new DuplicateManagedApplicationException("Managed application already in use.");
       } else {
         throw ex;
@@ -123,8 +124,12 @@ public class ProfileDao {
   }
 
   public List<String> listAssignedManagedApps(UUID tenantId, UUID subscriptionId) {
-    var params = new MapSqlParameterSource().addValue("tenantId", tenantId).addValue("subscriptionId", subscriptionId);
-    return jdbcTemplate.queryForList("SELECT managed_resource_group_id from billing_profile where tenant_id = :tenantId and subscription_id = :subscriptionId", params, String.class);
+    var params = new MapSqlParameterSource().addValue("tenantId", tenantId)
+        .addValue("subscriptionId", subscriptionId);
+    return jdbcTemplate.queryForList(
+        "SELECT managed_resource_group_id from billing_profile" +
+            " where tenant_id = :tenantId and subscription_id = :subscriptionId",
+        params, String.class);
   }
 
   @ReadTransaction
@@ -153,6 +158,7 @@ public class ProfileDao {
   }
 
   private static class BillingProfileMapper implements RowMapper<BillingProfile> {
+
     public BillingProfile mapRow(ResultSet rs, int rowNum) throws SQLException {
       return new BillingProfile(
           rs.getObject("id", UUID.class),
