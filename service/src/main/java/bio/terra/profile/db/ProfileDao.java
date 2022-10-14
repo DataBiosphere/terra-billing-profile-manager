@@ -4,6 +4,7 @@ import bio.terra.common.db.ReadTransaction;
 import bio.terra.common.db.WriteTransaction;
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.model.CloudPlatform;
+import bio.terra.profile.service.azure.model.ManagedAppCoordinates;
 import bio.terra.profile.service.profile.exception.DuplicateManagedApplicationException;
 import bio.terra.profile.service.profile.exception.ProfileInUseException;
 import bio.terra.profile.service.profile.exception.ProfileNotFoundException;
@@ -15,6 +16,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import com.google.api.Billing;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
@@ -117,6 +120,11 @@ public class ProfileDao {
             .addValue("offset", offset)
             .addValue("limit", limit);
     return jdbcTemplate.query(SQL_LIST, params, new BillingProfileMapper());
+  }
+
+  public List<String> listAssignedManagedApps(UUID tenantId, UUID subscriptionId) {
+    var params = new MapSqlParameterSource().addValue("tenantId", tenantId).addValue("subscriptionId", subscriptionId);
+    return jdbcTemplate.queryForList("SELECT managed_resource_group_id from billing_profile where tenant_id = :tenantId and subscription_id = :subscriptionId", params, String.class);
   }
 
   @ReadTransaction

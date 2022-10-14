@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.app.configuration.AzureConfiguration;
 import bio.terra.profile.common.BaseUnitTest;
+import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.model.AzureManagedAppModel;
 import bio.terra.profile.service.crl.CrlService;
 import com.azure.resourcemanager.managedapplications.models.Application;
@@ -79,6 +80,7 @@ public class AzureServiceUnitTest extends BaseUnitTest {
     when(appService.getTenantForSubscription(subId)).thenReturn(tenantId);
 
     var crlService = mock(CrlService.class);
+    var profileDao = mock(ProfileDao.class);
 
     var offer = new AzureConfiguration.AzureApplicationOffer();
     offer.setName(offerName);
@@ -89,9 +91,10 @@ public class AzureServiceUnitTest extends BaseUnitTest {
         new AzureService(
             crlService,
             appService,
-            new AzureConfiguration("fake", "fake", "fake", offers, ImmutableSet.of()));
+            new AzureConfiguration("fake", "fake", "fake", offers, ImmutableSet.of()),
+            profileDao);
 
-    var result = azureService.getAuthorizedManagedAppDeployments(subId, user);
+    var result = azureService.getAuthorizedManagedAppDeployments(subId, true, user);
 
     var expected =
         List.of(
@@ -117,6 +120,7 @@ public class AzureServiceUnitTest extends BaseUnitTest {
     var offerPublisher = "known_terra_publisher";
 
     var crlService = mock(CrlService.class);
+    var profileDao = mock(ProfileDao.class);
 
     var authedTerraApp = mock(Application.class);
     when(authedTerraApp.plan())
@@ -143,9 +147,10 @@ public class AzureServiceUnitTest extends BaseUnitTest {
         new AzureService(
             crlService,
             appService,
-            new AzureConfiguration("fake", "fake", "fake", offers, ImmutableSet.of()));
+            new AzureConfiguration("fake", "fake", "fake", offers, ImmutableSet.of()),
+            profileDao);
 
-    var result = azureService.getAuthorizedManagedAppDeployments(subId, user);
+    var result = azureService.getAuthorizedManagedAppDeployments(subId, true, user);
 
     assertEquals(result.size(), 1, "Duplicate app instances should be removed");
   }

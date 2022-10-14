@@ -233,6 +233,7 @@ paths:
     get:
       parameters:
         - $ref: '#/components/parameters/AzureSubscriptionId'
+        - $ref: '#/components/parameters/IncludeAssignedApplications'
       summary: Gets the Azure managed app deployments the caller has access to
       operationId: getManagedAppDeployments
       tags:
@@ -263,6 +264,15 @@ components:
       schema:
         type: string
         format: uuid
+
+    IncludeAssignedApplications:
+      name: includeAssignedApplications
+      in: query
+      description: Defaults to false. When set to true, managed applications that are already assigned to billing profiles will be returned.
+      required: false
+      schema:
+        type: boolean
+        default: false
 
     ProfileId:
       name: profileId

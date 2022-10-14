@@ -2,15 +2,19 @@ package bio.terra.profile.service.azure;
 
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.app.configuration.AzureConfiguration;
+import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.model.AzureManagedAppModel;
+import bio.terra.profile.service.azure.model.ManagedAppCoordinates;
 import bio.terra.profile.service.crl.CrlService;
 import com.azure.resourcemanager.managedapplications.models.Application;
 import com.azure.resourcemanager.resources.models.Provider;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
@@ -25,13 +29,15 @@ public class AzureService {
   private final ApplicationService appService;
   private final CrlService crlService;
   private final Set<AzureConfiguration.AzureApplicationOffer> azureAppOffers;
+  private final ProfileDao profileDao;
 
   @Autowired
   public AzureService(
-      CrlService crlService, ApplicationService appService, AzureConfiguration azureConfiguration) {
+          CrlService crlService, ApplicationService appService, AzureConfiguration azureConfiguration, ProfileDao profileDao) {
     this.crlService = crlService;
     this.appService = appService;
     this.azureAppOffers = azureConfiguration.getApplicationOffers();
+    this.profileDao = profileDao;
   }
 
   /**
@@ -42,13 +48,23 @@ public class AzureService {
    * @return List of Terra Azure managed applications the user has access to
    */
   public List<AzureManagedAppModel> getAuthorizedManagedAppDeployments(
-      UUID subscriptionId, AuthenticatedUserRequest userRequest) {
+      UUID subscriptionId, Boolean includeAssignedApplications, AuthenticatedUserRequest userRequest) {
     var tenantId = appService.getTenantForSubscription(subscriptionId);
 
     Stream<Application> applications = appService.getApplicationsForSubscription(subscriptionId);
 
+    // todo: do we need to check if the user has access to a billing profile that is using the managed app before we filter it out? or good to just filter any out
+
+    List<String> assignedManagedApplications;
+    if (includeAssignedApplications) {
+      assignedManagedApplications = Collections.emptyList();
+    } else {
+      assignedManagedApplications = profileDao.listAssignedManagedApps(tenantId, subscriptionId);
+    }
+
     return applications
         .filter(app -> isAuthedTerraManagedApp(userRequest, app))
+        .filter(app -> !assignedManagedApplications.contains(normalizeManagedResourceGroupId(app.managedResourceGroupId())))
         .map(
             app ->
                 new AzureManagedAppModel()
