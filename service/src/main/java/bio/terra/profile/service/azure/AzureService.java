@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
@@ -58,16 +57,16 @@ public class AzureService {
 
     Stream<Application> applications = appService.getApplicationsForSubscription(subscriptionId);
 
-    List<String> assignedManagedApplications;
+    List<String> assignedManagedResourceGroups;
     if (includeAssignedApplications) {
-      assignedManagedApplications = Collections.emptyList();
+      assignedManagedResourceGroups = Collections.emptyList();
     } else {
-      assignedManagedApplications = profileDao.listAssignedManagedApps(tenantId, subscriptionId);
+      assignedManagedResourceGroups = profileDao.listManagedResourceGroupsInSubscription(tenantId, subscriptionId);
     }
 
     return applications
         .filter(app -> isAuthedTerraManagedApp(userRequest, app))
-        .filter(app -> !assignedManagedApplications.contains(
+        .filter(app -> !assignedManagedResourceGroups.contains(
             normalizeManagedResourceGroupId(app.managedResourceGroupId())))
         .map(
             app ->

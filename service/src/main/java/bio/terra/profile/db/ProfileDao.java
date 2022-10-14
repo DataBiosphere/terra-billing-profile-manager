@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import com.google.api.Billing;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
@@ -123,7 +122,7 @@ public class ProfileDao {
     return jdbcTemplate.query(SQL_LIST, params, new BillingProfileMapper());
   }
 
-  public List<String> listAssignedManagedApps(UUID tenantId, UUID subscriptionId) {
+  public List<String> listManagedResourceGroupsInSubscription(UUID tenantId, UUID subscriptionId) {
     var params = new MapSqlParameterSource().addValue("tenantId", tenantId)
         .addValue("subscriptionId", subscriptionId);
     return jdbcTemplate.queryForList(

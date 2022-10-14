@@ -26,7 +26,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 
 public class ProfileDaoTest extends BaseSpringUnitTest {
-  @Autowired private ProfileDao profileDao;
+
+  @Autowired
+  private ProfileDao profileDao;
   private AuthenticatedUserRequest user;
   private List<UUID> profileIds;
 
@@ -74,18 +76,18 @@ public class ProfileDaoTest extends BaseSpringUnitTest {
     UUID profileId = UUID.randomUUID();
     profileIds.add(profileId);
     var profile = new BillingProfile(
-            profileId,
-            "test profile",
-            "",
-            "direct",
-            CloudPlatform.AZURE,
-            Optional.empty(),
-            Optional.of(tenantId),
-            Optional.of(subscriptionId),
-            Optional.of(managedResourceGroupId),
-            null,
-            null,
-            null
+        profileId,
+        "test profile",
+        "",
+        "direct",
+        CloudPlatform.AZURE,
+        Optional.empty(),
+        Optional.of(tenantId),
+        Optional.of(subscriptionId),
+        Optional.of(managedResourceGroupId),
+        null,
+        null,
+        null
     );
 
     var createResult = profileDao.createBillingProfile(profile, user);
@@ -94,23 +96,43 @@ public class ProfileDaoTest extends BaseSpringUnitTest {
     UUID duplicatedProfileId = UUID.randomUUID();
     profileIds.add(duplicatedProfileId);
     var duplicatedManagedAppCoordsProfile = new BillingProfile(
-            duplicatedProfileId,
-            "get your own managed app",
-            "",
-            "direct",
-            CloudPlatform.AZURE,
-            Optional.empty(),
-            Optional.of(tenantId),
-            Optional.of(subscriptionId),
-            Optional.of(managedResourceGroupId),
-            null,
-            null,
-            null
+        duplicatedProfileId,
+        "get your own managed app",
+        "",
+        "direct",
+        CloudPlatform.AZURE,
+        Optional.empty(),
+        Optional.of(tenantId),
+        Optional.of(subscriptionId),
+        Optional.of(managedResourceGroupId),
+        null,
+        null,
+        null
     );
 
     assertThrows(
-            DuplicateManagedApplicationException.class,
-            () -> profileDao.createBillingProfile(duplicatedManagedAppCoordsProfile, user));
+        DuplicateManagedApplicationException.class,
+        () -> profileDao.createBillingProfile(duplicatedManagedAppCoordsProfile, user));
+
+    UUID differentMRGIdProfileId = UUID.randomUUID();
+    profileIds.add(differentMRGIdProfileId);
+    var differentMRGProfile = new BillingProfile(
+        differentMRGIdProfileId,
+        "get your own managed app",
+        "",
+        "direct",
+        CloudPlatform.AZURE,
+        Optional.empty(),
+        Optional.of(tenantId),
+        Optional.of(subscriptionId),
+        Optional.of("new_managed_resource_group"),
+        null,
+        null,
+        null
+    );
+
+    createResult = profileDao.createBillingProfile(differentMRGProfile, user);
+    assertProfileEquals(differentMRGProfile, createResult);
   }
 
   @Test
