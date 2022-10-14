@@ -28,8 +28,7 @@ import org.springframework.dao.DuplicateKeyException;
 
 public class ProfileDaoTest extends BaseSpringUnitTest {
 
-  @Autowired
-  private ProfileDao profileDao;
+  @Autowired private ProfileDao profileDao;
   private AuthenticatedUserRequest user;
   private List<UUID> profileIds;
 
@@ -83,41 +82,35 @@ public class ProfileDaoTest extends BaseSpringUnitTest {
 
     UUID duplicatedProfileId = UUID.randomUUID();
     profileIds.add(duplicatedProfileId);
-    var duplicatedManagedAppCoordsProfile = new BillingProfile(
-        duplicatedProfileId,
-        "get your own managed app",
-        "",
-        "direct",
-        CloudPlatform.AZURE,
-        Optional.empty(),
-        Optional.of(tenantId),
-        Optional.of(subscriptionId),
-        Optional.of(managedResourceGroupId),
-        null,
-        null,
-        null
-    );
+    var duplicatedManagedAppCoordsProfile =
+        new BillingProfile(
+            duplicatedProfileId,
+            "get your own managed app",
+            "",
+            "direct",
+            CloudPlatform.AZURE,
+            Optional.empty(),
+            Optional.of(tenantId),
+            Optional.of(subscriptionId),
+            Optional.of(managedResourceGroupId),
+            null,
+            null,
+            null);
 
     assertThrows(
         DuplicateManagedApplicationException.class,
         () -> profileDao.createBillingProfile(duplicatedManagedAppCoordsProfile, user));
 
     var differentMRGProfile =
-        makeAzureProfile(tenantId,
-            subscriptionId,
-            "new_managed_resource_group");
+        makeAzureProfile(tenantId, subscriptionId, "new_managed_resource_group");
     assertDoesNotThrow(() -> profileDao.createBillingProfile(differentMRGProfile, user));
 
     var differentSubscriptionProfile =
-        makeAzureProfile(tenantId,
-            UUID.randomUUID(),
-            managedResourceGroupId);
+        makeAzureProfile(tenantId, UUID.randomUUID(), managedResourceGroupId);
     assertDoesNotThrow(() -> profileDao.createBillingProfile(differentSubscriptionProfile, user));
 
     var differentTenantProfile =
-        makeAzureProfile(UUID.randomUUID(),
-            subscriptionId,
-            managedResourceGroupId);
+        makeAzureProfile(UUID.randomUUID(), subscriptionId, managedResourceGroupId);
     assertDoesNotThrow(() -> profileDao.createBillingProfile(differentTenantProfile, user));
   }
 
@@ -188,15 +181,11 @@ public class ProfileDaoTest extends BaseSpringUnitTest {
     profileDao.createBillingProfile(profile, user);
 
     var differentSubscriptionProfile =
-        makeAzureProfile(tenantId,
-            UUID.randomUUID(),
-            differentSubscriptionMRGId);
+        makeAzureProfile(tenantId, UUID.randomUUID(), differentSubscriptionMRGId);
     profileDao.createBillingProfile(differentSubscriptionProfile, user);
 
     var differentTenantProfile =
-        makeAzureProfile(UUID.randomUUID(),
-            subscriptionId,
-            differentTenantMRGId);
+        makeAzureProfile(UUID.randomUUID(), subscriptionId, differentTenantMRGId);
     profileDao.createBillingProfile(differentTenantProfile, user);
 
     var result = profileDao.listManagedResourceGroupsInSubscription(tenantId, subscriptionId);
@@ -222,8 +211,8 @@ public class ProfileDaoTest extends BaseSpringUnitTest {
         null);
   }
 
-  private BillingProfile makeAzureProfile(UUID tenantId, UUID subscriptionId,
-      String managedResourceGroupId) {
+  private BillingProfile makeAzureProfile(
+      UUID tenantId, UUID subscriptionId, String managedResourceGroupId) {
     UUID profileId = UUID.randomUUID();
     profileIds.add(profileId);
     return new BillingProfile(
@@ -238,8 +227,7 @@ public class ProfileDaoTest extends BaseSpringUnitTest {
         Optional.of(managedResourceGroupId),
         null,
         null,
-        null
-    );
+        null);
   }
 
   // Tests profile equality, ignoring createdTime and createdBy

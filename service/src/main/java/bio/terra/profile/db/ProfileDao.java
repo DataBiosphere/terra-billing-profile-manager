@@ -15,7 +15,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
@@ -123,12 +122,15 @@ public class ProfileDao {
   }
 
   public List<String> listManagedResourceGroupsInSubscription(UUID tenantId, UUID subscriptionId) {
-    var params = new MapSqlParameterSource().addValue("tenantId", tenantId)
-        .addValue("subscriptionId", subscriptionId);
+    var params =
+        new MapSqlParameterSource()
+            .addValue("tenantId", tenantId)
+            .addValue("subscriptionId", subscriptionId);
     return jdbcTemplate.queryForList(
-        "SELECT managed_resource_group_id from billing_profile" +
-            " where tenant_id = :tenantId and subscription_id = :subscriptionId",
-        params, String.class);
+        "SELECT managed_resource_group_id from billing_profile"
+            + " where tenant_id = :tenantId and subscription_id = :subscriptionId",
+        params,
+        String.class);
   }
 
   @ReadTransaction

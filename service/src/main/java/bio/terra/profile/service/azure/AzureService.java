@@ -46,7 +46,7 @@ public class AzureService {
    * Gets the Azure managed applications the user has access to in the given subscription.
    *
    * @param subscriptionId Azure subscription ID that will be checked for managed applications
-   * @param userRequest    Authorized user request
+   * @param userRequest Authorized user request
    * @return List of Terra Azure managed applications the user has access to
    */
   public List<AzureManagedAppModel> getAuthorizedManagedAppDeployments(
@@ -61,13 +61,16 @@ public class AzureService {
     if (includeAssignedApplications) {
       assignedManagedResourceGroups = Collections.emptyList();
     } else {
-      assignedManagedResourceGroups = profileDao.listManagedResourceGroupsInSubscription(tenantId, subscriptionId);
+      assignedManagedResourceGroups =
+          profileDao.listManagedResourceGroupsInSubscription(tenantId, subscriptionId);
     }
 
     return applications
         .filter(app -> isAuthedTerraManagedApp(userRequest, app))
-        .filter(app -> !assignedManagedResourceGroups.contains(
-            normalizeManagedResourceGroupId(app.managedResourceGroupId())))
+        .filter(
+            app ->
+                !assignedManagedResourceGroups.contains(
+                    normalizeManagedResourceGroupId(app.managedResourceGroupId())))
         .map(
             app ->
                 new AzureManagedAppModel()
@@ -84,7 +87,7 @@ public class AzureService {
    * Gets the resource provider namespaces in a subscription that are in either the "Registered" or
    * "Registering" state.
    *
-   * @param tenantId       Azure tenant ID associated with the given subscription.
+   * @param tenantId Azure tenant ID associated with the given subscription.
    * @param subscriptionId Azure subscription ID to be checked for providers
    * @return Set of registered or registering resource providers namespaces.
    */

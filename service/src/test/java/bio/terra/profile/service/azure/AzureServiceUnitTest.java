@@ -20,7 +20,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
-import org.checkerframework.checker.units.qual.A;
 import org.junit.jupiter.api.Test;
 
 public class AzureServiceUnitTest extends BaseUnitTest {
@@ -41,7 +40,8 @@ public class AzureServiceUnitTest extends BaseUnitTest {
   @Test
   public void getManagedApps() {
     var authedTerraApp = mock(Application.class);
-    mockApplicationCalls(authedTerraApp,
+    mockApplicationCalls(
+        authedTerraApp,
         offerName,
         offerPublisher,
         Optional.of(authedUserEmail),
@@ -49,15 +49,12 @@ public class AzureServiceUnitTest extends BaseUnitTest {
         "fake_app_1");
 
     var unauthedTerraApp = mock(Application.class);
-    mockApplicationCalls(unauthedTerraApp,
-        offerName,
-        offerPublisher,
-        Optional.empty(),
-        "mrg_fake2",
-        "fake_app_2");
+    mockApplicationCalls(
+        unauthedTerraApp, offerName, offerPublisher, Optional.empty(), "mrg_fake2", "fake_app_2");
 
     var otherNonTerraApp = mock(Application.class);
-    mockApplicationCalls(otherNonTerraApp,
+    mockApplicationCalls(
+        otherNonTerraApp,
         "other_offer",
         offerPublisher,
         Optional.empty(),
@@ -65,7 +62,8 @@ public class AzureServiceUnitTest extends BaseUnitTest {
         "fake_app3");
 
     var differentPublisherApp = mock(Application.class);
-    mockApplicationCalls(differentPublisherApp,
+    mockApplicationCalls(
+        differentPublisherApp,
         offerName,
         "other_publisher",
         Optional.of(authedUserEmail),
@@ -111,7 +109,8 @@ public class AzureServiceUnitTest extends BaseUnitTest {
     var profileDao = mock(ProfileDao.class);
 
     var authedTerraApp = mock(Application.class);
-    mockApplicationCalls(authedTerraApp,
+    mockApplicationCalls(
+        authedTerraApp,
         offerName,
         offerPublisher,
         Optional.of(authedUserEmail),
@@ -152,7 +151,8 @@ public class AzureServiceUnitTest extends BaseUnitTest {
         .thenReturn(List.of(assignedTerraAppManagedResourceGroupId));
 
     var assignedTerraApp = mock(Application.class);
-    mockApplicationCalls(assignedTerraApp,
+    mockApplicationCalls(
+        assignedTerraApp,
         offerName,
         offerPublisher,
         Optional.of(authedUserEmail),
@@ -160,15 +160,15 @@ public class AzureServiceUnitTest extends BaseUnitTest {
         applicationName);
 
     var unassignedTerraApp = mock(Application.class);
-    mockApplicationCalls(unassignedTerraApp,
+    mockApplicationCalls(
+        unassignedTerraApp,
         offerName,
         offerPublisher,
         Optional.of(authedUserEmail),
         unassignedTerraAppManagedResourceGroupId,
         applicationName);
 
-    var appsList =
-        Stream.of(assignedTerraApp, unassignedTerraApp);
+    var appsList = Stream.of(assignedTerraApp, unassignedTerraApp);
     var appService = mock(ApplicationService.class);
     when(appService.getApplicationsForSubscription(eq(subId))).thenReturn(appsList);
     when(appService.getTenantForSubscription(subId)).thenReturn(tenantId);
@@ -185,20 +185,23 @@ public class AzureServiceUnitTest extends BaseUnitTest {
             new AzureConfiguration("fake", "fake", "fake", offers, ImmutableSet.of()),
             profileDao);
 
-    AzureManagedAppModel assignedAzureManagedAppModel = new AzureManagedAppModel()
-        .tenantId(tenantId)
-        .subscriptionId(subId)
-        .managedResourceGroupId(assignedTerraAppManagedResourceGroupId)
-        .applicationDeploymentName(applicationName);
+    AzureManagedAppModel assignedAzureManagedAppModel =
+        new AzureManagedAppModel()
+            .tenantId(tenantId)
+            .subscriptionId(subId)
+            .managedResourceGroupId(assignedTerraAppManagedResourceGroupId)
+            .applicationDeploymentName(applicationName);
 
-    AzureManagedAppModel unassignedAzureManagedAppModel = new AzureManagedAppModel()
-        .tenantId(tenantId)
-        .subscriptionId(subId)
-        .managedResourceGroupId(unassignedTerraAppManagedResourceGroupId)
-        .applicationDeploymentName(applicationName);
+    AzureManagedAppModel unassignedAzureManagedAppModel =
+        new AzureManagedAppModel()
+            .tenantId(tenantId)
+            .subscriptionId(subId)
+            .managedResourceGroupId(unassignedTerraAppManagedResourceGroupId)
+            .applicationDeploymentName(applicationName);
 
     var includeAssignedResult = azureService.getAuthorizedManagedAppDeployments(subId, true, user);
-    assertEquals(List.of(assignedAzureManagedAppModel, unassignedAzureManagedAppModel),
+    assertEquals(
+        List.of(assignedAzureManagedAppModel, unassignedAzureManagedAppModel),
         includeAssignedResult);
 
     appsList = Stream.of(assignedTerraApp, unassignedTerraApp);
@@ -225,12 +228,8 @@ public class AzureServiceUnitTest extends BaseUnitTest {
       authorizedUsers = "other@example.com";
     }
     when(application.parameters())
-        .thenReturn(
-            Map.of(
-                authorizedUserKey,
-                Map.of("value", authorizedUsers)));
-    when(application.managedResourceGroupId()).thenReturn(
-        managedResourceGroupId);
+        .thenReturn(Map.of(authorizedUserKey, Map.of("value", authorizedUsers)));
+    when(application.managedResourceGroupId()).thenReturn(managedResourceGroupId);
     when(application.name()).thenReturn(applicationName);
   }
 }

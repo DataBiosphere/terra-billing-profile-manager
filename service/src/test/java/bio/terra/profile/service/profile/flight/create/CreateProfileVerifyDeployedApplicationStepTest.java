@@ -71,7 +71,8 @@ class CreateProfileVerifyDeployedApplicationStepTest extends BaseSpringUnitTest 
 
   @Test
   void verifyManagedApp() {
-    when(azureService.getAuthorizedManagedAppDeployments(profile.subscriptionId().get(), true, user))
+    when(azureService.getAuthorizedManagedAppDeployments(
+            profile.subscriptionId().get(), true, user))
         .thenReturn(
             List.of(
                 new AzureManagedAppModel()
@@ -92,7 +93,8 @@ class CreateProfileVerifyDeployedApplicationStepTest extends BaseSpringUnitTest 
 
   @Test
   void missingProviders() {
-    when(azureService.getAuthorizedManagedAppDeployments(profile.subscriptionId().get(), true, user))
+    when(azureService.getAuthorizedManagedAppDeployments(
+            profile.subscriptionId().get(), true, user))
         .thenReturn(
             List.of(
                 new AzureManagedAppModel()
