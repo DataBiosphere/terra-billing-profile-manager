@@ -38,33 +38,6 @@ public class AzureServiceUnitTest extends BaseUnitTest {
   String offerPublisher = "known_terra_publisher";
   String authorizedUserKey = "authorizedTerraUser";
 
-
-  public void mockApplicationCalls(
-      Application application,
-      String offerName,
-      String offerPublisher,
-      Optional<String> authedUserEmail,
-      String managedResourceGroupId,
-      String applicationName) {
-    when(application.plan())
-        .thenReturn(new Plan().withProduct(offerName).withPublisher(offerPublisher));
-
-    String authorizedUsers;
-    if (authedUserEmail.isPresent()) {
-      authorizedUsers = String.format("%s,other@example.com", authedUserEmail.get());
-    } else {
-      authorizedUsers = "other@example.com";
-    }
-    when(application.parameters())
-        .thenReturn(
-            Map.of(
-                authorizedUserKey,
-                Map.of("value", authorizedUsers)));
-    when(application.managedResourceGroupId()).thenReturn(
-        managedResourceGroupId);
-    when(application.name()).thenReturn(applicationName);
-  }
-
   @Test
   public void getManagedApps() {
     var authedTerraApp = mock(Application.class);
@@ -233,5 +206,31 @@ public class AzureServiceUnitTest extends BaseUnitTest {
 
     var excludeAssignedResult = azureService.getAuthorizedManagedAppDeployments(subId, false, user);
     assertEquals(List.of(unassignedAzureManagedAppModel), excludeAssignedResult);
+  }
+
+  private void mockApplicationCalls(
+      Application application,
+      String offerName,
+      String offerPublisher,
+      Optional<String> authedUserEmail,
+      String managedResourceGroupId,
+      String applicationName) {
+    when(application.plan())
+        .thenReturn(new Plan().withProduct(offerName).withPublisher(offerPublisher));
+
+    String authorizedUsers;
+    if (authedUserEmail.isPresent()) {
+      authorizedUsers = String.format("%s,other@example.com", authedUserEmail.get());
+    } else {
+      authorizedUsers = "other@example.com";
+    }
+    when(application.parameters())
+        .thenReturn(
+            Map.of(
+                authorizedUserKey,
+                Map.of("value", authorizedUsers)));
+    when(application.managedResourceGroupId()).thenReturn(
+        managedResourceGroupId);
+    when(application.name()).thenReturn(applicationName);
   }
 }
