@@ -41,7 +41,7 @@ record CreateProfileVerifyAccountStep(
       var message =
           String.format(
               "The user [%s] needs access to the billing account [%s] to perform the requested operation",
-              user.getEmail(), profile.id());
+              user.getEmail(), profile.getRequiredBillingAccountId());
       throw new InaccessibleBillingAccountException(message);
     }
 
