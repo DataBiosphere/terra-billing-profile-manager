@@ -35,6 +35,7 @@ jobs:
 
       - name: Secrets check
         run: |
+          export TERM=dumb
           ./minnie-kenny.sh --force
           git secrets --scan-history
 
