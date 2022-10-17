@@ -57,20 +57,11 @@ public class AzureService {
 
     Stream<Application> applications = appService.getApplicationsForSubscription(subscriptionId);
 
-    List<String> assignedManagedResourceGroups;
-    if (includeAssignedApplications) {
-      assignedManagedResourceGroups = Collections.emptyList();
-    } else {
-      assignedManagedResourceGroups =
+    List<String> assignedManagedResourceGroups =
           profileDao.listManagedResourceGroupsInSubscription(subscriptionId);
-    }
 
     return applications
         .filter(app -> isAuthedTerraManagedApp(userRequest, app))
-        .filter(
-            app ->
-                !assignedManagedResourceGroups.contains(
-                    normalizeManagedResourceGroupId(app.managedResourceGroupId())))
         .map(
             app ->
                 new AzureManagedAppModel()
@@ -78,7 +69,11 @@ public class AzureService {
                     .subscriptionId(subscriptionId)
                     .managedResourceGroupId(
                         normalizeManagedResourceGroupId(app.managedResourceGroupId()))
-                    .tenantId(tenantId))
+                    .tenantId(tenantId)
+                    .assigned(assignedManagedResourceGroups.contains(
+                        normalizeManagedResourceGroupId(app.managedResourceGroupId()))))
+        .filter(app ->
+            includeAssignedApplications || !app.isAssigned())
         .distinct()
         .toList();
   }

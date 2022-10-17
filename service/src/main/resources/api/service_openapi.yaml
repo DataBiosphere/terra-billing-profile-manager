@@ -424,6 +424,7 @@ components:
         - managedResourceGroupId
         - subscriptionId
         - tenantId
+        - assigned
       properties:
         applicationDeploymentName:
           type: string
@@ -439,6 +440,9 @@ components:
           type: string
           format: uuid
           description: Azure tenant ID containing the Terra app deployment
+        assigned:
+          type: boolean
+          description: True if this managed app is assigned to a Terra billing profile
 
     SamPolicyModel:
       type: object

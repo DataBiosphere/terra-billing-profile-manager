@@ -99,7 +99,8 @@ public class AzureServiceUnitTest extends BaseUnitTest {
                 .applicationDeploymentName("fake_app_1")
                 .tenantId(tenantId)
                 .managedResourceGroupId("mrg_fake1")
-                .subscriptionId(subId));
+                .subscriptionId(subId)
+                .assigned(false));
     assertEquals(result, expected);
   }
 
@@ -190,14 +191,16 @@ public class AzureServiceUnitTest extends BaseUnitTest {
             .tenantId(tenantId)
             .subscriptionId(subId)
             .managedResourceGroupId(assignedTerraAppManagedResourceGroupId)
-            .applicationDeploymentName(applicationName);
+            .applicationDeploymentName(applicationName)
+            .assigned(true);
 
     AzureManagedAppModel unassignedAzureManagedAppModel =
         new AzureManagedAppModel()
             .tenantId(tenantId)
             .subscriptionId(subId)
             .managedResourceGroupId(unassignedTerraAppManagedResourceGroupId)
-            .applicationDeploymentName(applicationName);
+            .applicationDeploymentName(applicationName)
+            .assigned(false);
 
     var includeAssignedResult = azureService.getAuthorizedManagedAppDeployments(subId, true, user);
     assertEquals(
