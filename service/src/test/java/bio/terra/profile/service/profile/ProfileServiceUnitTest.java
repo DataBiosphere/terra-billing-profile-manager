@@ -2,18 +2,11 @@ package bio.terra.profile.service.profile;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 import bio.terra.common.exception.ForbiddenException;
 import bio.terra.common.exception.NotFoundException;
-import bio.terra.common.exception.UnauthorizedException;
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.common.BaseSpringUnitTest;
 import bio.terra.profile.db.ProfileDao;
@@ -143,7 +136,7 @@ public class ProfileServiceUnitTest extends BaseSpringUnitTest {
   public void getProfileNoAccess() throws InterruptedException {
     when(samService.hasActions(eq(user), eq(SamResourceType.PROFILE), eq(profile.id())))
         .thenReturn(false);
-    assertThrows(UnauthorizedException.class, () -> profileService.getProfile(profile.id(), user));
+    assertThrows(ForbiddenException.class, () -> profileService.getProfile(profile.id(), user));
   }
 
   @Test
