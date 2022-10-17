@@ -1,6 +1,6 @@
 package bio.terra.profile.service.profile;
 
-import bio.terra.common.exception.UnauthorizedException;
+import bio.terra.common.exception.ForbiddenException;
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.model.SamPolicyModel;
@@ -102,7 +102,7 @@ public class ProfileService {
         SamRethrow.onInterrupted(
             () -> samService.hasActions(user, SamResourceType.PROFILE, id), "hasActions");
     if (!hasActions) {
-      throw new UnauthorizedException("unauthorized");
+      throw new ForbiddenException("forbidden");
     }
     return profile;
   }
