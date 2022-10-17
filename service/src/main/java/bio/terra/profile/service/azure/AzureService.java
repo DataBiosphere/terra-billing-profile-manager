@@ -8,7 +8,6 @@ import bio.terra.profile.service.crl.CrlService;
 import com.azure.resourcemanager.managedapplications.models.Application;
 import com.azure.resourcemanager.resources.models.Provider;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -58,7 +57,7 @@ public class AzureService {
     Stream<Application> applications = appService.getApplicationsForSubscription(subscriptionId);
 
     List<String> assignedManagedResourceGroups =
-          profileDao.listManagedResourceGroupsInSubscription(subscriptionId);
+        profileDao.listManagedResourceGroupsInSubscription(subscriptionId);
 
     return applications
         .filter(app -> isAuthedTerraManagedApp(userRequest, app))
@@ -70,10 +69,10 @@ public class AzureService {
                     .managedResourceGroupId(
                         normalizeManagedResourceGroupId(app.managedResourceGroupId()))
                     .tenantId(tenantId)
-                    .assigned(assignedManagedResourceGroups.contains(
-                        normalizeManagedResourceGroupId(app.managedResourceGroupId()))))
-        .filter(app ->
-            includeAssignedApplications || !app.isAssigned())
+                    .assigned(
+                        assignedManagedResourceGroups.contains(
+                            normalizeManagedResourceGroupId(app.managedResourceGroupId()))))
+        .filter(app -> includeAssignedApplications || !app.isAssigned())
         .distinct()
         .toList();
   }

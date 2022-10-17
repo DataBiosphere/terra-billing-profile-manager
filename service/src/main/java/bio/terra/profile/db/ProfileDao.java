@@ -122,9 +122,7 @@ public class ProfileDao {
   }
 
   public List<String> listManagedResourceGroupsInSubscription(UUID subscriptionId) {
-    var params =
-        new MapSqlParameterSource()
-            .addValue("subscriptionId", subscriptionId);
+    var params = new MapSqlParameterSource().addValue("subscriptionId", subscriptionId);
     return jdbcTemplate.queryForList(
         "SELECT managed_resource_group_id from billing_profile"
             + " where subscription_id = :subscriptionId",
