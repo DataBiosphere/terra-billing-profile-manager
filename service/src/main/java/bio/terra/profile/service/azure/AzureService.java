@@ -62,7 +62,7 @@ public class AzureService {
       assignedManagedResourceGroups = Collections.emptyList();
     } else {
       assignedManagedResourceGroups =
-          profileDao.listManagedResourceGroupsInSubscription(tenantId, subscriptionId);
+          profileDao.listManagedResourceGroupsInSubscription(subscriptionId);
     }
 
     return applications

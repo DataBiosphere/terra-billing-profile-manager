@@ -97,7 +97,7 @@ public class ProfileDao {
           keyHolder.getString("created_by"));
     } catch (DuplicateKeyException ex) {
       if (ex.getMessage()
-          .contains("billing_profile_tenant_id_subscription_id_managed_resource__key")) {
+          .contains("billing_profile_subscription_id_managed_resource_group_id_key")) {
         throw new DuplicateManagedApplicationException("Managed application already in use.");
       } else {
         throw ex;
@@ -121,14 +121,13 @@ public class ProfileDao {
     return jdbcTemplate.query(SQL_LIST, params, new BillingProfileMapper());
   }
 
-  public List<String> listManagedResourceGroupsInSubscription(UUID tenantId, UUID subscriptionId) {
+  public List<String> listManagedResourceGroupsInSubscription(UUID subscriptionId) {
     var params =
         new MapSqlParameterSource()
-            .addValue("tenantId", tenantId)
             .addValue("subscriptionId", subscriptionId);
     return jdbcTemplate.queryForList(
         "SELECT managed_resource_group_id from billing_profile"
-            + " where tenant_id = :tenantId and subscription_id = :subscriptionId",
+            + " where subscription_id = :subscriptionId",
         params,
         String.class);
   }

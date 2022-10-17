@@ -6,4 +6,4 @@ databaseChangeLog:
         - addUniqueConstraint:
             constraint_name: unique_managed_application
             tableName: billing_profile
-            columnNames: tenant_id, subscription_id, managed_resource_group_id
+            columnNames: subscription_id, managed_resource_group_id

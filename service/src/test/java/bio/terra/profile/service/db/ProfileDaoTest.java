@@ -108,10 +108,6 @@ public class ProfileDaoTest extends BaseSpringUnitTest {
     var differentSubscriptionProfile =
         makeAzureProfile(tenantId, UUID.randomUUID(), managedResourceGroupId);
     assertDoesNotThrow(() -> profileDao.createBillingProfile(differentSubscriptionProfile, user));
-
-    var differentTenantProfile =
-        makeAzureProfile(UUID.randomUUID(), subscriptionId, managedResourceGroupId);
-    assertDoesNotThrow(() -> profileDao.createBillingProfile(differentTenantProfile, user));
   }
 
   @Test
@@ -175,7 +171,6 @@ public class ProfileDaoTest extends BaseSpringUnitTest {
     UUID subscriptionId = UUID.randomUUID();
     String managedResourceGroupId = "managedResourceGroupId";
     String differentSubscriptionMRGId = "differentSubscriptionMRGId";
-    String differentTenantMRGId = "differentTenantMRGId";
 
     var profile = makeAzureProfile(tenantId, subscriptionId, managedResourceGroupId);
     profileDao.createBillingProfile(profile, user);
@@ -184,11 +179,7 @@ public class ProfileDaoTest extends BaseSpringUnitTest {
         makeAzureProfile(tenantId, UUID.randomUUID(), differentSubscriptionMRGId);
     profileDao.createBillingProfile(differentSubscriptionProfile, user);
 
-    var differentTenantProfile =
-        makeAzureProfile(UUID.randomUUID(), subscriptionId, differentTenantMRGId);
-    profileDao.createBillingProfile(differentTenantProfile, user);
-
-    var result = profileDao.listManagedResourceGroupsInSubscription(tenantId, subscriptionId);
+    var result = profileDao.listManagedResourceGroupsInSubscription(subscriptionId);
     assertEquals(List.of(managedResourceGroupId), result);
   }
 

@@ -147,7 +147,7 @@ public class AzureServiceUnitTest extends BaseUnitTest {
 
     var crlService = mock(CrlService.class);
     var profileDao = mock(ProfileDao.class);
-    when(profileDao.listManagedResourceGroupsInSubscription(tenantId, subId))
+    when(profileDao.listManagedResourceGroupsInSubscription(subId))
         .thenReturn(List.of(assignedTerraAppManagedResourceGroupId));
 
     var assignedTerraApp = mock(Application.class);
