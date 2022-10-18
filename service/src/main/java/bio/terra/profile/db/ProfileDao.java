@@ -96,8 +96,9 @@ public class ProfileDao {
           keyHolder.getInstant("last_modified"),
           keyHolder.getString("created_by"));
     } catch (DuplicateKeyException ex) {
-      if (ex.getMessage()
-          .contains("billing_profile_subscription_id_managed_resource_group_id_key")) {
+      if (ex.getMessage() != null
+          && ex.getMessage()
+              .contains("billing_profile_subscription_id_managed_resource_group_id_key")) {
         throw new DuplicateManagedApplicationException("Managed application already in use.");
       } else {
         throw ex;
