@@ -442,7 +442,7 @@ components:
           description: Azure tenant ID containing the Terra app deployment
         assigned:
           type: boolean
-          description: True if this managed app is assigned to a Terra billing profile
+          description: True if this managed app is assigned to a billing profile
 
     SamPolicyModel:
       type: object
