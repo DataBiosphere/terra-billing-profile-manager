@@ -27,7 +27,7 @@ record CreateProfileVerifyDeployedApplicationStep(
     try {
       var apps =
           azureService.getAuthorizedManagedAppDeployments(
-              profile.getRequiredSubscriptionId(), user);
+              profile.getRequiredSubscriptionId(), true, user);
       canAccess =
           apps.stream()
                   .filter(

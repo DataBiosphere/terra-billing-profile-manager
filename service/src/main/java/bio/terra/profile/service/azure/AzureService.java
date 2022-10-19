@@ -2,6 +2,7 @@ package bio.terra.profile.service.azure;
 
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.app.configuration.AzureConfiguration;
+import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.model.AzureManagedAppModel;
 import bio.terra.profile.service.crl.CrlService;
 import com.azure.resourcemanager.managedapplications.models.Application;
@@ -20,18 +21,24 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class AzureService {
+
   private static final Logger logger = LoggerFactory.getLogger(AzureService.class);
 
   private final ApplicationService appService;
   private final CrlService crlService;
   private final Set<AzureConfiguration.AzureApplicationOffer> azureAppOffers;
+  private final ProfileDao profileDao;
 
   @Autowired
   public AzureService(
-      CrlService crlService, ApplicationService appService, AzureConfiguration azureConfiguration) {
+      CrlService crlService,
+      ApplicationService appService,
+      AzureConfiguration azureConfiguration,
+      ProfileDao profileDao) {
     this.crlService = crlService;
     this.appService = appService;
     this.azureAppOffers = azureConfiguration.getApplicationOffers();
+    this.profileDao = profileDao;
   }
 
   /**
@@ -42,10 +49,15 @@ public class AzureService {
    * @return List of Terra Azure managed applications the user has access to
    */
   public List<AzureManagedAppModel> getAuthorizedManagedAppDeployments(
-      UUID subscriptionId, AuthenticatedUserRequest userRequest) {
+      UUID subscriptionId,
+      Boolean includeAssignedApplications,
+      AuthenticatedUserRequest userRequest) {
     var tenantId = appService.getTenantForSubscription(subscriptionId);
 
     Stream<Application> applications = appService.getApplicationsForSubscription(subscriptionId);
+
+    List<String> assignedManagedResourceGroups =
+        profileDao.listManagedResourceGroupsInSubscription(subscriptionId);
 
     return applications
         .filter(app -> isAuthedTerraManagedApp(userRequest, app))
@@ -56,7 +68,11 @@ public class AzureService {
                     .subscriptionId(subscriptionId)
                     .managedResourceGroupId(
                         normalizeManagedResourceGroupId(app.managedResourceGroupId()))
-                    .tenantId(tenantId))
+                    .tenantId(tenantId)
+                    .assigned(
+                        assignedManagedResourceGroups.contains(
+                            normalizeManagedResourceGroupId(app.managedResourceGroupId()))))
+        .filter(app -> includeAssignedApplications || !app.isAssigned())
         .distinct()
         .toList();
   }

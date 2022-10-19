@@ -141,7 +141,7 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
 
   @Test
   void createAzureProfileInaccessibleAppDeployment() {
-    when(azureService.getAuthorizedManagedAppDeployments(any(), any()))
+    when(azureService.getAuthorizedManagedAppDeployments(any(), any(), any()))
         .thenReturn(Collections.emptyList());
 
     var profile =
@@ -170,7 +170,7 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
     var tenantId = UUID.randomUUID();
     var mrgId = "fake-mrg";
 
-    when(azureService.getAuthorizedManagedAppDeployments(any(), any()))
+    when(azureService.getAuthorizedManagedAppDeployments(any(), any(), any()))
         .thenReturn(
             Collections.singletonList(
                 new AzureManagedAppModel()

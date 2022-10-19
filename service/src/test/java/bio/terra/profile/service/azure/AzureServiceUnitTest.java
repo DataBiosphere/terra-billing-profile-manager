@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.app.configuration.AzureConfiguration;
 import bio.terra.profile.common.BaseUnitTest;
+import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.model.AzureManagedAppModel;
 import bio.terra.profile.service.crl.CrlService;
 import com.azure.resourcemanager.managedapplications.models.Application;
@@ -15,6 +16,7 @@ import com.azure.resourcemanager.managedapplications.models.Plan;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -22,76 +24,74 @@ import org.junit.jupiter.api.Test;
 
 public class AzureServiceUnitTest extends BaseUnitTest {
 
+  UUID subId = UUID.randomUUID();
+  UUID tenantId = UUID.randomUUID();
+  String authedUserEmail = "profile@example.com";
+  AuthenticatedUserRequest user =
+      AuthenticatedUserRequest.builder()
+          .setSubjectId("12345")
+          .setEmail(authedUserEmail)
+          .setToken("token")
+          .build();
+  String offerName = "known_terra_offer";
+  String offerPublisher = "known_terra_publisher";
+  String authorizedUserKey = "authorizedTerraUser";
+
   @Test
   public void getManagedApps() {
-    var subId = UUID.randomUUID();
-    var authedUserEmail = "profile@example.com";
-    var user =
-        AuthenticatedUserRequest.builder()
-            .setSubjectId("12345")
-            .setEmail(authedUserEmail)
-            .setToken("token")
-            .build();
-    var offerName = "known_terra_offer";
-    var offerPublisher = "known_terra_publisher";
-
     var authedTerraApp = mock(Application.class);
-    when(authedTerraApp.plan())
-        .thenReturn(new Plan().withProduct(offerName).withPublisher(offerPublisher));
-    when(authedTerraApp.parameters())
-        .thenReturn(
-            Map.of(
-                "authorizedTerraUser",
-                Map.of("value", String.format("%s,other@example.com", authedUserEmail))));
-    when(authedTerraApp.managedResourceGroupId()).thenReturn("mrg_fake1");
-    when(authedTerraApp.name()).thenReturn("fake_app_1");
+    mockApplicationCalls(
+        authedTerraApp,
+        offerName,
+        offerPublisher,
+        Optional.of(authedUserEmail),
+        "mrg_fake1",
+        "fake_app_1");
 
     var unauthedTerraApp = mock(Application.class);
-    when(unauthedTerraApp.plan())
-        .thenReturn(new Plan().withProduct(offerName).withPublisher(offerPublisher));
-    when(unauthedTerraApp.parameters())
-        .thenReturn(Map.of("authorizedTerraUser", Map.of("value", "other@example.com")));
-    when(unauthedTerraApp.managedResourceGroupId()).thenReturn("mrg_fake2");
-    when(unauthedTerraApp.name()).thenReturn("fake_app_2");
+    mockApplicationCalls(
+        unauthedTerraApp, offerName, offerPublisher, Optional.empty(), "mrg_fake2", "fake_app_2");
 
     var otherNonTerraApp = mock(Application.class);
-    when(otherNonTerraApp.plan())
-        .thenReturn(new Plan().withProduct("other_offer").withPublisher(offerPublisher));
-    when(otherNonTerraApp.managedResourceGroupId()).thenReturn("mrg_fake3");
-    when(otherNonTerraApp.name()).thenReturn("fake_app_3");
+    mockApplicationCalls(
+        otherNonTerraApp,
+        "other_offer",
+        offerPublisher,
+        Optional.empty(),
+        "mrg_fake3",
+        "fake_app3");
 
     var differentPublisherApp = mock(Application.class);
-    when(differentPublisherApp.plan())
-        .thenReturn(new Plan().withProduct(offerName).withPublisher("other_publisher"));
-    when(differentPublisherApp.parameters())
-        .thenReturn(
-            Map.of(
-                "authorizedTerraUser",
-                Map.of("value", String.format("%s,other@example.com", authedUserEmail))));
-    when(differentPublisherApp.managedResourceGroupId()).thenReturn("mrg_fake1");
-    when(differentPublisherApp.name()).thenReturn("fake_app_1");
+    mockApplicationCalls(
+        differentPublisherApp,
+        offerName,
+        "other_publisher",
+        Optional.of(authedUserEmail),
+        "mrg_fake1",
+        "fake_app_1");
 
     var appsList =
         Stream.of(authedTerraApp, unauthedTerraApp, otherNonTerraApp, differentPublisherApp);
     var appService = mock(ApplicationService.class);
-    var tenantId = UUID.randomUUID();
     when(appService.getApplicationsForSubscription(eq(subId))).thenReturn(appsList);
     when(appService.getTenantForSubscription(subId)).thenReturn(tenantId);
 
     var crlService = mock(CrlService.class);
+    var profileDao = mock(ProfileDao.class);
 
     var offer = new AzureConfiguration.AzureApplicationOffer();
     offer.setName(offerName);
     offer.setPublisher(offerPublisher);
-    offer.setAuthorizedUserKey("authorizedTerraUser");
+    offer.setAuthorizedUserKey(authorizedUserKey);
     var offers = Set.of(offer);
     var azureService =
         new AzureService(
             crlService,
             appService,
-            new AzureConfiguration("fake", "fake", "fake", offers, ImmutableSet.of()));
+            new AzureConfiguration("fake", "fake", "fake", offers, ImmutableSet.of()),
+            profileDao);
 
-    var result = azureService.getAuthorizedManagedAppDeployments(subId, user);
+    var result = azureService.getAuthorizedManagedAppDeployments(subId, true, user);
 
     var expected =
         List.of(
@@ -99,54 +99,140 @@ public class AzureServiceUnitTest extends BaseUnitTest {
                 .applicationDeploymentName("fake_app_1")
                 .tenantId(tenantId)
                 .managedResourceGroupId("mrg_fake1")
-                .subscriptionId(subId));
+                .subscriptionId(subId)
+                .assigned(false));
     assertEquals(result, expected);
   }
 
   @Test
   public void getManagedApps_dedupesApps() {
-    var subId = UUID.randomUUID();
-    var authedUserEmail = "profile@example.com";
-    var user =
-        AuthenticatedUserRequest.builder()
-            .setSubjectId("12345")
-            .setEmail(authedUserEmail)
-            .setToken("token")
-            .build();
-    var offerName = "known_terra_offer";
-    var offerPublisher = "known_terra_publisher";
-
     var crlService = mock(CrlService.class);
+    var profileDao = mock(ProfileDao.class);
 
     var authedTerraApp = mock(Application.class);
-    when(authedTerraApp.plan())
-        .thenReturn(new Plan().withProduct(offerName).withPublisher(offerPublisher));
-    when(authedTerraApp.parameters())
-        .thenReturn(
-            Map.of(
-                "authorizedTerraUser",
-                Map.of("value", String.format("%s,other@example.com", authedUserEmail))));
-    when(authedTerraApp.managedResourceGroupId()).thenReturn("mrg_fake1");
-    when(authedTerraApp.name()).thenReturn("fake_app_1");
+    mockApplicationCalls(
+        authedTerraApp,
+        offerName,
+        offerPublisher,
+        Optional.of(authedUserEmail),
+        "mrg_fake1",
+        "fake_app_1");
+
     var appsList = Stream.of(authedTerraApp, authedTerraApp);
     var appService = mock(ApplicationService.class);
-    var tenantId = UUID.randomUUID();
     when(appService.getApplicationsForSubscription(eq(subId))).thenReturn(appsList);
     when(appService.getTenantForSubscription(subId)).thenReturn(tenantId);
 
     var offer = new AzureConfiguration.AzureApplicationOffer();
     offer.setName(offerName);
     offer.setPublisher(offerPublisher);
-    offer.setAuthorizedUserKey("authorizedTerraUser");
+    offer.setAuthorizedUserKey(authorizedUserKey);
     var offers = Set.of(offer);
     var azureService =
         new AzureService(
             crlService,
             appService,
-            new AzureConfiguration("fake", "fake", "fake", offers, ImmutableSet.of()));
+            new AzureConfiguration("fake", "fake", "fake", offers, ImmutableSet.of()),
+            profileDao);
 
-    var result = azureService.getAuthorizedManagedAppDeployments(subId, user);
+    var result = azureService.getAuthorizedManagedAppDeployments(subId, true, user);
 
     assertEquals(result.size(), 1, "Duplicate app instances should be removed");
+  }
+
+  @Test
+  public void getManagedApps_includeAssignedApplications() {
+    var applicationName = "fake_app_1";
+    var assignedTerraAppManagedResourceGroupId = "assigned_fake_mrg";
+    var unassignedTerraAppManagedResourceGroupId = "unassigned_fake_mrg";
+
+    var crlService = mock(CrlService.class);
+    var profileDao = mock(ProfileDao.class);
+    when(profileDao.listManagedResourceGroupsInSubscription(subId))
+        .thenReturn(List.of(assignedTerraAppManagedResourceGroupId));
+
+    var assignedTerraApp = mock(Application.class);
+    mockApplicationCalls(
+        assignedTerraApp,
+        offerName,
+        offerPublisher,
+        Optional.of(authedUserEmail),
+        assignedTerraAppManagedResourceGroupId,
+        applicationName);
+
+    var unassignedTerraApp = mock(Application.class);
+    mockApplicationCalls(
+        unassignedTerraApp,
+        offerName,
+        offerPublisher,
+        Optional.of(authedUserEmail),
+        unassignedTerraAppManagedResourceGroupId,
+        applicationName);
+
+    var appsList = Stream.of(assignedTerraApp, unassignedTerraApp);
+    var appService = mock(ApplicationService.class);
+    when(appService.getApplicationsForSubscription(eq(subId))).thenReturn(appsList);
+    when(appService.getTenantForSubscription(subId)).thenReturn(tenantId);
+
+    var offer = new AzureConfiguration.AzureApplicationOffer();
+    offer.setName(offerName);
+    offer.setPublisher(offerPublisher);
+    offer.setAuthorizedUserKey(authorizedUserKey);
+    var offers = Set.of(offer);
+    var azureService =
+        new AzureService(
+            crlService,
+            appService,
+            new AzureConfiguration("fake", "fake", "fake", offers, ImmutableSet.of()),
+            profileDao);
+
+    AzureManagedAppModel assignedAzureManagedAppModel =
+        new AzureManagedAppModel()
+            .tenantId(tenantId)
+            .subscriptionId(subId)
+            .managedResourceGroupId(assignedTerraAppManagedResourceGroupId)
+            .applicationDeploymentName(applicationName)
+            .assigned(true);
+
+    AzureManagedAppModel unassignedAzureManagedAppModel =
+        new AzureManagedAppModel()
+            .tenantId(tenantId)
+            .subscriptionId(subId)
+            .managedResourceGroupId(unassignedTerraAppManagedResourceGroupId)
+            .applicationDeploymentName(applicationName)
+            .assigned(false);
+
+    var includeAssignedResult = azureService.getAuthorizedManagedAppDeployments(subId, true, user);
+    assertEquals(
+        List.of(assignedAzureManagedAppModel, unassignedAzureManagedAppModel),
+        includeAssignedResult);
+
+    appsList = Stream.of(assignedTerraApp, unassignedTerraApp);
+    when(appService.getApplicationsForSubscription(eq(subId))).thenReturn(appsList);
+
+    var excludeAssignedResult = azureService.getAuthorizedManagedAppDeployments(subId, false, user);
+    assertEquals(List.of(unassignedAzureManagedAppModel), excludeAssignedResult);
+  }
+
+  private void mockApplicationCalls(
+      Application application,
+      String offerName,
+      String offerPublisher,
+      Optional<String> authedUserEmail,
+      String managedResourceGroupId,
+      String applicationName) {
+    when(application.plan())
+        .thenReturn(new Plan().withProduct(offerName).withPublisher(offerPublisher));
+
+    String authorizedUsers;
+    if (authedUserEmail.isPresent()) {
+      authorizedUsers = String.format("%s,other@example.com", authedUserEmail.get());
+    } else {
+      authorizedUsers = "other@example.com";
+    }
+    when(application.parameters())
+        .thenReturn(Map.of(authorizedUserKey, Map.of("value", authorizedUsers)));
+    when(application.managedResourceGroupId()).thenReturn(managedResourceGroupId);
+    when(application.name()).thenReturn(applicationName);
   }
 }
