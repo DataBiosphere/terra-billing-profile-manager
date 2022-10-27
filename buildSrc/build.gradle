@@ -18,7 +18,7 @@ configurations {
 dependencies {
     implementation 'com.diffplug.spotless:spotless-plugin-gradle:6.11.0'
     implementation 'com.google.cloud.tools.jib:com.google.cloud.tools.jib.gradle.plugin:3.3.0'
-    implementation 'de.undercouch.download:de.undercouch.download.gradle.plugin:5.0.1'
+    implementation 'de.undercouch.download:de.undercouch.download.gradle.plugin:5.3.0'
     implementation 'gradle.plugin.com.github.spotbugs.snom:spotbugs-gradle-plugin:4.7.5'
     implementation 'io.spring.dependency-management:io.spring.dependency-management.gradle.plugin:1.0.10.RELEASE'
     implementation 'org.hidetake.swagger.generator:org.hidetake.swagger.generator.gradle.plugin:2.19.1'
