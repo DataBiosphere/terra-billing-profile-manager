@@ -20,7 +20,7 @@ dependencies {
     implementation 'com.google.cloud.tools.jib:com.google.cloud.tools.jib.gradle.plugin:3.3.0'
     implementation 'de.undercouch.download:de.undercouch.download.gradle.plugin:5.0.1'
     implementation 'gradle.plugin.com.github.spotbugs.snom:spotbugs-gradle-plugin:4.7.5'
-    implementation 'io.spring.dependency-management:io.spring.dependency-management.gradle.plugin:1.0.10.RELEASE'
+    implementation 'io.spring.dependency-management:io.spring.dependency-management.gradle.plugin:1.1.0'
     implementation 'org.hidetake.swagger.generator:org.hidetake.swagger.generator.gradle.plugin:2.19.1'
     implementation 'org.springframework.boot:spring-boot-gradle-plugin:2.7.3'
     implementation 'bio.terra:terra-test-runner:0.1.8-SNAPSHOT'
