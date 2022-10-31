@@ -48,9 +48,6 @@ dependencies {
     testImplementation 'org.hamcrest:hamcrest:2.2'
 }
 
-// https://spring.io/blog/2022/03/31/spring-framework-rce-early-announcement
-ext['spring-framework.version'] = '5.3.18'
-
 // Modify the standard :test task to only include unit-tagged tests.
 tasks.named('test') {
     useJUnitPlatform() {
