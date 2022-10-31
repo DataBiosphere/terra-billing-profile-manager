@@ -71,7 +71,8 @@ public class AzureService {
                     .tenantId(tenantId)
                     .assigned(
                         assignedManagedResourceGroups.contains(
-                            normalizeManagedResourceGroupId(app.managedResourceGroupId()))))
+                            normalizeManagedResourceGroupId(app.managedResourceGroupId())))
+                    .region(app.regionName()))
         .filter(app -> includeAssignedApplications || !app.isAssigned())
         .distinct()
         .toList();
