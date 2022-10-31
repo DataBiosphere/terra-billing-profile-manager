@@ -36,6 +36,7 @@ public class AzureServiceUnitTest extends BaseUnitTest {
   String offerName = "known_terra_offer";
   String offerPublisher = "known_terra_publisher";
   String authorizedUserKey = "authorizedTerraUser";
+  String regionName = "application-region";
 
   @Test
   public void getManagedApps() {
@@ -100,7 +101,8 @@ public class AzureServiceUnitTest extends BaseUnitTest {
                 .tenantId(tenantId)
                 .managedResourceGroupId("mrg_fake1")
                 .subscriptionId(subId)
-                .assigned(false));
+                .assigned(false)
+                .region(regionName));
     assertEquals(result, expected);
   }
 
@@ -192,7 +194,8 @@ public class AzureServiceUnitTest extends BaseUnitTest {
             .subscriptionId(subId)
             .managedResourceGroupId(assignedTerraAppManagedResourceGroupId)
             .applicationDeploymentName(applicationName)
-            .assigned(true);
+            .assigned(true)
+            .region(regionName);
 
     AzureManagedAppModel unassignedAzureManagedAppModel =
         new AzureManagedAppModel()
@@ -200,7 +203,8 @@ public class AzureServiceUnitTest extends BaseUnitTest {
             .subscriptionId(subId)
             .managedResourceGroupId(unassignedTerraAppManagedResourceGroupId)
             .applicationDeploymentName(applicationName)
-            .assigned(false);
+            .assigned(false)
+            .region(regionName);
 
     var includeAssignedResult = azureService.getAuthorizedManagedAppDeployments(subId, true, user);
     assertEquals(
@@ -234,5 +238,6 @@ public class AzureServiceUnitTest extends BaseUnitTest {
         .thenReturn(Map.of(authorizedUserKey, Map.of("value", authorizedUsers)));
     when(application.managedResourceGroupId()).thenReturn(managedResourceGroupId);
     when(application.name()).thenReturn(applicationName);
+    when(application.regionName()).thenReturn(regionName);
   }
 }
