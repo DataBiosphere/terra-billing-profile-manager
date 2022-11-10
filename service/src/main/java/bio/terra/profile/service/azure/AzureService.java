@@ -106,7 +106,7 @@ public class AzureService {
 
   private boolean isAuthedTerraManagedApp(AuthenticatedUserRequest userRequest, Application app) {
     if (app.plan() == null) {
-      logger.debug(
+      logger.info(
           "App deployment has no plan, ignoring [mrg_id={}]", app.managedResourceGroupId());
       return false;
     }
@@ -119,7 +119,7 @@ public class AzureService {
                         && o.getPublisher().equals(app.plan().publisher()))
             .findFirst();
     if (maybeOffer.isEmpty()) {
-      logger.debug(
+      logger.info(
           "App deployment is not a deployment of a well-known Terra offer, ignoring [mrg_id={}]",
           app.managedResourceGroupId());
       return false;
@@ -127,6 +127,9 @@ public class AzureService {
 
     var offer = maybeOffer.get();
     var authedUserKey = offer.getAuthorizedUserKey();
+
+    logger.info("Found MRG ID {} for user {}", app.managedResourceGroupId(), userRequest.getEmail());
+
     if (app.parameters() != null && app.parameters() instanceof Map rawParams) {
       if (!rawParams.containsKey(authedUserKey)) {
         logger.warn(
@@ -138,7 +141,10 @@ public class AzureService {
       var paramValues = (Map) rawParams.get(authedUserKey);
       var authedUsers = ((String) paramValues.get("value")).split(",");
 
-      return Arrays.stream(authedUsers).anyMatch(user -> user.equals(userRequest.getEmail()));
+
+      var result = Arrays.stream(authedUsers).anyMatch(user -> user.equals(userRequest.getEmail()));
+      logger.info("Authed users for MRG {} are  {}, current user = {} ; result = {} ", app.managedResourceGroupId(), authedUsers, userRequest.getEmail(), result);
+      return result;
     }
 
     return false;
