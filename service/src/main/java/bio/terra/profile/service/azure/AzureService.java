@@ -54,12 +54,17 @@ public class AzureService {
       AuthenticatedUserRequest userRequest) {
     var tenantId = appService.getTenantForSubscription(subscriptionId);
 
-    Stream<Application> applications = appService.getApplicationsForSubscription(subscriptionId);
+    logger.info("Fetching managed apps for user {} for sub {}", userRequest.getEmail(), subscriptionId);
+
+    List<Application> applications = appService.getApplicationsForSubscription(subscriptionId).collect(Collectors.toList());
+
+    logger.info("Found {} apps for user {} for sub {}", applications.size(), userRequest.getEmail(), subscriptionId);
+
 
     List<String> assignedManagedResourceGroups =
         profileDao.listManagedResourceGroupsInSubscription(subscriptionId);
 
-    return applications
+    return applications.stream()
         .filter(app -> isAuthedTerraManagedApp(userRequest, app))
         .map(
             app ->
