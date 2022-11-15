@@ -13,6 +13,12 @@ apply from: 'publishing.gradle'
 dependencies {
 	implementation 'io.sentry:sentry:6.6.0'
 
+	implementation('org.yaml:snakeyaml') {
+		version {
+			require "1.32"
+		}
+		because 'previous versions have a security vulnerability - this is a direct dependency to force the version to override opencensus'
+	}
 	implementation 'bio.terra:terra-common-lib:0.0.68-SNAPSHOT'
 
 	implementation 'org.apache.commons:commons-dbcp2'
