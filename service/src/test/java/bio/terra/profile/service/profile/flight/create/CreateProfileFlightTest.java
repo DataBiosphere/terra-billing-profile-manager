@@ -6,6 +6,8 @@ import static org.mockito.Mockito.*;
 
 import bio.terra.cloudres.google.billing.CloudBillingClientCow;
 import bio.terra.common.iam.AuthenticatedUserRequest;
+import bio.terra.common.sam.exception.SamExceptionFactory;
+import bio.terra.common.sam.exception.SamInterruptedException;
 import bio.terra.profile.app.configuration.AzureConfiguration;
 import bio.terra.profile.common.BaseSpringUnitTest;
 import bio.terra.profile.model.AzureManagedAppModel;
@@ -200,4 +202,46 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
     verify(applicationService)
         .addTagToMrg(tenantId, subId, mrgId, "terra.billingProfileId", profile.id().toString());
   }
+
+  @Test
+  void tagIsRemovedFromMRGOnFailure() throws Exception {
+    var subId = UUID.randomUUID();
+    var tenantId = UUID.randomUUID();
+    var mrgId = "fake-mrg";
+    var billingProfileId = UUID.randomUUID();
+    when(azureService.getAuthorizedManagedAppDeployments(any(), any(), any()))
+        .thenReturn(
+            Collections.singletonList(
+                new AzureManagedAppModel()
+                    .tenantId(tenantId)
+                    .subscriptionId(subId)
+                    .managedResourceGroupId(mrgId)));
+    when(azureService.getRegisteredProviderNamespacesForSubscription(any(), any()))
+        .thenReturn(azureConfiguration.getRequiredProviders());
+
+    doThrow(SamExceptionFactory.create("foo", new InterruptedException()))
+        .when(samService).createProfileResource(any(), eq(billingProfileId));
+
+    var profile =
+        new BillingProfile(
+            billingProfileId,
+            "fake-bp-name",
+            "fake-description",
+            "direct",
+            CloudPlatform.AZURE,
+            Optional.empty(),
+            Optional.of(tenantId),
+            Optional.of(subId),
+            Optional.of(mrgId),
+            null,
+            null,
+            null);
+    assertThrows(SamInterruptedException.class, () -> profileService.createProfile(profile, userRequest));
+
+    verify(applicationService)
+        .addTagToMrg(tenantId, subId, mrgId, "terra.billingProfileId", profile.id().toString());
+
+    verify(applicationService).removeTagFromMrg(tenantId, subId, mrgId, "terra.billingProfileId");
+  }
+
 }
