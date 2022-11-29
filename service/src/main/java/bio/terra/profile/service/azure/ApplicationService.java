@@ -2,6 +2,7 @@ package bio.terra.profile.service.azure;
 
 import bio.terra.profile.service.crl.CrlService;
 import bio.terra.profile.service.profile.exception.DuplicateTagException;
+import bio.terra.profile.service.profile.exception.MissingRequiredFieldsException;
 import com.azure.resourcemanager.managedapplications.models.Application;
 import java.util.HashMap;
 import java.util.UUID;
@@ -67,4 +68,29 @@ public class ApplicationService {
     tags.put(tag, value);
     crlService.updateTagsForResource(tenantId, subscriptionId, mrgResource.id(), tags);
   }
+
+  /**
+   * Removes a tag to the MRG associated with a given profile.
+   *
+   * @param tenantId Tenant ID associated with the MRG
+   * @param subscriptionId Subscription ID associated with the MRG
+   * @param managedResourceGroupId ID for the MRG
+   * @param tag Tag name
+   * @throws MissingRequiredFieldsException if the tag is not present.
+   */
+  public void removeTagFromMrg(UUID tenantId, UUID subscriptionId, String managedResourceGroupId, String tag) {
+    var mrgResource = crlService.getResourceGroup(tenantId, subscriptionId, managedResourceGroupId);
+    if (!mrgResource.tags().containsKey(tag)) {
+      throw new MissingRequiredFieldsException(
+          String.format("Cannot delete missing tag from MRG [mrg_id = %s, tag = %s]", managedResourceGroupId, tag)
+      );
+    }
+
+    // dupe existing tags to a mutable hashmap
+    HashMap<String, String> tags = new HashMap<>(mrgResource.tags());
+    tags.remove(tag);
+    crlService.updateTagsForResource(tenantId, subscriptionId, mrgResource.id(), tags);
+  }
+
+
 }
