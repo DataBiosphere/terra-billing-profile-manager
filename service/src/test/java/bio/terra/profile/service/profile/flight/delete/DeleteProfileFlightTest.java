@@ -1,5 +1,8 @@
 package bio.terra.profile.service.profile.flight.delete;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.app.configuration.AzureConfiguration;
 import bio.terra.profile.common.BaseSpringUnitTest;
@@ -11,34 +14,22 @@ import bio.terra.profile.service.crl.CrlService;
 import bio.terra.profile.service.iam.SamService;
 import bio.terra.profile.service.profile.ProfileService;
 import bio.terra.profile.service.profile.model.BillingProfile;
+import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-
-
 public class DeleteProfileFlightTest extends BaseSpringUnitTest {
 
-  @Autowired
-  ProfileService profileService;
-  @Autowired
-  AzureConfiguration azureConfiguration;
-  @MockBean
-  CrlService crlService;
+  @Autowired ProfileService profileService;
+  @Autowired AzureConfiguration azureConfiguration;
+  @MockBean CrlService crlService;
 
-  @MockBean
-  ProfileDao profileDao;
-  @MockBean
-  SamService samService;
-  @MockBean
-  AzureService azureService;
-  @MockBean
-  ApplicationService applicationService;
+  @MockBean ProfileDao profileDao;
+  @MockBean SamService samService;
+  @MockBean AzureService azureService;
+  @MockBean ApplicationService applicationService;
 
   AuthenticatedUserRequest userRequest =
       AuthenticatedUserRequest.builder()
@@ -46,7 +37,6 @@ public class DeleteProfileFlightTest extends BaseSpringUnitTest {
           .setSubjectId("fake-sub")
           .setEmail("example@example.com")
           .build();
-
 
   @Test
   void deletingAzureProfileUnlinksMRG() {
@@ -71,7 +61,8 @@ public class DeleteProfileFlightTest extends BaseSpringUnitTest {
     when(profileDao.getBillingProfileById(profile.id())).thenReturn(profile);
 
     profileService.deleteProfile(profile.id(), userRequest);
-    verify(applicationService).removeTagFromMrg(tenantId, subscriptionId, mrgId, "terra.billingProfileId");
+    verify(applicationService)
+        .removeTagFromMrg(tenantId, subscriptionId, mrgId, "terra.billingProfileId");
   }
 
   @Test
@@ -94,8 +85,5 @@ public class DeleteProfileFlightTest extends BaseSpringUnitTest {
 
     profileService.deleteProfile(profile.id(), userRequest);
     verify(applicationService, never()).removeTagFromMrg(any(), any(), any(), any());
-
   }
-
-
 }

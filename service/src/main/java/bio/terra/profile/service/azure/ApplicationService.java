@@ -78,12 +78,14 @@ public class ApplicationService {
    * @param tag Tag name
    * @throws MissingRequiredFieldsException if the tag is not present.
    */
-  public void removeTagFromMrg(UUID tenantId, UUID subscriptionId, String managedResourceGroupId, String tag) {
+  public void removeTagFromMrg(
+      UUID tenantId, UUID subscriptionId, String managedResourceGroupId, String tag) {
     var mrgResource = crlService.getResourceGroup(tenantId, subscriptionId, managedResourceGroupId);
     if (!mrgResource.tags().containsKey(tag)) {
       throw new MissingRequiredFieldsException(
-          String.format("Cannot delete missing tag from MRG [mrg_id = %s, tag = %s]", managedResourceGroupId, tag)
-      );
+          String.format(
+              "Cannot delete missing tag from MRG [mrg_id = %s, tag = %s]",
+              managedResourceGroupId, tag));
     }
 
     // dupe existing tags to a mutable hashmap
@@ -91,6 +93,4 @@ public class ApplicationService {
     tags.remove(tag);
     crlService.updateTagsForResource(tenantId, subscriptionId, mrgResource.id(), tags);
   }
-
-
 }

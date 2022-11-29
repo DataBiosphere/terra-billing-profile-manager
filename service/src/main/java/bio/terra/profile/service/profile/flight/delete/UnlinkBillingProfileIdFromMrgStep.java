@@ -8,13 +8,9 @@ import bio.terra.stairway.StepResult;
 import bio.terra.stairway.StepStatus;
 import bio.terra.stairway.exception.RetryException;
 
-/**
- * Removes the tag that associates a billing profile ID with an azure managed resource group
- **/
+/** Removes the tag that associates a billing profile ID with an azure managed resource group */
 public record UnlinkBillingProfileIdFromMrgStep(
-    ApplicationService applicationService,
-    BillingProfile profile
-) implements Step {
+    ApplicationService applicationService, BillingProfile profile) implements Step {
   private static final String BILLING_PROFILE_ID_TAG = "terra.billingProfileId";
 
   @Override
@@ -36,6 +32,4 @@ public record UnlinkBillingProfileIdFromMrgStep(
   public StepResult undoStep(FlightContext context) throws InterruptedException {
     return StepResult.getStepResultSuccess();
   }
-
 }
-

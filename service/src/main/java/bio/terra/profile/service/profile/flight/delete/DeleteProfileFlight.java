@@ -4,7 +4,6 @@ import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.service.azure.ApplicationService;
-import bio.terra.profile.service.crl.CrlService;
 import bio.terra.profile.service.iam.SamService;
 import bio.terra.profile.service.job.JobMapKeys;
 import bio.terra.profile.service.profile.flight.ProfileMapKeys;
@@ -24,7 +23,6 @@ public class DeleteProfileFlight extends Flight {
     SamService samService = appContext.getBean(SamService.class);
     ApplicationService appService = appContext.getBean(ApplicationService.class);
 
-
     var profileId = inputParameters.get(ProfileMapKeys.PROFILE_ID, UUID.class);
     var platform = inputParameters.get(JobMapKeys.CLOUD_PLATFORM.getKeyName(), CloudPlatform.class);
     var user =
@@ -33,7 +31,7 @@ public class DeleteProfileFlight extends Flight {
     // TODO what is the correct logic when a profile is deleted if it is being used by
     // workspaces/datasets?
 
-    if(CloudPlatform.AZURE.equals(platform)) {
+    if (CloudPlatform.AZURE.equals(platform)) {
       var profile = inputParameters.get(ProfileMapKeys.PROFILE, BillingProfile.class);
       addStep(new UnlinkBillingProfileIdFromMrgStep(appService, profile));
     }

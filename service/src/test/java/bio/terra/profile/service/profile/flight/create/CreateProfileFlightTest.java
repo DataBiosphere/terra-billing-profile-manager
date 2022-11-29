@@ -219,7 +219,8 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
     when(azureService.getRegisteredProviderNamespacesForSubscription(any(), any()))
         .thenReturn(azureConfiguration.getRequiredProviders());
     doThrow(SamExceptionFactory.create("foo", new InterruptedException()))
-        .when(samService).createProfileResource(any(), eq(billingProfileId));
+        .when(samService)
+        .createProfileResource(any(), eq(billingProfileId));
 
     var profile =
         new BillingProfile(
@@ -235,11 +236,11 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
             null,
             null,
             null);
-    assertThrows(SamInterruptedException.class, () -> profileService.createProfile(profile, userRequest));
+    assertThrows(
+        SamInterruptedException.class, () -> profileService.createProfile(profile, userRequest));
 
     verify(applicationService)
         .addTagToMrg(tenantId, subId, mrgId, "terra.billingProfileId", profile.id().toString());
     verify(applicationService).removeTagFromMrg(tenantId, subId, mrgId, "terra.billingProfileId");
   }
-
 }
