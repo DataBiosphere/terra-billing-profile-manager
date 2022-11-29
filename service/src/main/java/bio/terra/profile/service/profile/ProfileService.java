@@ -3,6 +3,7 @@ package bio.terra.profile.service.profile;
 import bio.terra.common.exception.ForbiddenException;
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.db.ProfileDao;
+import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.model.SamPolicyModel;
 import bio.terra.profile.service.iam.SamRethrow;
 import bio.terra.profile.service.iam.SamService;
@@ -83,6 +84,10 @@ public class ProfileService {
             .userRequest(user)
             .addParameter(ProfileMapKeys.PROFILE_ID, id)
             .addParameter(JobMapKeys.CLOUD_PLATFORM.getKeyName(), platform.name());
+    if (CloudPlatform.AZURE.equals(billingProfile.cloudPlatform())) {
+      deleteJob.addParameter(ProfileMapKeys.PROFILE, billingProfile);
+    }
+
     deleteJob.submitAndWait(null);
   }
 
