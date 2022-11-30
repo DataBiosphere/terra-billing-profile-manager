@@ -23,7 +23,8 @@ public class DeleteProfileFlight extends Flight {
     SamService samService = appContext.getBean(SamService.class);
     ApplicationService appService = appContext.getBean(ApplicationService.class);
 
-    var profileId = inputParameters.get(ProfileMapKeys.PROFILE_ID, UUID.class);
+    var profile = inputParameters.get(ProfileMapKeys.PROFILE, BillingProfile.class);
+    var profileId = profile.id();
     var platform = inputParameters.get(JobMapKeys.CLOUD_PLATFORM.getKeyName(), CloudPlatform.class);
     var user =
         inputParameters.get(JobMapKeys.AUTH_USER_INFO.getKeyName(), AuthenticatedUserRequest.class);
@@ -32,7 +33,6 @@ public class DeleteProfileFlight extends Flight {
     // workspaces/datasets?
 
     if (CloudPlatform.AZURE.equals(platform)) {
-      var profile = inputParameters.get(ProfileMapKeys.PROFILE, BillingProfile.class);
       addStep(new UnlinkBillingProfileIdFromMrgStep(appService, profile));
     }
     addStep(new DeleteProfileStep(profileDao, profileId));
