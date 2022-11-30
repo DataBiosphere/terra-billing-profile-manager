@@ -1,6 +1,7 @@
 package bio.terra.profile.service.profile.flight.delete;
 
 import bio.terra.profile.service.azure.ApplicationService;
+import bio.terra.profile.service.profile.flight.MRGTags;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.stairway.FlightContext;
 import bio.terra.stairway.Step;
@@ -11,7 +12,6 @@ import bio.terra.stairway.exception.RetryException;
 /** Removes the tag that associates a billing profile ID with an azure managed resource group */
 public record UnlinkBillingProfileIdFromMrgStep(
     ApplicationService applicationService, BillingProfile profile) implements Step {
-  private static final String BILLING_PROFILE_ID_TAG = "terra.billingProfileId";
 
   @Override
   public StepResult doStep(FlightContext context) throws InterruptedException, RetryException {
@@ -20,7 +20,8 @@ public record UnlinkBillingProfileIdFromMrgStep(
       var subscriptionId = profile.getRequiredSubscriptionId();
       var mrgId = profile.getRequiredManagedResourceGroupId();
 
-      applicationService.removeTagFromMrg(tenantId, subscriptionId, mrgId, BILLING_PROFILE_ID_TAG);
+      applicationService.removeTagFromMrg(
+          tenantId, subscriptionId, mrgId, MRGTags.BILLING_PROFILE_ID);
 
       return StepResult.getStepResultSuccess();
     } catch (Exception ex) {

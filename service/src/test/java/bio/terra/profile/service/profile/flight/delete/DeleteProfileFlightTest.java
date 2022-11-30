@@ -13,6 +13,7 @@ import bio.terra.profile.service.azure.AzureService;
 import bio.terra.profile.service.crl.CrlService;
 import bio.terra.profile.service.iam.SamService;
 import bio.terra.profile.service.profile.ProfileService;
+import bio.terra.profile.service.profile.flight.MRGTags;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import java.util.Optional;
 import java.util.UUID;
@@ -62,7 +63,7 @@ class DeleteProfileFlightTest extends BaseSpringUnitTest {
 
     profileService.deleteProfile(profile.id(), userRequest);
     verify(applicationService)
-        .removeTagFromMrg(tenantId, subscriptionId, mrgId, "terra.billingProfileId");
+        .removeTagFromMrg(tenantId, subscriptionId, mrgId, MRGTags.BILLING_PROFILE_ID);
   }
 
   @Test

@@ -87,7 +87,5 @@ public class ApplicationService {
       tags.remove(tag);
       crlService.updateTagsForResource(tenantId, subscriptionId, mrgResource.id(), tags);
     }
-
-
   }
 }

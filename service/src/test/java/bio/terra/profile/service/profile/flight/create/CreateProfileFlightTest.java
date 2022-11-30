@@ -20,6 +20,7 @@ import bio.terra.profile.service.profile.ProfileService;
 import bio.terra.profile.service.profile.exception.InaccessibleApplicationDeploymentException;
 import bio.terra.profile.service.profile.exception.InaccessibleBillingAccountException;
 import bio.terra.profile.service.profile.exception.MissingRequiredFieldsException;
+import bio.terra.profile.service.profile.flight.MRGTags;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import com.google.iam.v1.TestIamPermissionsResponse;
 import java.util.Collections;
@@ -200,7 +201,7 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
     profileService.createProfile(profile, userRequest);
 
     verify(applicationService)
-        .addTagToMrg(tenantId, subId, mrgId, "terra.billingProfileId", profile.id().toString());
+        .addTagToMrg(tenantId, subId, mrgId, MRGTags.BILLING_PROFILE_ID, profile.id().toString());
   }
 
   @Test
@@ -240,7 +241,7 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
         SamInterruptedException.class, () -> profileService.createProfile(profile, userRequest));
 
     verify(applicationService)
-        .addTagToMrg(tenantId, subId, mrgId, "terra.billingProfileId", profile.id().toString());
-    verify(applicationService).removeTagFromMrg(tenantId, subId, mrgId, "terra.billingProfileId");
+        .addTagToMrg(tenantId, subId, mrgId, MRGTags.BILLING_PROFILE_ID, profile.id().toString());
+    verify(applicationService).removeTagFromMrg(tenantId, subId, mrgId, MRGTags.BILLING_PROFILE_ID);
   }
 }
