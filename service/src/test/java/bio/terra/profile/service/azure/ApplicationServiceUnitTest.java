@@ -70,7 +70,7 @@ class ApplicationServiceUnitTest extends BaseUnitTest {
   }
 
   @Test
-  void removeTagFromMrg_failsWhenTagIsMissing() {
+  void removeTagFromMrg_doesNothingWhenTagIsMissing() {
     var tenantId = UUID.randomUUID();
     var subId = UUID.randomUUID();
     var mrgId = "fake_mrg_id";
@@ -82,9 +82,7 @@ class ApplicationServiceUnitTest extends BaseUnitTest {
     when(crlService.getResourceGroup(tenantId, subId, mrgId)).thenReturn(resourceGroup);
     var applicationService = new ApplicationService(crlService);
 
-    assertThrows(
-        MissingRequiredFieldsException.class,
-        () -> applicationService.removeTagFromMrg(tenantId, subId, mrgId, "fake_tag"));
+    applicationService.removeTagFromMrg(tenantId, subId, mrgId, "fake_tag");
 
     verify(crlService, never().description("Should not attempt to add a tag if there is a dupe"))
         .updateTagsForResource(any(), any(), any(), any());
