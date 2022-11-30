@@ -3,7 +3,6 @@ package bio.terra.profile.service.profile;
 import bio.terra.common.exception.ForbiddenException;
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.db.ProfileDao;
-import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.model.SamPolicyModel;
 import bio.terra.profile.service.iam.SamRethrow;
 import bio.terra.profile.service.iam.SamService;

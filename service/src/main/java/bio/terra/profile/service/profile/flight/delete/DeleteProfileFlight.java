@@ -10,7 +10,6 @@ import bio.terra.profile.service.profile.flight.ProfileMapKeys;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.stairway.Flight;
 import bio.terra.stairway.FlightMap;
-import java.util.UUID;
 import org.springframework.context.ApplicationContext;
 
 public class DeleteProfileFlight extends Flight {
