@@ -165,7 +165,7 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
   }
 
   @Test
-  void createAzureProfileSuccess() {
+  void createAzureProfileSuccess() throws InterruptedException {
     var subId = UUID.randomUUID();
     var tenantId = UUID.randomUUID();
     var mrgId = "fake-mrg";
@@ -199,5 +199,6 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
 
     verify(applicationService)
         .addTagToMrg(tenantId, subId, mrgId, "terra.billingProfileId", profile.id().toString());
+    verify(samService).createManagedResourceGroup(profile, userRequest);
   }
 }
