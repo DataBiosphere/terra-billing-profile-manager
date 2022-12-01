@@ -21,6 +21,7 @@ import java.util.stream.Stream;
 import okhttp3.OkHttpClient;
 import org.broadinstitute.dsde.workbench.client.sam.ApiClient;
 import org.broadinstitute.dsde.workbench.client.sam.ApiException;
+import org.broadinstitute.dsde.workbench.client.sam.api.AzureApi;
 import org.broadinstitute.dsde.workbench.client.sam.api.ResourcesApi;
 import org.broadinstitute.dsde.workbench.client.sam.api.StatusApi;
 import org.broadinstitute.dsde.workbench.client.sam.api.UsersApi;
@@ -218,7 +219,8 @@ public class SamService {
       throws ApiException {
     ResourcesApi samResourceApi = samResourcesApi(userRequest.getToken());
     String samResourceName = SamResourceType.PROFILE.getSamResourceName();
-    samResourceApi.addUserToPolicyV2(samResourceName, resourceId.toString(), policyName, userEmail);
+    samResourceApi.addUserToPolicyV2(
+        samResourceName, resourceId.toString(), policyName, userEmail, null);
     AccessPolicyMembershipV2 result =
         samResourceApi.getPolicyV2(samResourceName, resourceId.toString(), policyName);
     return new SamPolicyModel().name(policyName).members(result.getMemberEmails());
@@ -345,6 +347,44 @@ public class SamService {
     }
   }
 
+  /**
+   * Links the given MRG coordinates to a billing profile
+   *
+   * @param userRequest authenticated user
+   * @param profileId profile ID that will be linked
+   * @param mrgName Name of the managed resource group
+   * @param subscriptionId ID of the Azure subscription in which the MRG resides
+   * @param tenantId ID of the Azure tenant in which the MRG reside
+   * @throws InterruptedException
+   */
+  public void linkMrgToProfile(
+      AuthenticatedUserRequest userRequest,
+      UUID profileId,
+      String mrgName,
+      UUID subscriptionId,
+      UUID tenantId)
+      throws InterruptedException {
+    AzureApi azureApi = azureApi(userRequest.getToken());
+    try {
+      SamRetry.retry(
+          () ->
+              azureApi.createManagedResourceGroup(
+                  profileId.toString(),
+                  new ManagedResourceGroupCoordinates()
+                      .managedResourceGroupName(mrgName)
+                      .subscriptionId(subscriptionId.toString())
+                      .tenantId(tenantId.toString())));
+      logger.info(
+          "Linked billing profile {} to mrg coords [mrg_name={}, subscriptionId={}, tenantId={}]",
+          profileId,
+          mrgName,
+          subscriptionId,
+          tenantId);
+    } catch (ApiException e) {
+      throw SamExceptionFactory.create("Error linking a profile to an MRG in Sam", e);
+    }
+  }
+
   public SystemStatusSystems status() {
     // No access token needed since this is an unauthenticated API.
     StatusApi statusApi = new StatusApi(getApiClient(null));
@@ -375,6 +415,10 @@ public class SamService {
   @VisibleForTesting
   ResourcesApi samResourcesApi(String accessToken) {
     return new ResourcesApi(getApiClient(accessToken));
+  }
+
+  AzureApi azureApi(String accessToken) {
+    return new AzureApi(getApiClient(accessToken));
   }
 
   private ApiClient getApiClient(String accessToken) {
