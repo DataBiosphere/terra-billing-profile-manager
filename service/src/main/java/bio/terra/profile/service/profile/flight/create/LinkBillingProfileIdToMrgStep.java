@@ -2,6 +2,7 @@ package bio.terra.profile.service.profile.flight.create;
 
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.service.azure.ApplicationService;
+import bio.terra.profile.service.iam.SamRethrow;
 import bio.terra.profile.service.iam.SamService;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.stairway.FlightContext;
@@ -29,7 +30,9 @@ public record LinkBillingProfileIdToMrgStep(
       applicationService.addTagToMrg(
           tenantId, subscriptionId, mrgId, BILLING_PROFILE_ID_TAG, profile.id().toString());
 
-      samService.createManagedResourceGroup(profile, userRequest);
+      SamRethrow.onInterrupted(
+          () -> samService.createManagedResourceGroup(profile, userRequest),
+          "createManagedResourceGroup");
 
       return StepResult.getStepResultSuccess();
     } catch (Exception ex) {
