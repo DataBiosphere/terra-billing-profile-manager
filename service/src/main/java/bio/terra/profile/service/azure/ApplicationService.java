@@ -2,7 +2,6 @@ package bio.terra.profile.service.azure;
 
 import bio.terra.profile.service.crl.CrlService;
 import bio.terra.profile.service.profile.exception.DuplicateTagException;
-import bio.terra.profile.service.profile.exception.MissingRequiredFieldsException;
 import com.azure.resourcemanager.managedapplications.models.Application;
 import java.util.HashMap;
 import java.util.UUID;
@@ -76,7 +75,6 @@ public class ApplicationService {
    * @param subscriptionId Subscription ID associated with the MRG
    * @param managedResourceGroupId ID for the MRG
    * @param tag Tag name
-   * @throws MissingRequiredFieldsException if the tag is not present.
    */
   public void removeTagFromMrg(
       UUID tenantId, UUID subscriptionId, String managedResourceGroupId, String tag) {
