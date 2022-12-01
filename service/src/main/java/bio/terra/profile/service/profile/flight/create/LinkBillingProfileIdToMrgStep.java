@@ -31,15 +31,11 @@ public record LinkBillingProfileIdToMrgStep(
 
   @Override
   public StepResult undoStep(FlightContext context) throws InterruptedException {
-    try {
-      var tenantId = profile.getRequiredTenantId();
-      var subscriptionId = profile.getRequiredSubscriptionId();
-      var mrgId = profile.getRequiredManagedResourceGroupId();
-      applicationService.removeTagFromMrg(
-          tenantId, subscriptionId, mrgId, MRGTags.BILLING_PROFILE_ID);
-      return StepResult.getStepResultSuccess();
-    } catch (Exception ex) {
-      return new StepResult(StepStatus.STEP_RESULT_FAILURE_FATAL, ex);
-    }
+    var tenantId = profile.getRequiredTenantId();
+    var subscriptionId = profile.getRequiredSubscriptionId();
+    var mrgId = profile.getRequiredManagedResourceGroupId();
+    applicationService.removeTagFromMrg(
+        tenantId, subscriptionId, mrgId, MRGTags.BILLING_PROFILE_ID);
+    return StepResult.getStepResultSuccess();
   }
 }
