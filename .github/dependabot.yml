@@ -13,3 +13,6 @@ updates:
       - "gradle"
     commit-message:
       prefix: "[No Ticket]"
+    ignore:
+      - dependency-name: "org.springframework.boot:spring-boot-gradle-plugin"
+        versions: ["3.x"]
