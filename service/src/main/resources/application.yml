@@ -53,6 +53,12 @@ spring:
         use-last-modified: false
       static-locations: classpath:/api/
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
 profile:
   ingress:
     # Default value that's overridden by Helm.
