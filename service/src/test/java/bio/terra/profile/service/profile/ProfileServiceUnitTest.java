@@ -99,8 +99,7 @@ public class ProfileServiceUnitTest extends BaseSpringUnitTest {
     when(jobBuilder.description(anyString())).thenReturn(jobBuilder);
     when(jobBuilder.flightClass(eq(DeleteProfileFlight.class))).thenReturn(jobBuilder);
     when(jobBuilder.userRequest(eq(user))).thenReturn(jobBuilder);
-    when(jobBuilder.addParameter(eq(ProfileMapKeys.PROFILE_ID), eq(profile.id())))
-        .thenReturn(jobBuilder);
+    when(jobBuilder.addParameter(eq(ProfileMapKeys.PROFILE), eq(profile))).thenReturn(jobBuilder);
     when(jobBuilder.addParameter(
             eq(JobMapKeys.CLOUD_PLATFORM.getKeyName()), eq(CloudPlatform.GCP.name())))
         .thenReturn(jobBuilder);

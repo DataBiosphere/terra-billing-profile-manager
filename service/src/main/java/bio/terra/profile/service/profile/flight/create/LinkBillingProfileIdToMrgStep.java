@@ -2,7 +2,6 @@ package bio.terra.profile.service.profile.flight.create;
 
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.service.azure.ApplicationService;
-import bio.terra.profile.service.iam.SamRethrow;
 import bio.terra.profile.service.iam.SamService;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.stairway.FlightContext;
@@ -27,12 +26,11 @@ public record LinkBillingProfileIdToMrgStep(
       var subscriptionId = profile.getRequiredSubscriptionId();
       var mrgId = profile.getRequiredManagedResourceGroupId();
 
+      // TODO remove after TOAZ-291
       applicationService.addTagToMrg(
           tenantId, subscriptionId, mrgId, BILLING_PROFILE_ID_TAG, profile.id().toString());
 
-      SamRethrow.onInterrupted(
-          () -> samService.createManagedResourceGroup(profile, userRequest),
-          "createManagedResourceGroup");
+      samService.createManagedResourceGroup(profile, userRequest);
 
       return StepResult.getStepResultSuccess();
     } catch (Exception ex) {
@@ -42,6 +40,8 @@ public record LinkBillingProfileIdToMrgStep(
 
   @Override
   public StepResult undoStep(FlightContext context) throws InterruptedException {
+    samService.deleteManagedResourceGroup(profile.id(), userRequest);
+
     return StepResult.getStepResultSuccess();
   }
 }

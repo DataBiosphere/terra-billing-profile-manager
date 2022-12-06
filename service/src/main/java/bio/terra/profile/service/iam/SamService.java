@@ -352,6 +352,29 @@ public class SamService {
     }
   }
 
+  /**
+   * Deletes the managed resource group associated with the given billing profile in Sam.
+   *
+   * @param profileId profile ID whose MRG entry in Sam should be deleted
+   * @param userRequest authenticated user
+   * @throws InterruptedException
+   */
+  public void deleteManagedResourceGroup(UUID profileId, AuthenticatedUserRequest userRequest)
+      throws InterruptedException {
+    AzureApi azureApi = samAzureApi(userRequest.getToken());
+    try {
+      SamRetry.retry(() -> azureApi.deleteManagedResourceGroup(profileId.toString()));
+      logger.info("Deleted mrg in Sam for profile {}", profileId);
+    } catch (ApiException e) {
+      if (e.getCode() == HttpStatus.NOT_FOUND.value()) {
+        // MRG may already be deleted or not present
+        return;
+      }
+      throw SamExceptionFactory.create(
+          "Error deleting Sam managed resource group record for billing profile", e);
+    }
+  }
+
   public void createManagedResourceGroup(
       BillingProfile profile, AuthenticatedUserRequest userRequest) throws InterruptedException {
     AzureApi azureApi = samAzureApi(userRequest.getToken());
@@ -372,7 +395,18 @@ public class SamService {
           profile.tenantId(),
           profile.subscriptionId());
     } catch (ApiException e) {
-      throw SamExceptionFactory.create("Error creating managed resource group in Sam", e);
+      if (e.getCode() == HttpStatus.CONFLICT.value()) {
+        // MRG has already been created in Sam, move on
+        logger.info(
+            "Mrg record already exists in Sam for profile {},  mrg id = {}, tenant = {}, subscription = {}",
+            profile.id(),
+            profile.managedResourceGroupId(),
+            profile.tenantId(),
+            profile.subscriptionId());
+        return;
+      }
+      throw SamExceptionFactory.create(
+          "Error creating managed resource group record for billing profile", e);
     }
   }
 
