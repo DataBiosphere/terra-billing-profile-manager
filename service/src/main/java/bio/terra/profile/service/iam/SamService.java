@@ -375,6 +375,13 @@ public class SamService {
     }
   }
 
+  /**
+   * Creates a record in Sam that links a billing profile to an Azure MRG
+   *
+   * @param profile Billing profile that will be linked
+   * @param userRequest authenticated user
+   * @throws InterruptedException
+   */
   public void createManagedResourceGroup(
       BillingProfile profile, AuthenticatedUserRequest userRequest) throws InterruptedException {
     AzureApi azureApi = samAzureApi(userRequest.getToken());

@@ -11,7 +11,7 @@ import bio.terra.stairway.FlightContext;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
-public class UnlinkBillingProfileIdFromMrgStepUnitTest extends BaseUnitTest {
+class UnlinkBillingProfileIdFromMrgStepUnitTest extends BaseUnitTest {
   AuthenticatedUserRequest userRequest =
       AuthenticatedUserRequest.builder()
           .setToken("fake-token")

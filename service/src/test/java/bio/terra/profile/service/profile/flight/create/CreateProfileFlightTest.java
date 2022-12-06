@@ -10,6 +10,7 @@ import bio.terra.common.sam.exception.SamExceptionFactory;
 import bio.terra.common.sam.exception.SamInterruptedException;
 import bio.terra.profile.app.configuration.AzureConfiguration;
 import bio.terra.profile.common.BaseSpringUnitTest;
+import bio.terra.profile.common.ProfileFixtures;
 import bio.terra.profile.model.AzureManagedAppModel;
 import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.service.azure.ApplicationService;
@@ -56,20 +57,7 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
             .addAllPermissions(CreateProfileVerifyAccountStep.PERMISSIONS_TO_TEST)
             .build();
     when(billingCow.testIamPermissions(any())).thenReturn(iamPermissionsResponse);
-    var profile =
-        new BillingProfile(
-            UUID.randomUUID(),
-            "fake-bp-name",
-            "fake-description",
-            "direct",
-            CloudPlatform.GCP,
-            Optional.of("ABCDEF-1234"),
-            Optional.empty(),
-            Optional.empty(),
-            Optional.empty(),
-            null,
-            null,
-            null);
+    var profile = ProfileFixtures.createGcpBillingProfile("ABCD1234");
 
     var createdProfile = profileService.createProfile(profile, userRequest);
 
@@ -121,20 +109,7 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
             .addAllPermissions(List.of("billing:wrong", "billing:fake"))
             .build();
     when(billingCow.testIamPermissions(any())).thenReturn(iamPermissionsResponse);
-    var profile =
-        new BillingProfile(
-            UUID.randomUUID(),
-            "fake-bp-name",
-            "fake-description",
-            "direct",
-            CloudPlatform.GCP,
-            Optional.of("ABCDEF-1234"),
-            Optional.empty(),
-            Optional.empty(),
-            Optional.empty(),
-            null,
-            null,
-            null);
+    var profile = ProfileFixtures.createGcpBillingProfile("ABCDEF-1234");
 
     assertThrows(
         InaccessibleBillingAccountException.class,
@@ -147,19 +122,7 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
         .thenReturn(Collections.emptyList());
 
     var profile =
-        new BillingProfile(
-            UUID.randomUUID(),
-            "fake-bp-name",
-            "fake-description",
-            "direct",
-            CloudPlatform.AZURE,
-            Optional.empty(),
-            Optional.of(UUID.randomUUID()),
-            Optional.of(UUID.randomUUID()),
-            Optional.of("fake-mrg"),
-            null,
-            null,
-            null);
+        ProfileFixtures.createAzureBillingProfile(UUID.randomUUID(), UUID.randomUUID(), "fake");
 
     assertThrows(
         InaccessibleApplicationDeploymentException.class,
@@ -181,21 +144,7 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
                     .managedResourceGroupId(mrgId)));
     when(azureService.getRegisteredProviderNamespacesForSubscription(any(), any()))
         .thenReturn(azureConfiguration.getRequiredProviders());
-
-    var profile =
-        new BillingProfile(
-            UUID.randomUUID(),
-            "fake-bp-name",
-            "fake-description",
-            "direct",
-            CloudPlatform.AZURE,
-            Optional.empty(),
-            Optional.of(tenantId),
-            Optional.of(subId),
-            Optional.of(mrgId),
-            null,
-            null,
-            null);
+    var profile = ProfileFixtures.createAzureBillingProfile(tenantId, subId, mrgId);
 
     profileService.createProfile(profile, userRequest);
 
@@ -209,7 +158,6 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
     var subId = UUID.randomUUID();
     var tenantId = UUID.randomUUID();
     var mrgId = "fake-mrg";
-    var billingProfileId = UUID.randomUUID();
     when(azureService.getAuthorizedManagedAppDeployments(any(), any(), any()))
         .thenReturn(
             Collections.singletonList(
@@ -222,21 +170,8 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
     doThrow(SamExceptionFactory.create("foo", new InterruptedException()))
         .when(samService)
         .createManagedResourceGroup(any(), eq(userRequest));
+    var profile = ProfileFixtures.createAzureBillingProfile(tenantId, subId, mrgId);
 
-    var profile =
-        new BillingProfile(
-            billingProfileId,
-            "fake-bp-name",
-            "fake-description",
-            "direct",
-            CloudPlatform.AZURE,
-            Optional.empty(),
-            Optional.of(tenantId),
-            Optional.of(subId),
-            Optional.of(mrgId),
-            null,
-            null,
-            null);
     assertThrows(
         SamInterruptedException.class, () -> profileService.createProfile(profile, userRequest));
 
