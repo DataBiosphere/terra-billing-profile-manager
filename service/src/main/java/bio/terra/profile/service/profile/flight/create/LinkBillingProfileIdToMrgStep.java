@@ -29,13 +29,13 @@ public record LinkBillingProfileIdToMrgStep(
       // TODO remove after TOAZ-291
       applicationService.addTagToMrg(
           tenantId, subscriptionId, mrgId, BILLING_PROFILE_ID_TAG, profile.id().toString());
-
-      samService.createManagedResourceGroup(profile, userRequest);
-
-      return StepResult.getStepResultSuccess();
     } catch (Exception ex) {
       return new StepResult(StepStatus.STEP_RESULT_FAILURE_FATAL, ex);
     }
+
+    samService.createManagedResourceGroup(profile, userRequest);
+
+    return StepResult.getStepResultSuccess();
   }
 
   @Override
