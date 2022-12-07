@@ -10,8 +10,10 @@ import bio.terra.profile.model.SystemStatusSystems;
 import bio.terra.profile.service.iam.model.SamAction;
 import bio.terra.profile.service.iam.model.SamResourceType;
 import bio.terra.profile.service.iam.model.SamRole;
+import bio.terra.profile.service.profile.model.BillingProfile;
 import com.google.common.annotations.VisibleForTesting;
 import io.opencensus.contrib.spring.aop.Traced;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +23,7 @@ import java.util.stream.Stream;
 import okhttp3.OkHttpClient;
 import org.broadinstitute.dsde.workbench.client.sam.ApiClient;
 import org.broadinstitute.dsde.workbench.client.sam.ApiException;
+import org.broadinstitute.dsde.workbench.client.sam.api.AzureApi;
 import org.broadinstitute.dsde.workbench.client.sam.api.ResourcesApi;
 import org.broadinstitute.dsde.workbench.client.sam.api.StatusApi;
 import org.broadinstitute.dsde.workbench.client.sam.api.UsersApi;
@@ -218,7 +221,8 @@ public class SamService {
       throws ApiException {
     ResourcesApi samResourceApi = samResourcesApi(userRequest.getToken());
     String samResourceName = SamResourceType.PROFILE.getSamResourceName();
-    samResourceApi.addUserToPolicyV2(samResourceName, resourceId.toString(), policyName, userEmail);
+    samResourceApi.addUserToPolicyV2(
+        samResourceName, resourceId.toString(), policyName, userEmail, null);
     AccessPolicyMembershipV2 result =
         samResourceApi.getPolicyV2(samResourceName, resourceId.toString(), policyName);
     return new SamPolicyModel().name(policyName).members(result.getMemberEmails());
@@ -306,7 +310,10 @@ public class SamService {
         new AccessPolicyMembershipV2().addRolesItem(SamRole.USER.getSamRoleName()));
 
     CreateResourceRequestV2 profileRequest =
-        new CreateResourceRequestV2().resourceId(profileId.toString()).policies(policyMap);
+        new CreateResourceRequestV2()
+            .resourceId(profileId.toString())
+            .policies(policyMap)
+            .authDomain(Collections.emptyList());
 
     try {
       SamRetry.retry(
@@ -345,6 +352,61 @@ public class SamService {
     }
   }
 
+  /**
+   * Deletes the managed resource group associated with the given billing profile in Sam.
+   *
+   * @param profileId profile ID whose MRG entry in Sam should be deleted
+   * @param userRequest authenticated user
+   * @throws InterruptedException
+   */
+  public void deleteManagedResourceGroup(UUID profileId, AuthenticatedUserRequest userRequest)
+      throws InterruptedException {
+    AzureApi azureApi = samAzureApi(userRequest.getToken());
+    try {
+      SamRetry.retry(() -> azureApi.deleteManagedResourceGroup(profileId.toString()));
+      logger.info("Deleted mrg in Sam for profile {}", profileId);
+    } catch (ApiException e) {
+      if (e.getCode() == HttpStatus.NOT_FOUND.value()) {
+        // MRG may already be deleted or not present
+        return;
+      }
+      throw SamExceptionFactory.create(
+          "Error deleting Sam managed resource group record for billing profile", e);
+    }
+  }
+
+  /**
+   * Creates a record in Sam that links a billing profile to an Azure MRG
+   *
+   * @param profile Billing profile that will be linked
+   * @param userRequest authenticated user
+   * @throws InterruptedException
+   */
+  public void createManagedResourceGroup(
+      BillingProfile profile, AuthenticatedUserRequest userRequest) throws InterruptedException {
+    AzureApi azureApi = samAzureApi(userRequest.getToken());
+    try {
+      SamRetry.retry(
+          () ->
+              azureApi.createManagedResourceGroup(
+                  profile.id().toString(),
+                  new ManagedResourceGroupCoordinates()
+                      .tenantId(profile.getRequiredTenantId().toString())
+                      .subscriptionId(profile.getRequiredSubscriptionId().toString())
+                      .managedResourceGroupName(profile.getRequiredManagedResourceGroupId())));
+
+      logger.info(
+          "Created mrg in Sam for profile {}, mrg id = {}, tenant = {}, subscription = {}",
+          profile.id(),
+          profile.managedResourceGroupId(),
+          profile.tenantId(),
+          profile.subscriptionId());
+    } catch (ApiException e) {
+      throw SamExceptionFactory.create(
+          "Error creating managed resource group record for billing profile", e);
+    }
+  }
+
   public SystemStatusSystems status() {
     // No access token needed since this is an unauthenticated API.
     StatusApi statusApi = new StatusApi(getApiClient(null));
@@ -375,6 +437,10 @@ public class SamService {
   @VisibleForTesting
   ResourcesApi samResourcesApi(String accessToken) {
     return new ResourcesApi(getApiClient(accessToken));
+  }
+
+  AzureApi samAzureApi(String accessToken) {
+    return new AzureApi(getApiClient(accessToken));
   }
 
   private ApiClient getApiClient(String accessToken) {

@@ -44,7 +44,7 @@ dependencies {
 	implementation group: 'bio.terra.cloud-resource-lib', name: 'azure-resourcemanager-common'
 
 	// Sam
-	implementation group: "org.broadinstitute.dsde.workbench", name: "sam-client_2.13", version: "0.1-c53306a-SNAP"
+	implementation group: "org.broadinstitute.dsde.workbench", name: "sam-client_2.13", version: "0.1-64bc634-SNAP"
 
 	// Test deps
 	testImplementation('org.springframework.boot:spring-boot-starter-test') {

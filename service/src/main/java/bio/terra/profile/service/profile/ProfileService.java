@@ -81,7 +81,7 @@ public class ProfileService {
             .description(description)
             .flightClass(DeleteProfileFlight.class)
             .userRequest(user)
-            .addParameter(ProfileMapKeys.PROFILE_ID, id)
+            .addParameter(ProfileMapKeys.PROFILE, billingProfile)
             .addParameter(JobMapKeys.CLOUD_PLATFORM.getKeyName(), platform.name());
     deleteJob.submitAndWait(null);
   }

@@ -3,6 +3,7 @@ package bio.terra.profile.service.profile.flight.create;
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.app.configuration.AzureConfiguration;
 import bio.terra.profile.db.ProfileDao;
+import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.service.azure.ApplicationService;
 import bio.terra.profile.service.azure.AzureService;
 import bio.terra.profile.service.crl.CrlService;
@@ -41,9 +42,13 @@ public class CreateProfileFlight extends Flight {
         addStep(
             new CreateProfileVerifyDeployedApplicationStep(
                 azureService, profile, azureConfig, user));
-        addStep(new LinkBillingProfileIdToMrgStep(appService, profile));
         break;
     }
     addStep(new CreateProfileAuthzIamStep(samService, profile, user));
+
+    if (CloudPlatform.AZURE == profile.cloudPlatform()) {
+      // we can link the profile to the MRG only after the Sam resource has been created
+      addStep(new LinkBillingProfileIdToMrgStep(appService, samService, profile, user));
+    }
   }
 }
