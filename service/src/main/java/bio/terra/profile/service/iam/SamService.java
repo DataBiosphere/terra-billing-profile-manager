@@ -402,16 +402,6 @@ public class SamService {
           profile.tenantId(),
           profile.subscriptionId());
     } catch (ApiException e) {
-      if (e.getCode() == HttpStatus.CONFLICT.value()) {
-        // MRG has already been created in Sam, move on
-        logger.info(
-            "Mrg record already exists in Sam for profile {},  mrg id = {}, tenant = {}, subscription = {}",
-            profile.id(),
-            profile.managedResourceGroupId(),
-            profile.tenantId(),
-            profile.subscriptionId());
-        return;
-      }
       throw SamExceptionFactory.create(
           "Error creating managed resource group record for billing profile", e);
     }
