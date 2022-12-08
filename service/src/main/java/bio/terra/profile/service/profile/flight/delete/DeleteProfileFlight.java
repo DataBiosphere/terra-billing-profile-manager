@@ -1,7 +1,6 @@
 package bio.terra.profile.service.profile.flight.delete;
 
 import bio.terra.common.iam.AuthenticatedUserRequest;
-import bio.terra.profile.app.common.MetricUtils;
 import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.service.iam.SamService;
@@ -35,6 +34,5 @@ public class DeleteProfileFlight extends Flight {
       addStep(new UnlinkBillingProfileIdFromMrgStep(samService, profile, user));
     }
     addStep(new DeleteProfileAuthzIamStep(samService, profileId, user));
-    MetricUtils.incrementProfileDeletion(platform);
   }
 }

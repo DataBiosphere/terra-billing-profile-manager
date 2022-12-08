@@ -1,7 +1,9 @@
 package bio.terra.profile.app.common;
 
 import bio.terra.profile.model.CloudPlatform;
+import bio.terra.profile.service.profile.model.BillingProfile;
 import io.micrometer.core.instrument.Metrics;
+import java.util.concurrent.Callable;
 
 public class MetricUtils {
 
@@ -10,13 +12,18 @@ public class MetricUtils {
   /**
    * Emit a metric for the duration of creating a billing profile.
    *
-   * @param runnable the code to execute to create the profile, which will be timed
+   * @param callable the code to execute to create the profile, which will be timed
    * @param platform the platform the profile will be created on
    */
-  public static void recordProfileCreation(Runnable runnable, CloudPlatform platform) {
-    Metrics.globalRegistry
-        .timer("profile.creation.time", CLOUD_PLATFORM_TAG, platform.toString())
-        .record(runnable);
+  public static BillingProfile recordProfileCreation(
+      Callable<BillingProfile> callable, CloudPlatform platform) {
+    try {
+      return Metrics.globalRegistry
+          .timer("profile.creation.time", CLOUD_PLATFORM_TAG, platform.toString())
+          .recordCallable(callable);
+    } catch (Exception ex) { // Any exception bubbling up from the callable.
+      throw new RuntimeException(ex);
+    }
   }
 
   /**
