@@ -36,7 +36,6 @@ public class CreateProfileFlight extends Flight {
     MetricUtils.recordProfileCreation(
         () -> {
           addStep(new GetProfileStep(profileDao, profile));
-
           addStep(new CreateProfileStep(profileDao, profile, user));
           switch (profile.cloudPlatform()) {
             case GCP -> addStep(new CreateProfileVerifyAccountStep(crlService, profile, user));
