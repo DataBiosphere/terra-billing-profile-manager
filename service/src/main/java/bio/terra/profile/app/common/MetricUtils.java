@@ -5,7 +5,7 @@ import io.micrometer.core.instrument.Metrics;
 
 public class MetricUtils {
 
-  private final static String CLOUD_PLATFORM_TAG = "cloudPlatform";
+  private static final String CLOUD_PLATFORM_TAG = "cloudPlatform";
 
   /**
    * Emit a metric for the duration of creating a billing profile.
