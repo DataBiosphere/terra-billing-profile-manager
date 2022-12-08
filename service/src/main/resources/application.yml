@@ -54,6 +54,8 @@ spring:
       static-locations: classpath:/api/
 
 management:
+  server:
+    port: 9098
   endpoints:
     web:
       exposure:

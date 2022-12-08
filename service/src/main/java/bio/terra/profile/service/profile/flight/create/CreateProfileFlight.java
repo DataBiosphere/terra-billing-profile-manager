@@ -1,6 +1,7 @@
 package bio.terra.profile.service.profile.flight.create;
 
 import bio.terra.common.iam.AuthenticatedUserRequest;
+import bio.terra.profile.app.common.MetricUtils;
 import bio.terra.profile.app.configuration.AzureConfiguration;
 import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.model.CloudPlatform;
@@ -32,23 +33,24 @@ public class CreateProfileFlight extends Flight {
     AuthenticatedUserRequest user =
         inputParameters.get(JobMapKeys.AUTH_USER_INFO.getKeyName(), AuthenticatedUserRequest.class);
 
-    addStep(new GetProfileStep(profileDao, profile));
-    addStep(new CreateProfileStep(profileDao, profile, user));
-    switch (profile.cloudPlatform()) {
-      case GCP:
-        addStep(new CreateProfileVerifyAccountStep(crlService, profile, user));
-        break;
-      case AZURE:
-        addStep(
-            new CreateProfileVerifyDeployedApplicationStep(
-                azureService, profile, azureConfig, user));
-        break;
-    }
-    addStep(new CreateProfileAuthzIamStep(samService, profile, user));
+    MetricUtils.recordProfileCreation(
+        () -> {
+          addStep(new GetProfileStep(profileDao, profile));
 
-    if (CloudPlatform.AZURE == profile.cloudPlatform()) {
-      // we can link the profile to the MRG only after the Sam resource has been created
-      addStep(new LinkBillingProfileIdToMrgStep(appService, samService, profile, user));
-    }
+          addStep(new CreateProfileStep(profileDao, profile, user));
+          switch (profile.cloudPlatform()) {
+            case GCP -> addStep(new CreateProfileVerifyAccountStep(crlService, profile, user));
+            case AZURE -> addStep(
+                new CreateProfileVerifyDeployedApplicationStep(
+                    azureService, profile, azureConfig, user));
+          }
+          addStep(new CreateProfileAuthzIamStep(samService, profile, user));
+
+          if (CloudPlatform.AZURE == profile.cloudPlatform()) {
+            // we can link the profile to the MRG only after the Sam resource has been created
+            addStep(new LinkBillingProfileIdToMrgStep(appService, samService, profile, user));
+          }
+        },
+        profile.cloudPlatform());
   }
 }
