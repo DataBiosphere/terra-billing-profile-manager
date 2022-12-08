@@ -22,7 +22,13 @@ public class MetricUtils {
           .timer("profile.creation.time", CLOUD_PLATFORM_TAG, platform.toString())
           .recordCallable(callable);
     } catch (Exception ex) { // Any exception bubbling up from the callable.
-      throw new RuntimeException(ex);
+      // The method we are calling does not declare checked exceptions, so retain the original exception.
+      if (ex instanceof RuntimeException) {
+        throw (RuntimeException)ex;
+      }
+      else {
+        throw new RuntimeException(ex);
+      }
     }
   }
 
