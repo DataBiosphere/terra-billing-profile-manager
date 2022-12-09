@@ -21,13 +21,12 @@ public class MetricUtils {
       return Metrics.globalRegistry
           .timer("profile.creation.time", CLOUD_PLATFORM_TAG, platform.toString())
           .recordCallable(callable);
-    } catch (Exception ex) { // Any exception bubbling up from the callable.
-      // The method we are calling does not declare checked exceptions, so retain the original.
-      if (ex instanceof RuntimeException) {
-        throw (RuntimeException) ex;
-      } else {
-        throw new RuntimeException(ex);
-      }
+    } catch (RuntimeException ex) {
+      // The method we are calling does not throw checked exceptions, so retain the original.
+      throw ex;
+    } catch (Exception ex) {
+      // We should not get into this case, see above.
+      throw new RuntimeException(ex);
     }
   }
 
