@@ -2,6 +2,7 @@ package bio.terra.profile.service.profile;
 
 import bio.terra.common.exception.ForbiddenException;
 import bio.terra.common.iam.AuthenticatedUserRequest;
+import bio.terra.profile.app.common.MetricUtils;
 import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.model.SamPolicyModel;
 import bio.terra.profile.service.iam.SamRethrow;
@@ -17,6 +18,7 @@ import bio.terra.profile.service.profile.flight.delete.DeleteProfileFlight;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,7 +59,9 @@ public class ProfileService {
             .flightClass(CreateProfileFlight.class)
             .request(profile)
             .userRequest(user);
-    return createJob.submitAndWait(BillingProfile.class);
+    Callable<BillingProfile> executeProfileCreation =
+        () -> createJob.submitAndWait(BillingProfile.class);
+    return MetricUtils.recordProfileCreation(executeProfileCreation, profile.cloudPlatform());
   }
 
   /**
@@ -84,6 +88,7 @@ public class ProfileService {
             .addParameter(ProfileMapKeys.PROFILE, billingProfile)
             .addParameter(JobMapKeys.CLOUD_PLATFORM.getKeyName(), platform.name());
     deleteJob.submitAndWait(null);
+    MetricUtils.incrementProfileDeletion(platform);
   }
 
   /**
