@@ -96,7 +96,7 @@ class DeleteProfileFlightTest extends BaseSpringUnitTest {
 
     var azureCounter =
         meterRegistry
-            .find("profile.deletion.count")
+            .find("bpm.profile.deletion.count")
             .tags("cloudPlatform", CloudPlatform.AZURE.toString())
             .counter();
     assertNotNull(azureCounter);
@@ -104,7 +104,7 @@ class DeleteProfileFlightTest extends BaseSpringUnitTest {
 
     var gcpCounter =
         meterRegistry
-            .find("profile.deletion.count")
+            .find("bpm.profile.deletion.count")
             .tags("cloudPlatform", CloudPlatform.GCP.toString())
             .counter();
     assertNotNull(gcpCounter);

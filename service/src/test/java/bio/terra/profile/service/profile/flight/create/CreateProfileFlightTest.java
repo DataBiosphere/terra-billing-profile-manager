@@ -88,7 +88,7 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
     assertNotNull(createdProfile.lastModified());
     assertEquals(createdProfile.createdBy(), userRequest.getEmail());
 
-    var timer = meterRegistry.find("profile.creation.time").timer();
+    var timer = meterRegistry.find("bpm.profile.creation.time").timer();
     assertNotNull(timer);
     assertEquals(timer.count(), 1);
     assertEquals(timer.getId().getTag("cloudPlatform"), CloudPlatform.GCP.toString());
@@ -175,7 +175,7 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
         .addTagToMrg(tenantId, subId, mrgId, "terra.billingProfileId", profile.id().toString());
     verify(samService).createManagedResourceGroup(profile, userRequest);
 
-    var timer = meterRegistry.find("profile.creation.time").timer();
+    var timer = meterRegistry.find("bpm.profile.creation.time").timer();
     assertNotNull(timer);
     assertEquals(timer.count(), 1);
     assertEquals(timer.getId().getTag("cloudPlatform"), CloudPlatform.AZURE.toString());

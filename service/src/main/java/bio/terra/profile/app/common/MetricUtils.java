@@ -7,6 +7,7 @@ import java.util.concurrent.Callable;
 
 public class MetricUtils {
 
+  private static final String NAMESPACE = "bpm";
   private static final String CLOUD_PLATFORM_TAG = "cloudPlatform";
 
   /**
@@ -19,7 +20,10 @@ public class MetricUtils {
       Callable<BillingProfile> callable, CloudPlatform platform) {
     try {
       return Metrics.globalRegistry
-          .timer("profile.creation.time", CLOUD_PLATFORM_TAG, platform.toString())
+          .timer(
+              String.format("%s.profile.creation.time", NAMESPACE),
+              CLOUD_PLATFORM_TAG,
+              platform.toString())
           .recordCallable(callable);
     } catch (RuntimeException ex) {
       // The method we are calling does not throw checked exceptions, so retain the original.
@@ -37,7 +41,10 @@ public class MetricUtils {
    */
   public static void incrementProfileDeletion(CloudPlatform platform) {
     Metrics.globalRegistry
-        .counter("profile.deletion.count", CLOUD_PLATFORM_TAG, platform.toString())
+        .counter(
+            String.format("%s.profile.deletion.count", NAMESPACE),
+            CLOUD_PLATFORM_TAG,
+            platform.toString())
         .increment();
   }
 }
