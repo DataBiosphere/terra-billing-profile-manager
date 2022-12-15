@@ -67,14 +67,6 @@ jobs:
       - name: Push GCR image
         run: docker push ${{ steps.image-name.outputs.name }}
 
-      - name: Deploy to Terra Dev environment
-        uses: broadinstitute/repository-dispatch@master
-        with:
-          token: ${{ secrets.BROADBOT_TOKEN }}
-          repository: broadinstitute/terra-helmfile
-          event-type: update-service
-          client-payload: '{"service": "bpm", "version": "${{ needs.tag.outputs.tag }}", "dev_only": false}'
-
       - name: Notify slack on failure
         uses: broadinstitute/action-slack@v3.8.0
         if: failure()
@@ -85,3 +77,27 @@ jobs:
           author_name: Publish to dev
           fields: job
           text: 'Publish failed :sadpanda:'
+
+  report-to-sherlock:
+    # Report new BPM version to Broad DevOps
+    uses: broadinstitute/sherlock/.github/workflows/client-report-app-version.yaml@main
+    needs: [tag, publish-job]
+    with:
+      new-version: ${{ needs.tag.outputs.tag }}
+      chart-name: 'bpm'
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+  set-version-in-dev:
+    # Put new BPM version in Broad dev environment
+    uses: broadinstitute/sherlock/.github/workflows/client-set-environment-app-version.yaml@main
+    needs: [tag, publish-job, report-to-sherlock]
+    with:
+      new-version: ${{ needs.tag.outputs.tag }}
+      chart-name: 'bpm'
+      environment-name: 'dev'
+    secrets:
+      sync-git-token: ${{ secrets.BROADBOT_TOKEN }}
+    permissions:
+      id-token: 'write'
