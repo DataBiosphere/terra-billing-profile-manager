@@ -8,7 +8,7 @@ import static org.mockito.Mockito.*;
 import bio.terra.common.exception.ForbiddenException;
 import bio.terra.common.exception.NotFoundException;
 import bio.terra.common.iam.AuthenticatedUserRequest;
-import bio.terra.profile.common.BaseSpringUnitTest;
+import bio.terra.profile.common.*;
 import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.model.SamPolicyModel;
@@ -26,11 +26,17 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
-public class ProfileServiceUnitTest extends BaseSpringUnitTest {
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+
+
+
+@SpringJUnitConfig
+public class ProfileServiceUnitTest extends BaseUnitTest {
 
   @Mock private ProfileDao profileDao;
   @Mock private SamService samService;
