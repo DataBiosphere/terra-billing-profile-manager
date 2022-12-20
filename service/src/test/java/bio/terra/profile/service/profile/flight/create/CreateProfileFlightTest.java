@@ -23,14 +23,10 @@ import bio.terra.profile.service.profile.exception.InaccessibleBillingAccountExc
 import bio.terra.profile.service.profile.exception.MissingRequiredFieldsException;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import com.google.iam.v1.TestIamPermissionsResponse;
-import io.micrometer.core.instrument.Metrics;
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -44,20 +40,6 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
   @MockBean SamService samService;
   @MockBean AzureService azureService;
   @MockBean ApplicationService applicationService;
-
-  private SimpleMeterRegistry meterRegistry;
-
-  @BeforeEach
-  void setUp() {
-    meterRegistry = new SimpleMeterRegistry();
-    Metrics.globalRegistry.add(meterRegistry);
-  }
-
-  @AfterEach
-  void tearDown() {
-    meterRegistry.clear();
-    Metrics.globalRegistry.clear();
-  }
 
   AuthenticatedUserRequest userRequest =
       AuthenticatedUserRequest.builder()
@@ -87,11 +69,6 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
     assertNotNull(createdProfile.createdTime());
     assertNotNull(createdProfile.lastModified());
     assertEquals(createdProfile.createdBy(), userRequest.getEmail());
-
-    var timer = meterRegistry.find("bpm.profile.creation.time").timer();
-    assertNotNull(timer);
-    assertEquals(timer.count(), 1);
-    assertEquals(timer.getId().getTag("cloudPlatform"), CloudPlatform.GCP.toString());
   }
 
   @Test
@@ -175,10 +152,6 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
         .addTagToMrg(tenantId, subId, mrgId, "terra.billingProfileId", profile.id().toString());
     verify(samService).createManagedResourceGroup(profile, userRequest);
 
-    var timer = meterRegistry.find("bpm.profile.creation.time").timer();
-    assertNotNull(timer);
-    assertEquals(timer.count(), 1);
-    assertEquals(timer.getId().getTag("cloudPlatform"), CloudPlatform.AZURE.toString());
   }
 
   @Test
