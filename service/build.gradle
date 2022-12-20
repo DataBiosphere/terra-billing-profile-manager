@@ -11,7 +11,7 @@ apply from: 'generators.gradle'
 apply from: 'publishing.gradle'
 
 dependencies {
-	implementation 'io.sentry:sentry:6.9.2'
+	implementation 'io.sentry:sentry:6.10.0'
 
 	implementation('org.yaml:snakeyaml') {
 		version {
