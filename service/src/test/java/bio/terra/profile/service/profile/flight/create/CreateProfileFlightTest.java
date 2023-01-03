@@ -151,7 +151,6 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
     verify(applicationService)
         .addTagToMrg(tenantId, subId, mrgId, "terra.billingProfileId", profile.id().toString());
     verify(samService).createManagedResourceGroup(profile, userRequest);
-
   }
 
   @Test
