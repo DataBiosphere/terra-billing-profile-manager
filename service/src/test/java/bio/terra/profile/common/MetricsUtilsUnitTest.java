@@ -1,17 +1,16 @@
 package bio.terra.profile.common;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import bio.terra.profile.app.common.MetricUtils;
 import bio.terra.profile.model.CloudPlatform;
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class MetricsUtilsUnitTest extends BaseUnitTest {
 
@@ -43,7 +42,8 @@ public class MetricsUtilsUnitTest extends BaseUnitTest {
 
   @Test
   void createAzureProfileMetrics() {
-    var profile = ProfileFixtures.createAzureBillingProfile(UUID.randomUUID(), UUID.randomUUID(), "fake-mrg");
+    var profile =
+        ProfileFixtures.createAzureBillingProfile(UUID.randomUUID(), UUID.randomUUID(), "fake-mrg");
 
     MetricUtils.recordProfileCreation(() -> profile, CloudPlatform.AZURE);
 
@@ -52,5 +52,4 @@ public class MetricsUtilsUnitTest extends BaseUnitTest {
     assertEquals(timer.count(), 1);
     assertEquals(timer.getId().getTag("cloudPlatform"), CloudPlatform.AZURE.toString());
   }
-
 }

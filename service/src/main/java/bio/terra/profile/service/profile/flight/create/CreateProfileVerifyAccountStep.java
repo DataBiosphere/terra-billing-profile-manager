@@ -17,7 +17,8 @@ import java.util.List;
 public record CreateProfileVerifyAccountStep(
     CrlService crlService, BillingProfile profile, AuthenticatedUserRequest user) implements Step {
 
-  public static final List<String> PERMISSIONS_TO_TEST = List.of("billing.resourceAssociations.create");
+  public static final List<String> PERMISSIONS_TO_TEST =
+      List.of("billing.resourceAssociations.create");
 
   @Override
   public StepResult doStep(FlightContext context) throws InterruptedException {
