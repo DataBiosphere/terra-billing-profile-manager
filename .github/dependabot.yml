@@ -15,4 +15,4 @@ updates:
       prefix: "[No Ticket]"
     ignore:
       - dependency-name: "org.springframework.boot:spring-boot-gradle-plugin"
-        versions: ["3.x"]
+        update-types: ["version-update:semver-major"]
