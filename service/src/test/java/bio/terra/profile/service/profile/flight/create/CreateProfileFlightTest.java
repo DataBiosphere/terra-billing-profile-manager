@@ -8,6 +8,7 @@ import bio.terra.cloudres.google.billing.CloudBillingClientCow;
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.common.sam.exception.SamExceptionFactory;
 import bio.terra.common.sam.exception.SamInterruptedException;
+import bio.terra.profile.app.common.MetricUtils;
 import bio.terra.profile.app.configuration.AzureConfiguration;
 import bio.terra.profile.common.BaseSpringUnitTest;
 import bio.terra.profile.common.ProfileFixtures;
@@ -176,5 +177,17 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
         SamInterruptedException.class, () -> profileService.createProfile(profile, userRequest));
 
     verify(samService).deleteManagedResourceGroup(profile.id(), userRequest);
+  }
+
+  @Test
+  void metricsAreCalledOnProfileCreation() {
+    try (var metricsMock = mockStatic(MetricUtils.class)) {
+      var profile = ProfileFixtures.createGcpBillingProfile("ABCD1234");
+      metricsMock
+          .when(() -> MetricUtils.recordProfileCreation(any(), eq(CloudPlatform.GCP)))
+          .thenReturn(profile);
+      profileService.createProfile(profile, userRequest);
+      metricsMock.verify(() -> MetricUtils.recordProfileCreation(any(), eq(CloudPlatform.GCP)));
+    }
   }
 }

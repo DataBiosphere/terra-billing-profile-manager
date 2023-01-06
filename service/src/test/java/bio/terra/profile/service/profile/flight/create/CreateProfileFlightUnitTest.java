@@ -55,7 +55,8 @@ public class CreateProfileFlightUnitTest extends BaseUnitTest {
 
     var flight = new CreateProfileFlight(inputParameters, context);
     var steps = flight.getSteps();
-    assertEquals(steps.get(0).getClass(), GetProfileStep.class);
+    assertEquals(4, steps.size());
+    assertEquals(GetProfileStep.class, steps.get(0).getClass());
     assertEquals(steps.get(1).getClass(), CreateProfileStep.class);
     assertEquals(steps.get(2).getClass(), CreateProfileVerifyAccountStep.class);
     assertEquals(steps.get(3).getClass(), CreateProfileAuthzIamStep.class);
@@ -85,6 +86,7 @@ public class CreateProfileFlightUnitTest extends BaseUnitTest {
 
     var flight = new CreateProfileFlight(inputParameters, context);
     var steps = flight.getSteps();
+    assertEquals(5, steps.size());
     assertEquals(steps.get(0).getClass(), GetProfileStep.class);
     assertEquals(steps.get(1).getClass(), CreateProfileStep.class);
     assertEquals(steps.get(2).getClass(), CreateProfileVerifyDeployedApplicationStep.class);
