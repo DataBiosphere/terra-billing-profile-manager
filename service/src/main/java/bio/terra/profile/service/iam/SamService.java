@@ -309,6 +309,10 @@ public class SamService {
         SamRole.USER.getSamRoleName(),
         new AccessPolicyMembershipV2().addRolesItem(SamRole.USER.getSamRoleName()));
 
+    policyMap.put(
+        SamRole.PET_CREATOR.getSamRoleName(),
+        new AccessPolicyMembershipV2().addRolesItem(SamRole.PET_CREATOR.getSamRoleName()));
+
     CreateResourceRequestV2 profileRequest =
         new CreateResourceRequestV2()
             .resourceId(profileId.toString())

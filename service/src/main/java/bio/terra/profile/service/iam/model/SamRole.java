@@ -7,7 +7,8 @@ import org.apache.commons.lang3.StringUtils;
 public enum SamRole {
   ADMIN("admin"),
   OWNER("owner"),
-  USER("user");
+  USER("user"),
+  PET_CREATOR("pet-creator");
 
   private final String samRoleName;
 
