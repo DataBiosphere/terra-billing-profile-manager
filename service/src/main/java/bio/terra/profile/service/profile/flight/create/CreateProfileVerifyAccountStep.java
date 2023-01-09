@@ -14,10 +14,11 @@ import com.google.iam.v1.TestIamPermissionsResponse;
 import java.util.List;
 
 /** Step to verify the user has access to a GCP profile's billing account. */
-record CreateProfileVerifyAccountStep(
+public record CreateProfileVerifyAccountStep(
     CrlService crlService, BillingProfile profile, AuthenticatedUserRequest user) implements Step {
 
-  public static List<String> PERMISSIONS_TO_TEST = List.of("billing.resourceAssociations.create");
+  public static final List<String> PERMISSIONS_TO_TEST =
+      List.of("billing.resourceAssociations.create");
 
   @Override
   public StepResult doStep(FlightContext context) throws InterruptedException {

@@ -5,10 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+import bio.terra.cloudres.google.billing.CloudBillingClientCow;
 import bio.terra.common.exception.ForbiddenException;
 import bio.terra.common.exception.NotFoundException;
 import bio.terra.common.iam.AuthenticatedUserRequest;
-import bio.terra.profile.common.BaseSpringUnitTest;
+import bio.terra.common.stairway.StairwayComponent;
+import bio.terra.profile.app.common.MdcHook;
+import bio.terra.profile.common.*;
 import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.model.SamPolicyModel;
@@ -20,8 +23,10 @@ import bio.terra.profile.service.job.JobMapKeys;
 import bio.terra.profile.service.job.JobService;
 import bio.terra.profile.service.profile.flight.ProfileMapKeys;
 import bio.terra.profile.service.profile.flight.create.CreateProfileFlight;
+import bio.terra.profile.service.profile.flight.create.CreateProfileVerifyAccountStep;
 import bio.terra.profile.service.profile.flight.delete.DeleteProfileFlight;
 import bio.terra.profile.service.profile.model.BillingProfile;
+import com.google.iam.v1.TestIamPermissionsResponse;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -29,8 +34,10 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
-public class ProfileServiceUnitTest extends BaseSpringUnitTest {
+@SpringJUnitConfig
+public class ProfileServiceUnitTest extends BaseUnitTest {
 
   @Mock private ProfileDao profileDao;
   @Mock private SamService samService;
@@ -42,6 +49,13 @@ public class ProfileServiceUnitTest extends BaseSpringUnitTest {
   private List<SamPolicyModel> profilePolicies;
   private SamPolicyModel userPolicy;
   private SamPolicyModel ownerPolicy;
+
+  AuthenticatedUserRequest userRequest =
+      AuthenticatedUserRequest.builder()
+          .setToken("fake-token")
+          .setSubjectId("fake-sub")
+          .setEmail("example@example.com")
+          .build();
 
   @BeforeEach
   public void before() {
@@ -232,5 +246,35 @@ public class ProfileServiceUnitTest extends BaseSpringUnitTest {
         NotFoundException.class,
         () ->
             profileService.deleteProfilePolicyMember(profile.id(), "user", "user@unit.com", user));
+  }
+
+  @Test
+  public void createProfileFlightSetup() {
+    var billingCow = mock(CloudBillingClientCow.class);
+    var iamPermissionsResponse =
+        TestIamPermissionsResponse.newBuilder()
+            .addAllPermissions(CreateProfileVerifyAccountStep.PERMISSIONS_TO_TEST)
+            .build();
+    when(billingCow.testIamPermissions(any())).thenReturn(iamPermissionsResponse);
+    StairwayComponent stairwayComponent = mock(StairwayComponent.class);
+
+    var builder = spy(new JobBuilder(jobService, stairwayComponent, mock(MdcHook.class)));
+    when(jobService.newJob()).thenReturn(builder);
+
+    var profile = ProfileFixtures.createGcpBillingProfile("ABCD1234");
+    doReturn(profile).when(builder).submitAndWait(eq(BillingProfile.class));
+
+    var createdProfile = profileService.createProfile(profile, userRequest);
+
+    assertEquals(createdProfile.id(), profile.id());
+    assertEquals(createdProfile.biller(), profile.biller());
+    assertEquals(createdProfile.cloudPlatform(), profile.cloudPlatform());
+    assertEquals(createdProfile.billingAccountId().get(), profile.billingAccountId().get());
+    assertEquals(createdProfile.displayName(), profile.displayName());
+    verify(jobService).newJob();
+    verify(builder).description(anyString());
+    verify(builder).flightClass(CreateProfileFlight.class);
+    verify(builder).request(profile);
+    verify(builder).userRequest(userRequest);
   }
 }
