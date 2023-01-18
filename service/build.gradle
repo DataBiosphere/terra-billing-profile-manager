@@ -34,7 +34,7 @@ dependencies {
 	implementation platform('com.google.cloud:libraries-bom:26.3.0')
 
 	// Cloud Resource Library
-	implementation group: "com.azure.resourcemanager", name: "azure-resourcemanager-managedapplications", version: "1.0.0-beta.1"
+	implementation group: "com.azure.resourcemanager", name: "azure-resourcemanager-managedapplications", version: "1.0.0-beta.2"
 	implementation group: "com.azure.resourcemanager", name: "azure-resourcemanager-subscription", version: "1.0.0-beta.1"
 
 
