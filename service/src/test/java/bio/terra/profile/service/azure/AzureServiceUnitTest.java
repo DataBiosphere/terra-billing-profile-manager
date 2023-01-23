@@ -222,12 +222,12 @@ public class AzureServiceUnitTest extends BaseUnitTest {
   public void getManagedApps_handlesMultipleEmails() {
     var authedTerraApp = mock(Application.class);
     mockApplicationCalls(
-            authedTerraApp,
-            offerName,
-            offerPublisher,
-            Optional.of("foo@bar.com, " + authedUserEmail),
-            "mrg_fake1",
-            "fake_app_1");
+        authedTerraApp,
+        offerName,
+        offerPublisher,
+        Optional.of("foo@bar.com, " + authedUserEmail),
+        "mrg_fake1",
+        "fake_app_1");
 
     var appsList = Stream.of(authedTerraApp);
     var appService = mock(ApplicationService.class);
@@ -243,23 +243,23 @@ public class AzureServiceUnitTest extends BaseUnitTest {
     offer.setAuthorizedUserKey(authorizedUserKey);
     var offers = Set.of(offer);
     var azureService =
-            new AzureService(
-                    crlService,
-                    appService,
-                    new AzureConfiguration("fake", "fake", "fake", offers, ImmutableSet.of()),
-                    profileDao);
+        new AzureService(
+            crlService,
+            appService,
+            new AzureConfiguration("fake", "fake", "fake", offers, ImmutableSet.of()),
+            profileDao);
 
     var result = azureService.getAuthorizedManagedAppDeployments(subId, true, user);
 
     var expected =
-            List.of(
-                    new AzureManagedAppModel()
-                            .applicationDeploymentName("fake_app_1")
-                            .tenantId(tenantId)
-                            .managedResourceGroupId("mrg_fake1")
-                            .subscriptionId(subId)
-                            .assigned(false)
-                            .region(regionName));
+        List.of(
+            new AzureManagedAppModel()
+                .applicationDeploymentName("fake_app_1")
+                .tenantId(tenantId)
+                .managedResourceGroupId("mrg_fake1")
+                .subscriptionId(subId)
+                .assigned(false)
+                .region(regionName));
     assertEquals(result, expected);
   }
 

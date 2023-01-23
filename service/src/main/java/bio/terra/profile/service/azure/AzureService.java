@@ -138,7 +138,8 @@ public class AzureService {
       var paramValues = (Map) rawParams.get(authedUserKey);
       var authedUsers = ((String) paramValues.get("value")).split(",");
 
-      return Arrays.stream(authedUsers).anyMatch(user -> user.trim().equals(userRequest.getEmail()));
+      return Arrays.stream(authedUsers)
+          .anyMatch(user -> user.trim().equals(userRequest.getEmail()));
     }
 
     return false;
