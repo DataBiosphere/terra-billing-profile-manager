@@ -14,6 +14,8 @@ public final class StartupInitializer {
   private static final String changelogPath = "db/changelog.xml";
   private static final Logger logger = LoggerFactory.getLogger(StartupInitializer.class);
 
+  private static final boolean INIT_STATIC_DATA = true;
+
   public static void initialize(ApplicationContext applicationContext) {
     // Initialize or upgrade the database depending on the configuration
     LiquibaseMigrator migrateService = applicationContext.getBean(LiquibaseMigrator.class);
@@ -33,6 +35,11 @@ public final class StartupInitializer {
 
     // The JobService initialization also handles Stairway initialization.
     jobService.initialize();
+
+    if (INIT_STATIC_DATA) {
+      StaticDataInitializer staticDataInitializer = applicationContext.getBean(StaticDataInitializer.class);
+      staticDataInitializer.initStaticData();
+    }
 
     if (sentryConfiguration.dsn().isEmpty()) {
       logger.info("No Sentry DSN found. Starting up without it.");

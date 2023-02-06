@@ -141,6 +141,17 @@ public class ProfileDao {
     }
   }
 
+
+  public boolean profileExistsWithId(UUID id) {
+    try {
+      getBillingProfileById(id);
+    } catch(ProfileNotFoundException e) {
+      return false;
+    }
+
+    return true;
+  }
+
   @WriteTransaction
   public boolean deleteBillingProfileById(UUID id) {
     try {
