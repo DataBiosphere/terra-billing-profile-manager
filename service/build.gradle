@@ -9,6 +9,7 @@ plugins {
 
 apply from: 'generators.gradle'
 apply from: 'publishing.gradle'
+apply from: 'testing.gradle'
 
 dependencies {
 	implementation 'io.sentry:sentry:6.13.0'

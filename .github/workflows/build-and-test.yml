@@ -114,8 +114,8 @@ jobs:
           pg_isready -h localhost -t 10
           psql -h localhost -U postgres -f ./service/local-dev/local-postgres-init.sql
 
-      - name: Test with coverage
-        run: ./gradlew --build-cache test jacocoTestReport
+      - name: Unit test with coverage
+        run: ./gradlew --build-cache :service:unitTest jacocoTestReport
 
       - name: SonarQube scan
         run: ./gradlew --build-cache sonarqube

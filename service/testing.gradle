@@ -1,0 +1,16 @@
+tasks.withType(Test) {
+    systemProperty 'spring.profiles.include', 'human-readable-logging'
+    testLogging.showStandardStreams = true
+}
+
+task unitTest(type: Test) {
+    useJUnitPlatform {
+        includeTags "unit"
+    }
+}
+
+task integrationTest(type: Test) {
+    useJUnitPlatform {
+        includeTags "integration"
+    }
+}
