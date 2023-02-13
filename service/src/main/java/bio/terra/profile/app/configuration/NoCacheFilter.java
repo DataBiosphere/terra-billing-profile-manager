@@ -13,7 +13,7 @@ public class NoCacheFilter implements Filter {
   public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
       throws IOException, ServletException {
     var servletResponse = (HttpServletResponse) response;
-    servletResponse.setHeader("Cache-Control", "no-cache");
+    servletResponse.setHeader("Cache-Control", "no-store");
     chain.doFilter(request, response);
   }
 }
