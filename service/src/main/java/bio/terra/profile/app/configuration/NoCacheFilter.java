@@ -5,8 +5,7 @@ import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletResponse;
 
-@WebFilter(
-    urlPatterns = {"/api/azure/v1/managedApps", "/api/profiles/v1", "/api/profiles/v1/{profileId}"})
+@WebFilter(urlPatterns = {"/api/*"})
 public class NoCacheFilter implements Filter {
 
   @Override

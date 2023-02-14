@@ -5,6 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
+import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -34,6 +35,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @ConfigurationPropertiesScan(basePackages = {"bio.terra.profile"})
 @EnableRetry
 @EnableTransactionManagement
+@ServletComponentScan
 public class Main {
   public static void main(String[] args) {
     new SpringApplicationBuilder(Main.class).initializers(new LoggingInitializer()).run(args);
