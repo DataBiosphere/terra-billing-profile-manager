@@ -33,9 +33,9 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
       "bio.terra.profile"
     })
 @ConfigurationPropertiesScan(basePackages = {"bio.terra.profile"})
+@ServletComponentScan(basePackages = {"bio.terra.profile"})
 @EnableRetry
 @EnableTransactionManagement
-@ServletComponentScan
 public class Main {
   public static void main(String[] args) {
     new SpringApplicationBuilder(Main.class).initializers(new LoggingInitializer()).run(args);
