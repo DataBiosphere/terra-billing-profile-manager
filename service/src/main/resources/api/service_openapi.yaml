@@ -152,6 +152,30 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
 
+  /api/profiles/v1/{profileId}/spendReport:
+    parameters:
+      - $ref: '#/components/parameters/ProfileId'
+    get:
+      parameters:
+        - $ref: '#/components/parameters/SpendReportStartDate'
+        - $ref: '#/components/parameters/SpendReportEndDate'
+        - $ref: '#/components/parameters/SpendReportAggregationKey'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpendReport'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/PermissionDenied'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
   /api/profiles/v1/{profileId}/policies:
     parameters:
       - $ref: '#/components/parameters/ProfileId'
@@ -329,6 +353,34 @@ components:
         type: integer
         minimum: 1
         default: 10
+
+    SpendReportStartDate:
+      name: spendReportStartDate
+      in: query
+      description: start date of report (YYYY-MM-DD). Data included in report will start at 12 AM UTC on this date.
+      required: true
+      schema:
+        type: string
+        format: date
+
+    SpendReportEndDate:
+      name: spendReportEndDate
+      in: query
+      description: end date of report (YYYY-MM-DD). Data included in report will end at 11:59 PM UTC on this date.
+      required: true
+      schema:
+        type: string
+        format: date
+
+    SpendReportAggregationKey:
+      name: spendReportAggregationKey
+      in: query
+      description: Key(s) indicating how to aggregate spend data in results. Will return only summary data (spendDetails is empty) if aggregationKey is not present. Aggregation can be sub-aggregated one level by appending a second aggregation key separated by a '~' as follows 'Aggregation~SubAggregation'. Aggregation key options are [Category, Daily]
+      required: false
+      schema:
+        type: array
+        items:
+          type: string
 
   schemas:
     CreateProfileRequest:
@@ -597,6 +649,73 @@ components:
       type: string
       description: Enum representing a cloud platform type.
       enum: [ 'AZURE', 'GCP' ]
+
+    SpendReport:
+      type: object
+      required:
+        - spendDetails
+        - spendSummary
+      properties:
+        spendDetails:
+          description: details of spend data, categorized by given key
+          type: array
+          items:
+            $ref: '#/components/schemas/SpendReportingAggregation'
+        spendSummary:
+          $ref: '#/components/schemas/SpendReportingForDateRange'
+
+    SpendReportingAggregation:
+      type: object
+      required:
+        - aggregationKey
+        - spendData
+      properties:
+        aggregationKey:
+          type: string
+          enum:
+            - Daily
+            - Category
+          description: Key indicating how spendData has been aggregated.
+        spendData:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpendReportingForDateRange'
+
+    SpendReportingForDateRange:
+      required:
+        - cost
+        - credits
+        - currency
+        - startTime
+        - endTime
+      type: object
+      properties:
+        cost:
+          type: string
+          description: total cost for date range
+        credits:
+          type: string
+          description: credits towards reported cost. cost - credits = amount billed to users
+        currency:
+          type: string
+          description: currency that cost and credits uses
+        startTime:
+          type: string
+          format: timestamp
+          description: timestamp (UTC) marking the start of reported spend range (YYYY-MM-DDThh:mm:ss.fffZ)
+        endTime:
+          type: string
+          format: timestamp
+          description: timestamp (UTC) marking the end of reported spend range (YYYY-MM-DDThh:mm:ss.fffZ)
+        category:
+          type: string
+          enum:
+            - Storage
+            - Compute
+            - Other
+          description: if present, Terra spend category that cost falls into
+        subAggregation:
+          $ref: '#/components/schemas/SpendReportingAggregation'
 
   responses:
     StatusResponse:
