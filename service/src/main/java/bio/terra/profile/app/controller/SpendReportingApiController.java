@@ -1,0 +1,49 @@
+package bio.terra.profile.app.controller;
+
+import bio.terra.common.iam.AuthenticatedUserRequest;
+import bio.terra.common.iam.AuthenticatedUserRequestFactory;
+import bio.terra.profile.api.SpendReportingApi;
+import bio.terra.profile.model.SpendReport;
+import bio.terra.profile.service.spendreporting.SpendReportingService;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
+import javax.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
+public class SpendReportingApiController implements SpendReportingApi {
+
+  private final HttpServletRequest request;
+  private final SpendReportingService spendReportingService;
+  private final AuthenticatedUserRequestFactory authenticatedUserRequestFactory;
+
+  @Autowired
+  public SpendReportingApiController(
+      HttpServletRequest request,
+      SpendReportingService spendReportingService,
+      AuthenticatedUserRequestFactory authenticatedUserRequestFactory) {
+    this.request = request;
+    this.spendReportingService = spendReportingService;
+    this.authenticatedUserRequestFactory = authenticatedUserRequestFactory;
+  }
+
+  @Override
+  public ResponseEntity<SpendReport> getSpendReport(
+      UUID id,
+      Date spendReportStartDate,
+      Date spendReportEndDate,
+      List<String> spendReportAggregationKey) {
+    AuthenticatedUserRequest authenticatedUserRequest =
+        authenticatedUserRequestFactory.from(request);
+    return new ResponseEntity<SpendReport>(
+        spendReportingService.getSpendReport(
+            id,
+            spendReportStartDate,
+            spendReportEndDate,
+            spendReportAggregationKey,
+            authenticatedUserRequest),
+        HttpStatus.OK);
+  }
+}

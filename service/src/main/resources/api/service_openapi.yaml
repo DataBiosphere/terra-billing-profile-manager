@@ -156,6 +156,10 @@ paths:
     parameters:
       - $ref: '#/components/parameters/ProfileId'
     get:
+      tags:
+        - Spend Reporting
+      summary: Get spend report for profile
+      operationId: getSpendReport
       parameters:
         - $ref: '#/components/parameters/SpendReportStartDate'
         - $ref: '#/components/parameters/SpendReportEndDate'
