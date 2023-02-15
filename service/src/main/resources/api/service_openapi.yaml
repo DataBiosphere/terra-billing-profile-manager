@@ -163,7 +163,6 @@ paths:
       parameters:
         - $ref: '#/components/parameters/SpendReportStartDate'
         - $ref: '#/components/parameters/SpendReportEndDate'
-        - $ref: '#/components/parameters/SpendReportAggregationKey'
       responses:
         '200':
           description: OK
@@ -375,16 +374,6 @@ components:
       schema:
         type: string
         format: date
-
-    SpendReportAggregationKey:
-      name: spendReportAggregationKey
-      in: query
-      description: Key(s) indicating how to aggregate spend data in results. Will return only summary data (spendDetails is empty) if aggregationKey is not present. Aggregation can be sub-aggregated one level by appending a second aggregation key separated by a '~' as follows 'Aggregation~SubAggregation'. Aggregation key options are [Category, Daily]
-      required: false
-      schema:
-        type: array
-        items:
-          type: string
 
   schemas:
     CreateProfileRequest:
@@ -677,7 +666,6 @@ components:
         aggregationKey:
           type: string
           enum:
-            - Daily
             - Category
           description: Key indicating how spendData has been aggregated.
         spendData:
@@ -718,8 +706,6 @@ components:
             - Compute
             - Other
           description: if present, Terra spend category that cost falls into
-        subAggregation:
-          $ref: '#/components/schemas/SpendReportingAggregation'
 
   responses:
     StatusResponse:
