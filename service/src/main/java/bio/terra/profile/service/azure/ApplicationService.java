@@ -4,7 +4,6 @@ import bio.terra.profile.service.azure.exception.InaccessibleSubscriptionExcepti
 import bio.terra.profile.service.crl.CrlService;
 import com.azure.core.management.exception.ManagementException;
 import com.azure.resourcemanager.managedapplications.models.Application;
-
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;

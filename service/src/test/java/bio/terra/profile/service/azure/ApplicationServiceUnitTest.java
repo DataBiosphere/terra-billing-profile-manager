@@ -6,11 +6,8 @@ import static org.mockito.Mockito.*;
 import bio.terra.profile.common.BaseUnitTest;
 import bio.terra.profile.service.azure.exception.InaccessibleSubscriptionException;
 import bio.terra.profile.service.crl.CrlService;
-import bio.terra.profile.service.profile.exception.DuplicateTagException;
 import com.azure.core.management.exception.ManagementError;
 import com.azure.core.management.exception.ManagementException;
-import com.azure.resourcemanager.resources.models.ResourceGroup;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
