@@ -31,10 +31,9 @@ public class SpendReportingApiController implements SpendReportingApi {
 
   @Override
   public ResponseEntity<SpendReport> getSpendReport(
-      UUID id,
-      Date spendReportStartDate,
-      Date spendReportEndDate,
-      List<String> spendReportAggregationKey) {
+      UUID id, Date spendReportStartDate, Date spendReportEndDate
+      /*, Temporarily commented to follow the swagger specification
+      List<String> spendReportAggregationKey*/ ) {
     AuthenticatedUserRequest authenticatedUserRequest =
         authenticatedUserRequestFactory.from(request);
     return new ResponseEntity<SpendReport>(
@@ -42,7 +41,7 @@ public class SpendReportingApiController implements SpendReportingApi {
             id,
             spendReportStartDate,
             spendReportEndDate,
-            spendReportAggregationKey,
+            List.of("spendReportAggregationKey"), // update once aggregationKey is a valid parameter
             authenticatedUserRequest),
         HttpStatus.OK);
   }

@@ -25,11 +25,16 @@ public class SpendReportingService {
 
   private final ProfileDao profileDao;
   private final SamService samService;
+  private final AzureCostManagementQuery azureCostManagementQuery;
 
   @Autowired
-  public SpendReportingService(ProfileDao profileDao, SamService samService) {
+  public SpendReportingService(
+      ProfileDao profileDao,
+      SamService samService,
+      AzureCostManagementQuery azureCostManagementQuery) {
     this.profileDao = profileDao;
     this.samService = samService;
+    this.azureCostManagementQuery = azureCostManagementQuery;
   }
 
   public SpendReport getSpendReport(

@@ -43,3 +43,6 @@ pom.xml
 
 ### write-config script output
 config/
+
+### jEnv
+.java-version
