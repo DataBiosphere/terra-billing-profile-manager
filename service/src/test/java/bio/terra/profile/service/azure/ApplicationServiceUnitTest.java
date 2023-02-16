@@ -1,5 +1,6 @@
 package bio.terra.profile.service.azure;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
@@ -21,7 +22,7 @@ class ApplicationServiceUnitTest extends BaseUnitTest {
 
     var result = applicationService.getTenantForSubscription(UUID.randomUUID());
 
-    assert (result.equals(expectedTenantId));
+    assertEquals(result, expectedTenantId);
   }
 
   @Test
@@ -34,10 +35,11 @@ class ApplicationServiceUnitTest extends BaseUnitTest {
                 null,
                 new ManagementError(ApplicationService.AZURE_SUB_NOT_FOUND, "not found")));
     var applicationService = new ApplicationService(crlService);
+    var testUuid = UUID.randomUUID();
 
     assertThrows(
         InaccessibleSubscriptionException.class,
-        () -> applicationService.getTenantForSubscription(UUID.randomUUID()));
+        () -> applicationService.getTenantForSubscription(testUuid));
   }
 
   @Test
@@ -47,9 +49,9 @@ class ApplicationServiceUnitTest extends BaseUnitTest {
         .thenThrow(
             new ManagementException("error", null, new ManagementError("ExampleError", "example")));
     var applicationService = new ApplicationService(crlService);
+    var testUuid = UUID.randomUUID();
 
     assertThrows(
-        ManagementException.class,
-        () -> applicationService.getTenantForSubscription(UUID.randomUUID()));
+        ManagementException.class, () -> applicationService.getTenantForSubscription(testUuid));
   }
 }
