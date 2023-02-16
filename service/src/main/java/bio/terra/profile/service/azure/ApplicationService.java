@@ -16,7 +16,7 @@ public class ApplicationService {
   public static final String AZURE_AUTH_FAILED = "AuthorizationFailed";
   public static final String INVALID_AUTH_TOKEN = "InvalidAuthenticationTokenTenant";
 
-  private static final Set<String> INACCCESSIBLE_SUB_CODES =
+  private static final Set<String> INACCESSIBLE_SUB_CODES =
       Set.of(AZURE_SUB_NOT_FOUND, AZURE_AUTH_FAILED, INVALID_AUTH_TOKEN);
 
   private final CrlService crlService;
@@ -48,7 +48,7 @@ public class ApplicationService {
     try {
       return crlService.getTenantForSubscription(subscriptionId);
     } catch (ManagementException e) {
-      if (INACCCESSIBLE_SUB_CODES.contains(e.getValue().getCode())) {
+      if (INACCESSIBLE_SUB_CODES.contains(e.getValue().getCode())) {
         throw new InaccessibleSubscriptionException("Subscription not accessible", e);
       }
       throw e;
