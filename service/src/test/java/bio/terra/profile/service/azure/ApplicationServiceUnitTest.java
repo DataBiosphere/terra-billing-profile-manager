@@ -55,41 +55,4 @@ class ApplicationServiceUnitTest extends BaseUnitTest {
         ManagementException.class,
         () -> applicationService.getTenantForSubscription(UUID.randomUUID()));
   }
-
-  @Test
-  void addTagToMrg() {
-    var tenantId = UUID.randomUUID();
-    var subId = UUID.randomUUID();
-    var mrgId = "fake_mrg_id";
-    var crlService = mock(CrlService.class);
-    var resourceGroup = mock(ResourceGroup.class);
-    var resourceGroupId = UUID.randomUUID().toString();
-    when(resourceGroup.id()).thenReturn(resourceGroupId);
-    when(crlService.getResourceGroup(tenantId, subId, mrgId)).thenReturn(resourceGroup);
-    var applicationService = new ApplicationService(crlService);
-
-    applicationService.addTagToMrg(tenantId, subId, mrgId, "fake_tag", "fake_value");
-
-    verify(crlService)
-        .updateTagsForResource(tenantId, subId, resourceGroupId, Map.of("fake_tag", "fake_value"));
-  }
-
-  @Test
-  void addTagToMrg_failsWhenTagExists() {
-    var tenantId = UUID.randomUUID();
-    var subId = UUID.randomUUID();
-    var mrgId = "fake_mrg_id";
-    var crlService = mock(CrlService.class);
-    var resourceGroup = mock(ResourceGroup.class);
-    when(resourceGroup.tags()).thenReturn(Map.of("fake_tag", "fake_value"));
-    when(crlService.getResourceGroup(tenantId, subId, mrgId)).thenReturn(resourceGroup);
-    var applicationService = new ApplicationService(crlService);
-
-    assertThrows(
-        DuplicateTagException.class,
-        () -> applicationService.addTagToMrg(tenantId, subId, mrgId, "fake_tag", "fake_value"));
-
-    verify(crlService, times(0).description("Should not attempt to add a tag if there is a dupe"))
-        .updateTagsForResource(any(), any(), any(), any());
-  }
 }
