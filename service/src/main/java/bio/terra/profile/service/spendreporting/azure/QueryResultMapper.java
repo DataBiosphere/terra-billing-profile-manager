@@ -1,8 +1,8 @@
-package bio.terra.profile.service.spendreporting;
+package bio.terra.profile.service.spendreporting.azure;
 
-import bio.terra.profile.service.spendreporting.model.SpendCategoryType;
-import bio.terra.profile.service.spendreporting.model.SpendData;
-import bio.terra.profile.service.spendreporting.model.SpendDataItem;
+import bio.terra.profile.service.spendreporting.azure.model.SpendCategoryType;
+import bio.terra.profile.service.spendreporting.azure.model.SpendData;
+import bio.terra.profile.service.spendreporting.azure.model.SpendDataItem;
 import com.azure.resourcemanager.costmanagement.models.QueryResult;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;

@@ -10,6 +10,7 @@ import bio.terra.profile.service.iam.model.SamAction;
 import bio.terra.profile.service.iam.model.SamResourceType;
 import bio.terra.profile.service.profile.ProfileService;
 import bio.terra.profile.service.profile.model.BillingProfile;
+import bio.terra.profile.service.spendreporting.azure.AzureCostManagementQuery;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;

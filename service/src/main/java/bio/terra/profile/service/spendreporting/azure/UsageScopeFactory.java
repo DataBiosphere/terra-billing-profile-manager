@@ -1,4 +1,4 @@
-package bio.terra.profile.service.spendreporting;
+package bio.terra.profile.service.spendreporting.azure;
 
 public class UsageScopeFactory {
   public static String buildResourceGroupUsageScope(

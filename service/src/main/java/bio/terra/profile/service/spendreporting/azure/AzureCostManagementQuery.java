@@ -1,7 +1,7 @@
-package bio.terra.profile.service.spendreporting;
+package bio.terra.profile.service.spendreporting.azure;
 
 import bio.terra.profile.service.crl.CrlService;
-import bio.terra.profile.service.spendreporting.model.SpendData;
+import bio.terra.profile.service.spendreporting.azure.model.SpendData;
 import com.azure.core.http.rest.Response;
 import com.azure.core.util.Context;
 import com.azure.resourcemanager.costmanagement.models.ExportType;

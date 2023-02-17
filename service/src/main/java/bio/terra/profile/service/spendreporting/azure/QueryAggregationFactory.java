@@ -1,4 +1,4 @@
-package bio.terra.profile.service.spendreporting;
+package bio.terra.profile.service.spendreporting.azure;
 
 import com.azure.resourcemanager.costmanagement.models.FunctionType;
 import com.azure.resourcemanager.costmanagement.models.QueryAggregation;

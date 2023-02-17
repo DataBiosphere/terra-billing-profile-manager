@@ -1,4 +1,4 @@
-package bio.terra.profile.service.spendreporting.model;
+package bio.terra.profile.service.spendreporting.azure.model;
 
 import java.util.Collections;
 import java.util.List;
