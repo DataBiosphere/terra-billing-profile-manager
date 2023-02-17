@@ -10,7 +10,7 @@ public class SpendData {
     this.spendDataItems = spendDataItems;
   }
 
-  public List<SpendDataItem> getCostItems() {
+  public List<SpendDataItem> getSpendDataItems() {
     return Collections.unmodifiableList(spendDataItems);
   }
 }

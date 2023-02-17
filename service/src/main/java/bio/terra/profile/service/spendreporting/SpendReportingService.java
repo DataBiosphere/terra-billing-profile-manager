@@ -10,7 +10,7 @@ import bio.terra.profile.service.iam.model.SamAction;
 import bio.terra.profile.service.iam.model.SamResourceType;
 import bio.terra.profile.service.profile.ProfileService;
 import bio.terra.profile.service.profile.model.BillingProfile;
-import bio.terra.profile.service.spendreporting.azure.AzureCostManagementQuery;
+import bio.terra.profile.service.spendreporting.azure.AzureSpendReportingService;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -26,16 +26,16 @@ public class SpendReportingService {
 
   private final ProfileDao profileDao;
   private final SamService samService;
-  private final AzureCostManagementQuery azureCostManagementQuery;
+  private final AzureSpendReportingService azureSpendReportingService;
 
   @Autowired
   public SpendReportingService(
       ProfileDao profileDao,
       SamService samService,
-      AzureCostManagementQuery azureCostManagementQuery) {
+      AzureSpendReportingService azureSpendReportingService) {
     this.profileDao = profileDao;
     this.samService = samService;
-    this.azureCostManagementQuery = azureCostManagementQuery;
+    this.azureSpendReportingService = azureSpendReportingService;
   }
 
   public SpendReport getSpendReport(
@@ -53,6 +53,9 @@ public class SpendReportingService {
     if (profile.cloudPlatform().equals(CloudPlatform.AZURE)) {
       // fetch spend data from Azure
       // turn data into SpendReport
+
+      // SpendData spendData = azureSpendReportingService.getBillingProjectSpendData(...);
+
     } else {
       throw new NotImplementedException(
           String.format(
