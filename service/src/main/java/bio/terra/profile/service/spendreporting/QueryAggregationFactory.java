@@ -12,11 +12,11 @@ public class QueryAggregationFactory {
         put("totalCost", new QueryAggregation().withName("Cost").withFunction(FunctionType.SUM));
       }
 
-      {
-        put(
-            "totalCostUSD",
-            new QueryAggregation().withName("CostUSD").withFunction(FunctionType.SUM));
-      }
+      //      {
+      //        put(
+      //            "totalCostUSD",
+      //            new QueryAggregation().withName("CostUSD").withFunction(FunctionType.SUM));
+      //      }
     };
   }
 }
