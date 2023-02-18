@@ -5,8 +5,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class SpendDataItemCategoryMapper {
-  private static final String AZURE_COMPUTE_RESOURCE_TYPE = "microsoft.compute";
-  private static final String AZURE_STORAGE_RESOURCE_TYPE = "microsoft.storage";
+  public static final String AZURE_COMPUTE_RESOURCE_TYPE = "microsoft.compute";
+  public static final String AZURE_STORAGE_RESOURCE_TYPE = "microsoft.storage";
 
   public SpendCategoryType mapResourceCategory(String resourceCategory) {
     if (resourceCategory.startsWith(AZURE_COMPUTE_RESOURCE_TYPE)) {

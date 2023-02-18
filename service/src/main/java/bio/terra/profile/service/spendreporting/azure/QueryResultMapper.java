@@ -11,13 +11,13 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class QueryResultMapper {
-  private static final int COST_COLUMN_INDEX = 0;
-  private static final int RESOURCE_TYPE_COLUMN_INDEX = 1;
-  private static final int CURRENCY_COLUMN_INDEX = 2;
+  public static final String COST_COLUMN_NAME = "cost";
+  public static final String RESOURCE_TYPE_COLUMN_NAME = "resourcetype";
+  public static final String CURRENCY_COLUMN_NAME = "currency";
 
-  private static final String COST_COLUMN_NAME = "cost";
-  private static final String RESOURCE_TYPE_COLUMN_NAME = "resourcetype";
-  private static final String CURRENCY_COLUMN_NAME = "currency";
+  public static final int COST_COLUMN_INDEX = 0;
+  public static final int RESOURCE_TYPE_COLUMN_INDEX = 1;
+  public static final int CURRENCY_COLUMN_INDEX = 2;
 
   private static final int EXPECTED_NUMBER_OF_COLUMNS = 3;
 
