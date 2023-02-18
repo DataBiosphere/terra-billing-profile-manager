@@ -15,6 +15,9 @@ public class AzureSpendReportingService {
     this.azureCostManagementQuery = azureCostManagementQuery;
   }
 
+  //Resources related to an Azure billing project reside in the 2 resource groups:
+  //1st - managed resource group related to the Terra managed app
+  //2nd - K8s node resource group
   public SpendData getBillingProjectSpendData(
       UUID subscriptionId,
       String resourceGroupName,
