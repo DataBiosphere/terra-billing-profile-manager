@@ -11,7 +11,8 @@ import bio.terra.profile.service.iam.model.SamResourceType;
 import bio.terra.profile.service.profile.ProfileService;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.profile.service.spendreporting.azure.AzureSpendReportingService;
-import java.util.Date;
+import bio.terra.profile.service.spendreporting.azure.model.SpendData;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 import org.apache.commons.lang3.NotImplementedException;
@@ -40,8 +41,8 @@ public class SpendReportingService {
 
   public SpendReport getSpendReport(
       UUID id,
-      Date startDate,
-      Date endDate,
+      OffsetDateTime startDate,
+      OffsetDateTime endDate,
       List<String> aggregationKeys,
       AuthenticatedUserRequest userRequest) {
     SamRethrow.onInterrupted(
@@ -53,9 +54,8 @@ public class SpendReportingService {
     if (profile.cloudPlatform().equals(CloudPlatform.AZURE)) {
       // fetch spend data from Azure
       // turn data into SpendReport
-
-      // SpendData spendData = azureSpendReportingService.getBillingProjectSpendData(...);
-
+      SpendData spendData =
+          azureSpendReportingService.getBillingProjectSpendData(profile, startDate, endDate);
     } else {
       throw new NotImplementedException(
           String.format(

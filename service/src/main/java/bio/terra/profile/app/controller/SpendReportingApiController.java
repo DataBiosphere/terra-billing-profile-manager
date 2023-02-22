@@ -5,6 +5,7 @@ import bio.terra.common.iam.AuthenticatedUserRequestFactory;
 import bio.terra.profile.api.SpendReportingApi;
 import bio.terra.profile.model.SpendReport;
 import bio.terra.profile.service.spendreporting.SpendReportingService;
+import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -39,8 +40,9 @@ public class SpendReportingApiController implements SpendReportingApi {
     return new ResponseEntity<SpendReport>(
         spendReportingService.getSpendReport(
             id,
-            spendReportStartDate,
-            spendReportEndDate,
+            // assumption that incoming date is in UTC
+            spendReportStartDate.toInstant().atOffset(ZoneOffset.UTC),
+            spendReportEndDate.toInstant().atOffset(ZoneOffset.UTC),
             List.of("spendReportAggregationKey"), // update once aggregationKey is a valid parameter
             authenticatedUserRequest),
         HttpStatus.OK);
