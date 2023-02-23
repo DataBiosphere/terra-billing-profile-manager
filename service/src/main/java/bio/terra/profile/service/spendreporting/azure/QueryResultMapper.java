@@ -1,6 +1,7 @@
 package bio.terra.profile.service.spendreporting.azure;
 
 import bio.terra.profile.service.spendreporting.azure.exception.UnexpectedCostManagementQueryResponse;
+import bio.terra.profile.service.spendreporting.azure.model.SpendCategoryType;
 import bio.terra.profile.service.spendreporting.azure.model.SpendData;
 import bio.terra.profile.service.spendreporting.azure.model.SpendDataItem;
 import com.azure.resourcemanager.costmanagement.models.QueryColumn;
@@ -28,6 +29,11 @@ public class QueryResultMapper {
   }
 
   public SpendData mapQueryResult(QueryResult queryResult) {
+    return mapQueryResult(queryResult, null);
+  }
+
+  public SpendData mapQueryResult(
+      QueryResult queryResult, SpendCategoryType categorizeEverythingWith) {
     throwIfDataFormatIsNotValid(queryResult);
 
     var spendItems =
@@ -38,11 +44,20 @@ public class QueryResultMapper {
                         r.get(RESOURCE_TYPE_COLUMN_INDEX).toString(),
                         Double.parseDouble(r.get(COST_COLUMN_INDEX).toString()),
                         r.get(CURRENCY_COLUMN_INDEX).toString(),
-                        spendDataItemCategoryMapper.mapResourceCategory(
-                            r.get(RESOURCE_TYPE_COLUMN_INDEX).toString())))
+                        getCategory(
+                            r.get(RESOURCE_TYPE_COLUMN_INDEX).toString(),
+                            categorizeEverythingWith)))
             .collect(Collectors.toList());
 
     return new SpendData(spendItems);
+  }
+
+  private SpendCategoryType getCategory(
+      String resourceType, SpendCategoryType categorizeEverythingWith) {
+    if (categorizeEverythingWith == null) {
+      return spendDataItemCategoryMapper.mapResourceCategory(resourceType);
+    }
+    return categorizeEverythingWith;
   }
 
   private void throwIfDataFormatIsNotValid(QueryResult queryResult) {

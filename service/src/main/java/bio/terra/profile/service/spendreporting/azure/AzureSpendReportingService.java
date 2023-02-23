@@ -3,7 +3,10 @@ package bio.terra.profile.service.spendreporting.azure;
 import bio.terra.profile.service.crl.CrlService;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.profile.service.spendreporting.azure.exception.KubernetesResourceNotFound;
+import bio.terra.profile.service.spendreporting.azure.model.SpendCategoryType;
 import bio.terra.profile.service.spendreporting.azure.model.SpendData;
+import com.azure.core.http.rest.Response;
+import com.azure.resourcemanager.costmanagement.models.QueryResult;
 import com.azure.resourcemanager.resources.ResourceManager;
 import com.azure.resourcemanager.resources.models.GenericResource;
 import java.time.OffsetDateTime;
@@ -15,14 +18,19 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class AzureSpendReportingService {
+  public static final String K8S_RESOURCE_GROUP_NAME_PREFIX = "MC";
   public static final String AZURE_KUBERNETES_RESOURCE_TYPE = "microsoft.container";
   private final AzureCostManagementQuery azureCostManagementQuery;
   private final CrlService crlService;
+  private final QueryResultMapper queryResultMapper;
 
   public AzureSpendReportingService(
-      AzureCostManagementQuery azureCostManagementQuery, CrlService crlService) {
+      AzureCostManagementQuery azureCostManagementQuery,
+      CrlService crlService,
+      QueryResultMapper queryResultMapper) {
     this.azureCostManagementQuery = azureCostManagementQuery;
     this.crlService = crlService;
+    this.queryResultMapper = queryResultMapper;
   }
 
   /**
@@ -66,8 +74,19 @@ public class AzureSpendReportingService {
 
   private SpendData querySpendDataForResourceGroup(
       UUID subscriptionId, String resourceGroupName, OffsetDateTime from, OffsetDateTime to) {
-    return azureCostManagementQuery.resourceGroupCostQueryWithResourceTypeGrouping(
-        subscriptionId, resourceGroupName, from, to);
+    Response<QueryResult> costQueryResponse =
+        azureCostManagementQuery.resourceGroupCostQueryWithResourceTypeGrouping(
+            subscriptionId, resourceGroupName, from, to);
+    if (isK8sResourceGroup(resourceGroupName)) {
+      return queryResultMapper.mapQueryResult(
+          costQueryResponse.getValue(), SpendCategoryType.COMPUTE);
+    } else {
+      return queryResultMapper.mapQueryResult(costQueryResponse.getValue());
+    }
+  }
+
+  private boolean isK8sResourceGroup(String resourceGroupName) {
+    return resourceGroupName.startsWith(K8S_RESOURCE_GROUP_NAME_PREFIX);
   }
 
   /**
@@ -94,6 +113,10 @@ public class AzureSpendReportingService {
     // where resourcegroupname is the name of managed resource group, clustername is the name of K8s
     // cluster, location is the region name.
     return String.format(
-        "MC_%s_%s_%s", resourceGroupName, k8sResource.get().name(), k8sResource.get().regionName());
+        "%s_%s_%s_%s",
+        K8S_RESOURCE_GROUP_NAME_PREFIX,
+        resourceGroupName,
+        k8sResource.get().name(),
+        k8sResource.get().regionName());
   }
 }

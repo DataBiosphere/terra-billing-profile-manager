@@ -1,7 +1,6 @@
 package bio.terra.profile.service.spendreporting.azure;
 
 import bio.terra.profile.service.crl.CrlService;
-import bio.terra.profile.service.spendreporting.azure.model.SpendData;
 import com.azure.core.http.rest.Response;
 import com.azure.core.util.Context;
 import com.azure.resourcemanager.costmanagement.models.ExportType;
@@ -23,26 +22,24 @@ public class AzureCostManagementQuery {
   private static final String GROUPING_BY_RESOURCE_Type = "ResourceType";
 
   private final CrlService crlService;
-  private final QueryResultMapper queryResultMapper;
 
-  public AzureCostManagementQuery(CrlService crlService, QueryResultMapper queryResultMapper) {
+  public AzureCostManagementQuery(CrlService crlService) {
     this.crlService = crlService;
-    this.queryResultMapper = queryResultMapper;
   }
 
-  public SpendData resourceGroupCostQueryWithResourceIdGrouping(
+  public Response<QueryResult> resourceGroupCostQueryWithResourceIdGrouping(
       UUID subscriptionId, String resourceGroupName, OffsetDateTime from, OffsetDateTime to) {
     return resourceGroupCostQuery(
         subscriptionId, resourceGroupName, from, to, GROUPING_BY_RESOURCE_ID);
   }
 
-  public SpendData resourceGroupCostQueryWithResourceTypeGrouping(
+  public Response<QueryResult> resourceGroupCostQueryWithResourceTypeGrouping(
       UUID subscriptionId, String resourceGroupName, OffsetDateTime from, OffsetDateTime to) {
     return resourceGroupCostQuery(
         subscriptionId, resourceGroupName, from, to, GROUPING_BY_RESOURCE_Type);
   }
 
-  private SpendData resourceGroupCostQuery(
+  private Response<QueryResult> resourceGroupCostQuery(
       UUID subscriptionId,
       String resourceGroupName,
       OffsetDateTime from,
@@ -50,25 +47,23 @@ public class AzureCostManagementQuery {
       String groupingName) {
     var costManagementManager = crlService.getCostManagementManager(subscriptionId);
 
-    Response<QueryResult> result =
-        costManagementManager
-            .queries()
-            .usageWithResponse(
-                UsageScopeFactory.buildResourceGroupUsageScope(
-                    subscriptionId.toString(), resourceGroupName),
-                new QueryDefinition()
-                    .withType(ExportType.ACTUAL_COST)
-                    .withTimeframe(TimeframeType.CUSTOM)
-                    .withTimePeriod(new QueryTimePeriod().withFrom(from).withTo(to))
-                    .withDataset(
-                        new QueryDataset()
-                            .withAggregation(QueryAggregationFactory.buildDefault())
-                            .withGrouping(
-                                List.of(
-                                    new QueryGrouping()
-                                        .withType(QueryColumnType.DIMENSION)
-                                        .withName(groupingName)))),
-                Context.NONE);
-    return queryResultMapper.mapQueryResult(result.getValue());
+    return costManagementManager
+        .queries()
+        .usageWithResponse(
+            UsageScopeFactory.buildResourceGroupUsageScope(
+                subscriptionId.toString(), resourceGroupName),
+            new QueryDefinition()
+                .withType(ExportType.ACTUAL_COST)
+                .withTimeframe(TimeframeType.CUSTOM)
+                .withTimePeriod(new QueryTimePeriod().withFrom(from).withTo(to))
+                .withDataset(
+                    new QueryDataset()
+                        .withAggregation(QueryAggregationFactory.buildDefault())
+                        .withGrouping(
+                            List.of(
+                                new QueryGrouping()
+                                    .withType(QueryColumnType.DIMENSION)
+                                    .withName(groupingName)))),
+            Context.NONE);
   }
 }
