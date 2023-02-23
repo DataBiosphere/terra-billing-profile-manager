@@ -14,7 +14,6 @@ import bio.terra.profile.service.spendreporting.azure.AzureSpendReportingService
 import bio.terra.profile.service.spendreporting.azure.model.SpendData;
 import bio.terra.profile.service.spendreporting.azure.model.mapper.SpendDataMapper;
 import java.time.OffsetDateTime;
-import java.util.List;
 import java.util.UUID;
 import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
@@ -47,13 +46,12 @@ public class SpendReportingService {
       UUID id,
       OffsetDateTime startDate,
       OffsetDateTime endDate,
-      List<String> aggregationKeys,
       AuthenticatedUserRequest userRequest) {
     SamRethrow.onInterrupted(
         () ->
-            samService.isAuthorized(
+            samService.verifyAuthorization(
                 userRequest, SamResourceType.PROFILE, id, SamAction.READ_SPEND_REPORT),
-        "checkSpendReportAuthz");
+        "verifyAuthorization");
     BillingProfile profile = profileDao.getBillingProfileById(id);
     if (profile.cloudPlatform().equals(CloudPlatform.AZURE)) {
       SpendData spendData =

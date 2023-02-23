@@ -7,7 +7,6 @@ import bio.terra.profile.model.SpendReport;
 import bio.terra.profile.service.spendreporting.SpendReportingService;
 import java.time.ZoneOffset;
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,9 +31,7 @@ public class SpendReportingApiController implements SpendReportingApi {
 
   @Override
   public ResponseEntity<SpendReport> getSpendReport(
-      UUID id, Date spendReportStartDate, Date spendReportEndDate
-      /*, Temporarily commented to follow the swagger specification
-      List<String> spendReportAggregationKey*/ ) {
+      UUID id, Date spendReportStartDate, Date spendReportEndDate) {
     AuthenticatedUserRequest authenticatedUserRequest =
         authenticatedUserRequestFactory.from(request);
     return new ResponseEntity<SpendReport>(
@@ -43,7 +40,6 @@ public class SpendReportingApiController implements SpendReportingApi {
             // assumption that incoming date is in UTC
             spendReportStartDate.toInstant().atOffset(ZoneOffset.UTC),
             spendReportEndDate.toInstant().atOffset(ZoneOffset.UTC),
-            List.of("spendReportAggregationKey"), // update once aggregationKey is a valid parameter
             authenticatedUserRequest),
         HttpStatus.OK);
   }
