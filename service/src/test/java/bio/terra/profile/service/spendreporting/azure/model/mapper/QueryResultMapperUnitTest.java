@@ -1,4 +1,4 @@
-package bio.terra.profile.service.spendreporting.azure;
+package bio.terra.profile.service.spendreporting.azure.model.mapper;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;

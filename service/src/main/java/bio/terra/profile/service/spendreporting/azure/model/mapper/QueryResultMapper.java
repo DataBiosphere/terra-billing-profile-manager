@@ -1,4 +1,4 @@
-package bio.terra.profile.service.spendreporting.azure;
+package bio.terra.profile.service.spendreporting.azure.model.mapper;
 
 import bio.terra.profile.service.spendreporting.azure.exception.UnexpectedCostManagementQueryResponse;
 import bio.terra.profile.service.spendreporting.azure.model.SpendCategoryType;
@@ -6,6 +6,7 @@ import bio.terra.profile.service.spendreporting.azure.model.SpendData;
 import bio.terra.profile.service.spendreporting.azure.model.SpendDataItem;
 import com.azure.resourcemanager.costmanagement.models.QueryColumn;
 import com.azure.resourcemanager.costmanagement.models.QueryResult;
+import java.time.OffsetDateTime;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
@@ -49,7 +50,7 @@ public class QueryResultMapper {
                             categorizeEverythingWith)))
             .collect(Collectors.toList());
 
-    return new SpendData(spendItems);
+    return new SpendData(spendItems, OffsetDateTime.now(), OffsetDateTime.now().plusDays(30));
   }
 
   private SpendCategoryType getCategory(

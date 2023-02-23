@@ -12,6 +12,7 @@ import bio.terra.profile.service.profile.ProfileService;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.profile.service.spendreporting.azure.AzureSpendReportingService;
 import bio.terra.profile.service.spendreporting.azure.model.SpendData;
+import bio.terra.profile.service.spendreporting.azure.model.mapper.SpendDataMapper;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -28,15 +29,18 @@ public class SpendReportingService {
   private final ProfileDao profileDao;
   private final SamService samService;
   private final AzureSpendReportingService azureSpendReportingService;
+  private final SpendDataMapper spendDataMapper;
 
   @Autowired
   public SpendReportingService(
       ProfileDao profileDao,
       SamService samService,
-      AzureSpendReportingService azureSpendReportingService) {
+      AzureSpendReportingService azureSpendReportingService,
+      SpendDataMapper spendDataMapper) {
     this.profileDao = profileDao;
     this.samService = samService;
     this.azureSpendReportingService = azureSpendReportingService;
+    this.spendDataMapper = spendDataMapper;
   }
 
   public SpendReport getSpendReport(
@@ -52,16 +56,13 @@ public class SpendReportingService {
         "checkSpendReportAuthz");
     BillingProfile profile = profileDao.getBillingProfileById(id);
     if (profile.cloudPlatform().equals(CloudPlatform.AZURE)) {
-      // fetch spend data from Azure
-      // turn data into SpendReport
       SpendData spendData =
           azureSpendReportingService.getBillingProjectSpendData(profile, startDate, endDate);
+      return spendDataMapper.mapSpendData(spendData);
     } else {
       throw new NotImplementedException(
           String.format(
               "Spend reporting for %s billing profiles is unsupported.", profile.cloudPlatform()));
     }
-
-    return new SpendReport();
   }
 }

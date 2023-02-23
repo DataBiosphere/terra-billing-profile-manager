@@ -1,7 +1,7 @@
-package bio.terra.profile.service.spendreporting.azure;
+package bio.terra.profile.service.spendreporting.azure.model.mapper;
 
-import static bio.terra.profile.service.spendreporting.azure.SpendDataItemCategoryMapper.AZURE_COMPUTE_RESOURCE_TYPE;
-import static bio.terra.profile.service.spendreporting.azure.SpendDataItemCategoryMapper.AZURE_STORAGE_RESOURCE_TYPE;
+import static bio.terra.profile.service.spendreporting.azure.model.mapper.SpendDataItemCategoryMapper.AZURE_COMPUTE_RESOURCE_TYPE;
+import static bio.terra.profile.service.spendreporting.azure.model.mapper.SpendDataItemCategoryMapper.AZURE_STORAGE_RESOURCE_TYPE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 

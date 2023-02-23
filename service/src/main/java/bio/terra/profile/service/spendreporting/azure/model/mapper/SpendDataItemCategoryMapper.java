@@ -1,4 +1,4 @@
-package bio.terra.profile.service.spendreporting.azure;
+package bio.terra.profile.service.spendreporting.azure.model.mapper;
 
 import bio.terra.profile.service.spendreporting.azure.model.SpendCategoryType;
 import org.springframework.stereotype.Component;

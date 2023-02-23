@@ -5,6 +5,7 @@ import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.profile.service.spendreporting.azure.exception.KubernetesResourceNotFound;
 import bio.terra.profile.service.spendreporting.azure.model.SpendCategoryType;
 import bio.terra.profile.service.spendreporting.azure.model.SpendData;
+import bio.terra.profile.service.spendreporting.azure.model.mapper.QueryResultMapper;
 import com.azure.core.http.rest.Response;
 import com.azure.resourcemanager.costmanagement.models.QueryResult;
 import com.azure.resourcemanager.resources.ResourceManager;
@@ -69,7 +70,7 @@ public class AzureSpendReportingService {
         azureCostManagementQueriesFutures.stream().map(CompletableFuture::join).toList();
 
     return new SpendData(
-        spendDataList.stream().flatMap(sp -> sp.getSpendDataItems().stream()).toList());
+        spendDataList.stream().flatMap(sp -> sp.getSpendDataItems().stream()).toList(), from, to);
   }
 
   private SpendData querySpendDataForResourceGroup(
