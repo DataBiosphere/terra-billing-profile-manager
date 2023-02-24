@@ -48,7 +48,7 @@ public class QueryResultMapper {
                         getCategory(
                             r.get(RESOURCE_TYPE_COLUMN_INDEX).toString(),
                             categorizeEverythingWith)))
-            .collect(Collectors.toList());
+            .toList();
 
     return new SpendData(spendItems, OffsetDateTime.now(), OffsetDateTime.now().plusDays(30));
   }

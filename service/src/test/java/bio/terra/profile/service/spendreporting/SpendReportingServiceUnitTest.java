@@ -70,14 +70,11 @@ public class SpendReportingServiceUnitTest extends BaseUnitTest {
             eq(SamAction.READ_SPEND_REPORT)))
         .thenReturn(true);
 
+    var from = OffsetDateTime.now();
+    var to = from.plusDays(30);
     assertThrows(
         NotImplementedException.class,
-        () ->
-            spendReportingService.getSpendReport(
-                resourceId,
-                OffsetDateTime.now(),
-                OffsetDateTime.now().plusDays(30),
-                authenticatedUserRequest));
+        () -> spendReportingService.getSpendReport(resourceId, from, to, authenticatedUserRequest));
   }
 
   @Test
@@ -93,14 +90,13 @@ public class SpendReportingServiceUnitTest extends BaseUnitTest {
             eq(billingProfileId),
             eq(SamAction.READ_SPEND_REPORT));
 
+    var from = OffsetDateTime.now();
+    var to = from.plusDays(30);
     assertThrows(
         ForbiddenException.class,
         () ->
             spendReportingService.getSpendReport(
-                billingProfileId,
-                OffsetDateTime.now(),
-                OffsetDateTime.now().plusDays(30),
-                authenticatedUserRequest));
+                billingProfileId, from, to, authenticatedUserRequest));
   }
 
   @Test

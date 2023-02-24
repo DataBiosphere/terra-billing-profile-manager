@@ -56,6 +56,10 @@ public class SpendReportingService {
     if (profile.cloudPlatform().equals(CloudPlatform.AZURE)) {
       SpendData spendData =
           azureSpendReportingService.getBillingProjectSpendData(profile, startDate, endDate);
+      logger.info(
+          "User with email '{}' requested spend report for billing profile with id '{}'",
+          userRequest.getEmail(),
+          id.toString());
       return spendDataMapper.mapSpendData(spendData);
     } else {
       throw new NotImplementedException(

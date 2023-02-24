@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class QueryAggregationFactory {
+  private QueryAggregationFactory() {}
+
   public static Map<String, QueryAggregation> buildDefault() {
     Map<String, QueryAggregation> queryAggregation = new HashMap<>();
     queryAggregation.put(

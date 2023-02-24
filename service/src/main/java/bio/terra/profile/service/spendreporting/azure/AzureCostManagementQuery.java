@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class AzureCostManagementQuery {
   private static final String GROUPING_BY_RESOURCE_ID = "ResourceId";
-  private static final String GROUPING_BY_RESOURCE_Type = "ResourceType";
+  private static final String GROUPING_BY_RESOURCE_TYPE = "ResourceType";
 
   private final CrlService crlService;
 
@@ -36,7 +36,7 @@ public class AzureCostManagementQuery {
   public Response<QueryResult> resourceGroupCostQueryWithResourceTypeGrouping(
       UUID subscriptionId, String resourceGroupName, OffsetDateTime from, OffsetDateTime to) {
     return resourceGroupCostQuery(
-        subscriptionId, resourceGroupName, from, to, GROUPING_BY_RESOURCE_Type);
+        subscriptionId, resourceGroupName, from, to, GROUPING_BY_RESOURCE_TYPE);
   }
 
   private Response<QueryResult> resourceGroupCostQuery(
