@@ -8,7 +8,6 @@ import bio.terra.profile.service.iam.SamRethrow;
 import bio.terra.profile.service.iam.SamService;
 import bio.terra.profile.service.iam.model.SamAction;
 import bio.terra.profile.service.iam.model.SamResourceType;
-import bio.terra.profile.service.profile.ProfileService;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.profile.service.spendreporting.azure.AzureSpendReportingService;
 import bio.terra.profile.service.spendreporting.azure.model.SpendData;
@@ -23,7 +22,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class SpendReportingService {
-  private static final Logger logger = LoggerFactory.getLogger(ProfileService.class);
+  private static final Logger logger = LoggerFactory.getLogger(SpendReportingService.class);
 
   private final ProfileDao profileDao;
   private final SamService samService;

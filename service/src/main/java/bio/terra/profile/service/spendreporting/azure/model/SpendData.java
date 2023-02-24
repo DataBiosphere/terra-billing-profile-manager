@@ -28,6 +28,6 @@ public class SpendData {
   }
 
   public String getCurrency() {
-    return spendDataItems.size() > 0 ? spendDataItems.get(0).currency() : "n/a";
+    return spendDataItems.isEmpty() ? "n/a" : spendDataItems.get(0).currency();
   }
 }

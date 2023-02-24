@@ -34,7 +34,7 @@ public class SpendReportingApiController implements SpendReportingApi {
       UUID id, Date spendReportStartDate, Date spendReportEndDate) {
     AuthenticatedUserRequest authenticatedUserRequest =
         authenticatedUserRequestFactory.from(request);
-    return new ResponseEntity<SpendReport>(
+    return new ResponseEntity<>(
         spendReportingService.getSpendReport(
             id,
             // assumption that incoming date is in UTC

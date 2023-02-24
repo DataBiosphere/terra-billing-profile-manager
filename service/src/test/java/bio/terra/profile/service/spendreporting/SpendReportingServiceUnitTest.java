@@ -4,7 +4,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
@@ -64,10 +63,10 @@ public class SpendReportingServiceUnitTest extends BaseUnitTest {
 
     when(mockProfileDao.getBillingProfileById(any(UUID.class))).thenReturn(gcpBillingProfile);
     when(mockSamService.isAuthorized(
-            eq(authenticatedUserRequest),
-            eq(SamResourceType.PROFILE),
-            eq(resourceId),
-            eq(SamAction.READ_SPEND_REPORT)))
+            authenticatedUserRequest,
+            SamResourceType.PROFILE,
+            resourceId,
+            SamAction.READ_SPEND_REPORT))
         .thenReturn(true);
 
     var from = OffsetDateTime.now();
@@ -85,10 +84,10 @@ public class SpendReportingServiceUnitTest extends BaseUnitTest {
     doThrow(ForbiddenException.class)
         .when(mockSamService)
         .verifyAuthorization(
-            eq(authenticatedUserRequest),
-            eq(SamResourceType.PROFILE),
-            eq(billingProfileId),
-            eq(SamAction.READ_SPEND_REPORT));
+            authenticatedUserRequest,
+            SamResourceType.PROFILE,
+            billingProfileId,
+            SamAction.READ_SPEND_REPORT);
 
     var from = OffsetDateTime.now();
     var to = from.plusDays(30);
@@ -111,19 +110,18 @@ public class SpendReportingServiceUnitTest extends BaseUnitTest {
     OffsetDateTime to = from.plusDays(30);
     when(mockProfileDao.getBillingProfileById(any(UUID.class))).thenReturn(azureBillingProfile);
     var spendData = SpendDataFixtures.buildDefaultSpendData();
-    when(mockAzureSpendReportingService.getBillingProjectSpendData(
-            eq(azureBillingProfile), eq(from), eq(to)))
+    when(mockAzureSpendReportingService.getBillingProjectSpendData(azureBillingProfile, from, to))
         .thenReturn(spendData);
     var spendReport = SpendReportFixtures.buildDefaultSpendReport();
-    when(mockSpendDataMapper.mapSpendData(eq(spendData))).thenReturn(spendReport);
+    when(mockSpendDataMapper.mapSpendData(spendData)).thenReturn(spendReport);
 
     doNothing()
         .when(mockSamService)
         .verifyAuthorization(
-            eq(authenticatedUserRequest),
-            eq(SamResourceType.PROFILE),
-            eq(billingProfileId),
-            eq(SamAction.READ_SPEND_REPORT));
+            authenticatedUserRequest,
+            SamResourceType.PROFILE,
+            billingProfileId,
+            SamAction.READ_SPEND_REPORT);
 
     spendReportingService.getSpendReport(billingProfileId, from, to, authenticatedUserRequest);
 
