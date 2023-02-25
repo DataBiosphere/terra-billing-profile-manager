@@ -1,18 +1,23 @@
 package bio.terra.profile.app.controller;
 
+import bio.terra.common.exception.InconsistentFieldsException;
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.common.iam.AuthenticatedUserRequestFactory;
 import bio.terra.profile.api.SpendReportingApi;
 import bio.terra.profile.model.SpendReport;
 import bio.terra.profile.service.spendreporting.SpendReportingService;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 
+@Controller
 public class SpendReportingApiController implements SpendReportingApi {
 
   private final HttpServletRequest request;
@@ -31,16 +36,23 @@ public class SpendReportingApiController implements SpendReportingApi {
 
   @Override
   public ResponseEntity<SpendReport> getSpendReport(
-      UUID id, Date spendReportStartDate, Date spendReportEndDate) {
+      UUID id,
+      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date spendReportStartDate,
+      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date spendReportEndDate) {
+    OffsetDateTime startDate = spendReportStartDate.toInstant().atOffset(ZoneOffset.UTC);
+    OffsetDateTime endDate = spendReportEndDate.toInstant().atOffset(ZoneOffset.UTC);
+    throwsIfParametersAreNotValid(startDate, endDate);
+
     AuthenticatedUserRequest authenticatedUserRequest =
         authenticatedUserRequestFactory.from(request);
     return new ResponseEntity<>(
-        spendReportingService.getSpendReport(
-            id,
-            // assumption that incoming date is in UTC
-            spendReportStartDate.toInstant().atOffset(ZoneOffset.UTC),
-            spendReportEndDate.toInstant().atOffset(ZoneOffset.UTC),
-            authenticatedUserRequest),
+        spendReportingService.getSpendReport(id, startDate, endDate, authenticatedUserRequest),
         HttpStatus.OK);
+  }
+
+  private void throwsIfParametersAreNotValid(OffsetDateTime startDate, OffsetDateTime endDate) {
+    if (endDate.isBefore(startDate)) {
+      throw new InconsistentFieldsException("End date should be greater than start date.");
+    }
   }
 }
