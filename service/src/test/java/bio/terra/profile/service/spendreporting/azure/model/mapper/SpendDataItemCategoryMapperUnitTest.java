@@ -14,23 +14,23 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-public class SpendDataItemCategoryMapperUnitTest extends BaseUnitTest {
+class SpendDataItemCategoryMapperUnitTest extends BaseUnitTest {
   private SpendDataItemCategoryMapper spendDataItemCategoryMapper;
 
   @BeforeEach
-  public void setup() {
+  void setup() {
     spendDataItemCategoryMapper = new SpendDataItemCategoryMapper();
   }
 
   @Test
-  public void testCompute() {
+  void testCompute() {
     assertThat(
         spendDataItemCategoryMapper.mapResourceCategory(AZURE_COMPUTE_RESOURCE_TYPE),
         equalTo(SpendCategoryType.COMPUTE));
   }
 
   @Test
-  public void testStorage() {
+  void testStorage() {
     assertThat(
         spendDataItemCategoryMapper.mapResourceCategory(AZURE_STORAGE_RESOURCE_TYPE),
         equalTo(SpendCategoryType.STORAGE));
@@ -38,7 +38,7 @@ public class SpendDataItemCategoryMapperUnitTest extends BaseUnitTest {
 
   @ParameterizedTest
   @MethodSource("getOtherAzureResourceTypes")
-  public void testOther(String azureResourceTypes) {
+  void testOther(String azureResourceTypes) {
     assertThat(
         spendDataItemCategoryMapper.mapResourceCategory(azureResourceTypes),
         equalTo(SpendCategoryType.OTHER));

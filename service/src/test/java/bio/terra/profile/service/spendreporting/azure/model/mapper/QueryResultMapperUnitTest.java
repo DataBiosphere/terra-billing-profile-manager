@@ -18,16 +18,16 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class QueryResultMapperUnitTest extends BaseUnitTest {
+class QueryResultMapperUnitTest extends BaseUnitTest {
   private QueryResultMapper queryResultMapper;
 
   @BeforeEach
-  public void setup() {
+  void setup() {
     queryResultMapper = new QueryResultMapper(new SpendDataItemCategoryMapper());
   }
 
   @Test
-  public void testMapQueryResultWithWrongNumberOfColumnsThrowsException() {
+  void testMapQueryResultWithWrongNumberOfColumnsThrowsException() {
     QueryResult queryResult = mock(QueryResult.class);
     var listOfOnlyOneColumn = List.of(new QueryColumn().withName("column1"));
     when(queryResult.columns()).thenReturn(listOfOnlyOneColumn);
@@ -38,7 +38,7 @@ public class QueryResultMapperUnitTest extends BaseUnitTest {
   }
 
   @Test
-  public void testMapQueryResultWithUnexpectedColumnNamesThrowsException() {
+  void testMapQueryResultWithUnexpectedColumnNamesThrowsException() {
     QueryResult queryResult = mock(QueryResult.class);
 
     var listOfOnlyOneColumn =
@@ -54,7 +54,7 @@ public class QueryResultMapperUnitTest extends BaseUnitTest {
   }
 
   @Test
-  public void testMapQueryResultWithShuffledColumnsThrowsException() {
+  void testMapQueryResultWithShuffledColumnsThrowsException() {
     QueryResult queryResult = mock(QueryResult.class);
 
     var currencyColumn = new QueryColumn().withName(QueryResultMapper.CURRENCY_COLUMN_NAME);
@@ -75,7 +75,7 @@ public class QueryResultMapperUnitTest extends BaseUnitTest {
   }
 
   @Test
-  public void testMapValidQueryResultSuccess() {
+  void testMapValidQueryResultSuccess() {
     List<List<Object>> rows = new ArrayList<>();
     List<Object> row =
         List.of(15.23, SpendDataItemCategoryMapper.AZURE_COMPUTE_RESOURCE_TYPE, "USD");

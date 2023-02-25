@@ -35,7 +35,7 @@ import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 @SpringJUnitConfig
-public class SpendReportingServiceUnitTest extends BaseUnitTest {
+class SpendReportingServiceUnitTest extends BaseUnitTest {
   private SpendReportingService spendReportingService;
 
   @Mock ProfileDao mockProfileDao;
@@ -48,14 +48,14 @@ public class SpendReportingServiceUnitTest extends BaseUnitTest {
   @Captor ArgumentCaptor<SpendData> spendDataCaptor;
 
   @BeforeEach
-  public void setup() {
+  void setup() {
     spendReportingService =
         new SpendReportingService(
             mockProfileDao, mockSamService, mockAzureSpendReportingService, mockSpendDataMapper);
   }
 
   @Test
-  public void testGetSpendReportForGcpThrowsException() throws InterruptedException {
+  void testGetSpendReportForGcpThrowsException() throws InterruptedException {
     var resourceId = UUID.randomUUID();
     var billingAccountId = UUID.randomUUID().toString();
     var gcpBillingProfile = ProfileFixtures.createGcpBillingProfile(billingAccountId);
@@ -77,7 +77,7 @@ public class SpendReportingServiceUnitTest extends BaseUnitTest {
   }
 
   @Test
-  public void testGetSpendReportUserIsNotAuthorizedThrowsException() throws InterruptedException {
+  void testGetSpendReportUserIsNotAuthorizedThrowsException() throws InterruptedException {
     UUID billingProfileId = UUID.randomUUID();
     var authenticatedUserRequest = AuthRequestFixtures.buildAuthRequest();
 
@@ -99,7 +99,7 @@ public class SpendReportingServiceUnitTest extends BaseUnitTest {
   }
 
   @Test
-  public void testGetSpendReportUserIsAuthorizedSuccess() throws InterruptedException {
+  void testGetSpendReportUserIsAuthorizedSuccess() throws InterruptedException {
     String billingAccountId = UUID.randomUUID().toString();
     UUID billingProfileId = UUID.randomUUID();
     var authenticatedUserRequest = AuthRequestFixtures.buildAuthRequest();

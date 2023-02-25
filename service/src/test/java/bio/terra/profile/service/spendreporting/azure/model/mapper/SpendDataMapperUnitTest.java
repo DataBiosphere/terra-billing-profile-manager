@@ -13,16 +13,16 @@ import bio.terra.profile.service.spendreporting.azure.model.SpendCategoryType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class SpendDataMapperUnitTest extends BaseUnitTest {
+class SpendDataMapperUnitTest extends BaseUnitTest {
   private SpendDataMapper spendDataMapper;
 
   @BeforeEach
-  public void setup() {
+  void setup() {
     spendDataMapper = new SpendDataMapper();
   }
 
   @Test
-  public void testMapSpendDataWithCategoryAggregation() {
+  void testMapSpendDataWithCategoryAggregation() {
     var spendData = SpendDataFixtures.buildDefaultSpendData();
 
     var spendReport = spendDataMapper.mapSpendData(spendData);

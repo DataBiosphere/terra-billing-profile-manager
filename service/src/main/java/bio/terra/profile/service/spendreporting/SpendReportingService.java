@@ -58,7 +58,7 @@ public class SpendReportingService {
       logger.info(
           "User with email '{}' requested spend report for billing profile with id '{}'",
           userRequest.getEmail(),
-          id.toString());
+          id);
       return spendDataMapper.mapSpendData(spendData);
     } else {
       throw new NotImplementedException(

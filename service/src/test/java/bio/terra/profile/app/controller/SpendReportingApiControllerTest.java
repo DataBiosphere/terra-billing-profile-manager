@@ -1,6 +1,5 @@
 package bio.terra.profile.app.controller;
 
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -23,7 +22,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.web.servlet.MockMvc;
 
 @AutoConfigureMockMvc
-public class SpendReportingApiControllerTest extends BaseSpringUnitTest {
+class SpendReportingApiControllerTest extends BaseSpringUnitTest {
   @Autowired MockMvc mockMvc;
   @MockBean SamService samService;
   @MockBean SpendReportingService spendReportingService;
@@ -32,7 +31,7 @@ public class SpendReportingApiControllerTest extends BaseSpringUnitTest {
 
   @BeforeEach
   void setup() throws Exception {
-    when(samService.getUserStatusInfo(eq(userRequest.getToken())))
+    when(samService.getUserStatusInfo(userRequest.getToken()))
         .thenReturn(
             new UserStatusInfo()
                 .userSubjectId(userRequest.getSubjectId())
@@ -41,7 +40,7 @@ public class SpendReportingApiControllerTest extends BaseSpringUnitTest {
   }
 
   @Test
-  public void getSpendReportWithWrongDateParameters_returnBadRequest() throws Exception {
+  void getSpendReportWithWrongDateParameters_returnBadRequest() throws Exception {
     var profileId = UUID.randomUUID();
     var startDate = OffsetDateTime.now();
     var endDate = startDate.minusDays(30);
@@ -55,7 +54,7 @@ public class SpendReportingApiControllerTest extends BaseSpringUnitTest {
   }
 
   @Test
-  public void getSpendReportWithWrongDateParameters_returnOk() throws Exception {
+  void getSpendReportWithWrongDateParameters_returnOk() throws Exception {
     var profileId = UUID.randomUUID();
     var startDate = OffsetDateTime.now();
     var endDate = startDate.plusDays(30);
