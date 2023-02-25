@@ -20,7 +20,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class AzureSpendReportingService {
   public static final String K8S_RESOURCE_GROUP_NAME_PREFIX = "MC";
-  public static final String AZURE_KUBERNETES_RESOURCE_TYPE = "microsoft.container";
+  public static final String AZURE_KUBERNETES_RESOURCE_TYPE =
+      "Microsoft.ContainerService/managedClusters";
   private final AzureCostManagementQuery azureCostManagementQuery;
   private final CrlService crlService;
   private final QueryResultMapper queryResultMapper;
