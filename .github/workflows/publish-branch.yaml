@@ -17,7 +17,7 @@ env:
   SERVICE_NAME: ${{ github.event.repository.name }}
 
 jobs:
-  publish-job:
+  publish-branch-job:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -38,3 +38,5 @@ jobs:
           ./gradlew --build-cache :service:jibDockerBuild \
           --image=${{ steps.image-name.outputs.name }} \
           -Djib.console=plain
+      - name: Push GCR image
+        run: docker push ${{ steps.image-name.outputs.name }}
