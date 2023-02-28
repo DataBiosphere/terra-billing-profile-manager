@@ -1,7 +1,9 @@
 package bio.terra.profile.app.controller;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import bio.terra.common.iam.AuthenticatedUserRequest;
@@ -40,7 +42,7 @@ class SpendReportingApiControllerTest extends BaseSpringUnitTest {
   }
 
   @Test
-  void getSpendReportWithWrongDateParameters_returnBadRequest() throws Exception {
+  void getSpendReportWithWrongDateRange_returnBadRequest() throws Exception {
     var profileId = UUID.randomUUID();
     var startDate = OffsetDateTime.now();
     var endDate = startDate.minusDays(30);
@@ -50,7 +52,46 @@ class SpendReportingApiControllerTest extends BaseSpringUnitTest {
                 .queryParam("spendReportStartDate", startDate.format(DateTimeFormatter.ISO_DATE))
                 .queryParam("spendReportEndDate", endDate.format(DateTimeFormatter.ISO_DATE))
                 .header("Authorization", "Bearer " + userRequest.getToken()))
-        .andExpect(status().is(HttpStatus.BAD_REQUEST.value()));
+        .andExpect(status().is(HttpStatus.BAD_REQUEST.value()))
+        .andExpect(content().string(containsString("End date should be greater than start date")));
+  }
+
+  @Test
+  void getSpendReportWithWrongStartDateFormat_returnBadRequest() throws Exception {
+    var profileId = UUID.randomUUID();
+    var now = OffsetDateTime.now();
+    var startDateWithWrongFormat =
+        String.format("%s.%s.%s", now.getMonth(), now.getDayOfMonth(), now.getYear());
+    mockMvc
+        .perform(
+            get("/api/profiles/v1/{profileId}/spendReport", profileId.toString())
+                .queryParam("spendReportStartDate", startDateWithWrongFormat)
+                .queryParam(
+                    "spendReportEndDate", now.plusDays(30).format(DateTimeFormatter.ISO_DATE))
+                .header("Authorization", "Bearer " + userRequest.getToken()))
+        .andExpect(status().is(HttpStatus.BAD_REQUEST.value()))
+        .andExpect(
+            content()
+                .string(containsString("Invalid request MethodArgumentTypeMismatchException")));
+  }
+
+  @Test
+  void getSpendReportWithWrongEndDateFormat_returnBadRequest() throws Exception {
+    var profileId = UUID.randomUUID();
+    var now = OffsetDateTime.now();
+    var endDateWithWrongFormat =
+        String.format("%s.%s.%s", now.getMonth(), now.getDayOfMonth(), now.getYear());
+    mockMvc
+        .perform(
+            get("/api/profiles/v1/{profileId}/spendReport", profileId.toString())
+                .queryParam(
+                    "spendReportStartDate", now.minusDays(30).format(DateTimeFormatter.ISO_DATE))
+                .queryParam("spendReportEndDate", endDateWithWrongFormat)
+                .header("Authorization", "Bearer " + userRequest.getToken()))
+        .andExpect(status().is(HttpStatus.BAD_REQUEST.value()))
+        .andExpect(
+            content()
+                .string(containsString("Invalid request MethodArgumentTypeMismatchException")));
   }
 
   @Test

@@ -20,8 +20,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class AzureSpendReportingService {
   public static final String K8S_RESOURCE_GROUP_NAME_PREFIX = "MC";
-  public static final String AZURE_KUBERNETES_RESOURCE_TYPE =
-      "Microsoft.ContainerService/managedClusters";
+  public static final String AZURE_KUBERNETES_RESOURCE_TYPE = "managedClusters";
   private final AzureCostManagementQuery azureCostManagementQuery;
   private final CrlService crlService;
   private final QueryResultMapper queryResultMapper;
@@ -58,14 +57,17 @@ public class AzureSpendReportingService {
             CompletableFuture.supplyAsync(
                 () ->
                     querySpendDataForResourceGroup(
-                        billingProfile.getRequiredTenantId(),
+                        billingProfile.getRequiredSubscriptionId(),
                         billingProfile.getRequiredManagedResourceGroupId(),
                         from,
                         to)),
             CompletableFuture.supplyAsync(
                 () ->
                     querySpendDataForResourceGroup(
-                        billingProfile.getRequiredTenantId(), k8sNodeResourceGroup, from, to)));
+                        billingProfile.getRequiredSubscriptionId(),
+                        k8sNodeResourceGroup,
+                        from,
+                        to)));
 
     List<SpendData> spendDataList =
         azureCostManagementQueriesFutures.stream().map(CompletableFuture::join).toList();

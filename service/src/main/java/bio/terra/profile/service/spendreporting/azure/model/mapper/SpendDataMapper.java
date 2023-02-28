@@ -7,27 +7,43 @@ import bio.terra.profile.service.spendreporting.azure.model.SpendCategoryType;
 import bio.terra.profile.service.spendreporting.azure.model.SpendData;
 import bio.terra.profile.service.spendreporting.azure.model.SpendDataItem;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
 @Component
 public class SpendDataMapper {
+  public static final String COST_FORMAT = "%.2f";
+
   public SpendReport mapSpendData(SpendData data) {
     var spendData =
         data.getSpendDataItems().stream()
             .map(
                 sdi ->
-                    new SpendReportingForDateRange()
-                        .cost(sdi.cost().toString())
-                        .currency(sdi.currency())
-                        .credits("0") // Azure doesn't provide such data
-                        .category(mapCategory(sdi.spendCategoryType())))
+                    buildSpendReportingForDateRange(
+                        sdi.cost(), sdi.currency(), sdi.spendCategoryType()))
+            .collect(Collectors.groupingBy(SpendReportingForDateRange::getCategory))
+            .entrySet()
+            .stream()
+            .map(
+                kvp -> {
+                  var categoryTotalCost =
+                      kvp.getValue().stream()
+                          .mapToDouble(e -> Double.parseDouble(e.getCost()))
+                          .sum();
+                  var currency =
+                      kvp.getValue().stream()
+                          .findFirst()
+                          .map(SpendReportingForDateRange::getCurrency)
+                          .orElse("n/a");
+                  return buildSpendReportingForDateRange(categoryTotalCost, currency, kvp.getKey());
+                })
             .toList();
 
     var spendSummary =
         new SpendReportingForDateRange()
             .cost(
                 String.format(
-                    "%.2f",
+                    COST_FORMAT,
                     data.getSpendDataItems().stream().mapToDouble(SpendDataItem::cost).sum()))
             .currency(data.getCurrency())
             .credits("0")
@@ -43,7 +59,26 @@ public class SpendDataMapper {
         .spendSummary(spendSummary);
   }
 
-  private SpendReportingForDateRange.CategoryEnum mapCategory(SpendCategoryType spendCategoryType) {
+  private static SpendReportingForDateRange buildSpendReportingForDateRange(
+      Double cost, String currency, SpendCategoryType spendCategoryType) {
+    return new SpendReportingForDateRange()
+        .cost(cost.toString())
+        .currency(currency)
+        .credits("0") // Azure doesn't provide such data
+        .category(mapCategory(spendCategoryType));
+  }
+
+  private static SpendReportingForDateRange buildSpendReportingForDateRange(
+      Double cost, String currency, SpendReportingForDateRange.CategoryEnum categoryEnum) {
+    return new SpendReportingForDateRange()
+        .cost(String.format(COST_FORMAT, cost))
+        .currency(currency)
+        .credits("0") // Azure doesn't provide such data
+        .category(categoryEnum);
+  }
+
+  private static SpendReportingForDateRange.CategoryEnum mapCategory(
+      SpendCategoryType spendCategoryType) {
     switch (spendCategoryType) {
       case STORAGE -> {
         return SpendReportingForDateRange.CategoryEnum.STORAGE;
