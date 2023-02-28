@@ -35,5 +35,8 @@ jobs:
           ./gradlew --build-cache :service:jibDockerBuild \
           --image=${{ steps.image-name.outputs.name }} \
           -Djib.console=plain
+      - name: Push GCR image
+        run: docker push ${{ steps.image-name.outputs.name }}
+
 #      - name: Push GCR image
 #        run: docker push ${{ steps.image-name.outputs.name }}
