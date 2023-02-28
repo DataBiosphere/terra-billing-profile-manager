@@ -17,8 +17,15 @@ env:
   SERVICE_NAME: ${{ github.event.repository.name }}
 
 jobs:
+  vars:
+    runs-on: ubuntu-latest
+    outputs:
+      git-sha: ${{ env.GIT_SHORTHASH }}
+    steps:
+      - run: echo "Setting git sha"
+
   publish-image:
     uses: ./.github/workflows/publish.yml
     secrets: inherit
     with:
-      image_tag: ${{ GIT_SHORTHASH }}
+      image_tag: ${{ needs.vars.outputs.git-sha }}
