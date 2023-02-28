@@ -1,19 +1,20 @@
-name: Tag, publish, deploy
-on: workflow_dispatch
+name: Publish image
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      image_tag:
+        required: true
+        type: string
 
-# Tags HEAD of main branch, builds and publishes images and deploys to Terra dev environment
 
 env:
   SERVICE_NAME: ${{ github.event.repository.name }}
   GOOGLE_PROJECT: broad-dsp-gcr-public
 
-jobs:
-  tag:
-    uses: ./.github/workflows/tag.yml
-    secrets: inherit
 
-  publish-job:
-    needs: [ tag ]
+jobs:
+  publish-image-job:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -22,82 +23,17 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-
-      - name: Cache Gradle packages
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: v1-${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            v1-${{ runner.os }}-gradle-
-
-      - name: Publish API client
-        run: ./gradlew :client:artifactoryPublish
-        env:
-          ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-          ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-          ARTIFACTORY_REPO_KEY: libs-snapshot-local
-
       - name: Auth to GCR
         uses: google-github-actions/auth@v0
         with:
           credentials_json: ${{ secrets.GCR_PUBLISH_KEY_B64 }}
-      - name: Explicitly auth Docker for GCR
-        run: gcloud auth configure-docker --quiet
-
       - name: Construct docker image name and tag
         id: image-name
-        run: echo ::set-output name=name::gcr.io/${GOOGLE_PROJECT}/${SERVICE_NAME}:${{ needs.tag.outputs.tag }}
-
-      # TODO add google cloud profiler
-
+        run: echo ::set-output name=name::gcr.io/${GOOGLE_PROJECT}/${SERVICE_NAME}:${{ inputs.image_tag }}
       - name: Build image locally with jib
         run: |
           ./gradlew --build-cache :service:jibDockerBuild \
           --image=${{ steps.image-name.outputs.name }} \
           -Djib.console=plain
-
-      - name: Run Trivy vulnerability scanner
-        uses: broadinstitute/dsp-appsec-trivy-action@v1
-        with:
-          image: ${{ steps.image-name.outputs.name }}
-
-      - name: Push GCR image
-        run: docker push ${{ steps.image-name.outputs.name }}
-
-      - name: Notify slack on failure
-        uses: broadinstitute/action-slack@v3.8.0
-        if: failure()
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.BPM_SLACK_WEBHOOK }}
-        with:
-          status: ${{ job.status }}
-          author_name: Publish to dev
-          fields: job
-          text: 'Publish failed :sadpanda:'
-
-  report-to-sherlock:
-    # Report new BPM version to Broad DevOps
-    uses: broadinstitute/sherlock/.github/workflows/client-report-app-version.yaml@main
-    needs: [tag, publish-job]
-    with:
-      new-version: ${{ needs.tag.outputs.tag }}
-      chart-name: 'bpm'
-    permissions:
-      contents: 'read'
-      id-token: 'write'
-
-  set-version-in-dev:
-    # Put new BPM version in Broad dev environment
-    uses: broadinstitute/sherlock/.github/workflows/client-set-environment-app-version.yaml@main
-    needs: [tag, publish-job, report-to-sherlock]
-    with:
-      new-version: ${{ needs.tag.outputs.tag }}
-      chart-name: 'bpm'
-      environment-name: 'dev'
-    secrets:
-      sync-git-token: ${{ secrets.BROADBOT_TOKEN }}
-    permissions:
-      id-token: 'write'
+#      - name: Push GCR image
+#        run: docker push ${{ steps.image-name.outputs.name }}

@@ -11,32 +11,10 @@ on:
 
 
 env:
-  GIT_SHORTHASH: $(git rev-parse --short "$GITHUB_SHA")
-  GIT_BRANCH: ${GITHUB_REF#refs/heads/}
   GOOGLE_PROJECT: broad-dsp-gcr-public
   SERVICE_NAME: ${{ github.event.repository.name }}
 
 jobs:
-  publish-branch-job:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up JDK 17
-        uses: actions/setup-java@v2
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-      - name: Auth to GCR
-        uses: google-github-actions/auth@v0
-        with:
-          credentials_json: ${{ secrets.GCR_PUBLISH_KEY_B64 }}
-      - name: Construct docker image name and tag
-        id: image-name
-        run: echo ::set-output name=name::gcr.io/${GOOGLE_PROJECT}/${SERVICE_NAME}:${GIT_SHORTHASH}
-      - name: Build image locally with jib
-        run: |
-          ./gradlew --build-cache :service:jibDockerBuild \
-          --image=${{ steps.image-name.outputs.name }} \
-          -Djib.console=plain
-      - name: Push GCR image
-        run: docker push ${{ steps.image-name.outputs.name }}
+  publish-image:
+    uses: ./.github/workflows/publish.yml
+    secrets: inherit
