@@ -11,6 +11,8 @@ on:
 
 
 env:
+  GIT_SHORTHASH: $(git rev-parse --short "$GITHUB_SHA")
+  GIT_BRANCH: ${GITHUB_REF#refs/heads/}
   GOOGLE_PROJECT: broad-dsp-gcr-public
   SERVICE_NAME: ${{ github.event.repository.name }}
 
@@ -18,3 +20,5 @@ jobs:
   publish-image:
     uses: ./.github/workflows/publish.yml
     secrets: inherit
+    with:
+      image_tag: ${GIT_SHORTHASH}
