@@ -21,4 +21,4 @@ jobs:
     uses: ./.github/workflows/publish.yml
     secrets: inherit
     with:
-      image_tag: ${GIT_SHORTHASH}
+      image_tag: ${{ GIT_SHORTHASH }}
