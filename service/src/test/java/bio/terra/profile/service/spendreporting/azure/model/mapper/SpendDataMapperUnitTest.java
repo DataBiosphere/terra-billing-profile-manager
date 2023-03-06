@@ -50,8 +50,8 @@ class SpendDataMapperUnitTest extends BaseUnitTest {
         equalTo(
             String.format(
                 SpendDataMapper.COST_FORMAT,
-                Double.parseDouble(SpendDataFixtures.DEFAULT_COMPUTE1_COST)
-                    + Double.parseDouble(SpendDataFixtures.DEFAULT_COMPUTE2_COST))));
+                SpendDataFixtures.DEFAULT_COMPUTE1_COST.add(
+                    SpendDataFixtures.DEFAULT_COMPUTE2_COST))));
     assertThat(
         aggregatedComputeItem.get().getCurrency(), equalTo(SpendDataFixtures.DEFAULT_CURRENCY));
     assertNull(aggregatedComputeItem.get().getStartTime());
@@ -69,9 +69,7 @@ class SpendDataMapperUnitTest extends BaseUnitTest {
     assertThat(
         aggregatedStorageItem.get().getCost(),
         equalTo(
-            String.format(
-                SpendDataMapper.COST_FORMAT,
-                Double.parseDouble(SpendDataFixtures.DEFAULT_STORAGE_COST))));
+            String.format(SpendDataMapper.COST_FORMAT, SpendDataFixtures.DEFAULT_STORAGE_COST)));
     assertThat(
         aggregatedStorageItem.get().getCurrency(), equalTo(SpendDataFixtures.DEFAULT_CURRENCY));
     assertNull(aggregatedStorageItem.get().getStartTime());

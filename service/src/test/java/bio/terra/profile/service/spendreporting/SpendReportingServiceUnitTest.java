@@ -110,7 +110,7 @@ class SpendReportingServiceUnitTest extends BaseUnitTest {
     OffsetDateTime to = from.plusDays(30);
     when(mockProfileDao.getBillingProfileById(any(UUID.class))).thenReturn(azureBillingProfile);
     var spendData = SpendDataFixtures.buildDefaultSpendData();
-    when(mockAzureSpendReportingService.getBillingProjectSpendData(azureBillingProfile, from, to))
+    when(mockAzureSpendReportingService.getBillingProfileSpendData(azureBillingProfile, from, to))
         .thenReturn(spendData);
     var spendReport = SpendReportFixtures.buildDefaultSpendReport();
     when(mockSpendDataMapper.mapSpendData(spendData)).thenReturn(spendReport);
@@ -126,7 +126,7 @@ class SpendReportingServiceUnitTest extends BaseUnitTest {
     spendReportingService.getSpendReport(billingProfileId, from, to, authenticatedUserRequest);
 
     verify(mockAzureSpendReportingService, times(1))
-        .getBillingProjectSpendData(
+        .getBillingProfileSpendData(
             billingProfileCaptor.capture(), fromCaptor.capture(), toCaptor.capture());
     assertThat(billingProfileCaptor.getValue(), equalTo(azureBillingProfile));
     assertThat(fromCaptor.getValue(), equalTo(from));

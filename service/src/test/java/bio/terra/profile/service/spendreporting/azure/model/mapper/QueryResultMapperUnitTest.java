@@ -13,6 +13,8 @@ import bio.terra.profile.service.spendreporting.azure.model.SpendCategoryType;
 import bio.terra.profile.service.spendreporting.azure.model.SpendData;
 import com.azure.resourcemanager.costmanagement.models.QueryColumn;
 import com.azure.resourcemanager.costmanagement.models.QueryResult;
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,7 +36,9 @@ class QueryResultMapperUnitTest extends BaseUnitTest {
 
     assertThrows(
         UnexpectedCostManagementQueryResponse.class,
-        () -> queryResultMapper.mapQueryResult(queryResult));
+        () ->
+            queryResultMapper.mapQueryResult(
+                queryResult, OffsetDateTime.now(), OffsetDateTime.now().plusDays(30)));
   }
 
   @Test
@@ -50,7 +54,9 @@ class QueryResultMapperUnitTest extends BaseUnitTest {
 
     assertThrows(
         UnexpectedCostManagementQueryResponse.class,
-        () -> queryResultMapper.mapQueryResult(queryResult));
+        () ->
+            queryResultMapper.mapQueryResult(
+                queryResult, OffsetDateTime.now(), OffsetDateTime.now().plusDays(30)));
   }
 
   @Test
@@ -71,7 +77,9 @@ class QueryResultMapperUnitTest extends BaseUnitTest {
 
     assertThrows(
         UnexpectedCostManagementQueryResponse.class,
-        () -> queryResultMapper.mapQueryResult(queryResult));
+        () ->
+            queryResultMapper.mapQueryResult(
+                queryResult, OffsetDateTime.now(), OffsetDateTime.now().plusDays(30)));
   }
 
   @Test
@@ -83,12 +91,14 @@ class QueryResultMapperUnitTest extends BaseUnitTest {
 
     var queryResult = mockValidQueryResult(rows);
 
-    SpendData result = queryResultMapper.mapQueryResult(queryResult);
+    OffsetDateTime from = OffsetDateTime.now();
+    OffsetDateTime to = from.plusDays(30);
+    SpendData result = queryResultMapper.mapQueryResult(queryResult, from, to);
     assertNotNull(result);
     assertThat(result.getSpendDataItems().size(), equalTo(1));
     assertThat(
         result.getSpendDataItems().get(0).cost(),
-        equalTo(row.get(QueryResultMapper.COST_COLUMN_INDEX)));
+        equalTo(new BigDecimal(row.get(QueryResultMapper.COST_COLUMN_INDEX).toString())));
     assertThat(
         result.getSpendDataItems().get(0).resourceType(),
         equalTo(row.get(QueryResultMapper.RESOURCE_TYPE_COLUMN_INDEX)));
@@ -97,6 +107,8 @@ class QueryResultMapperUnitTest extends BaseUnitTest {
         equalTo(row.get(QueryResultMapper.CURRENCY_COLUMN_INDEX)));
     assertThat(
         result.getSpendDataItems().get(0).spendCategoryType(), equalTo(SpendCategoryType.COMPUTE));
+    assertThat(result.getFrom(), equalTo(from));
+    assertThat(result.getTo(), equalTo(to));
   }
 
   private QueryResult mockValidQueryResult(List<List<Object>> rows) {

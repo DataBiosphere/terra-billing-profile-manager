@@ -6,6 +6,7 @@ import bio.terra.profile.service.spendreporting.azure.model.SpendData;
 import bio.terra.profile.service.spendreporting.azure.model.SpendDataItem;
 import com.azure.resourcemanager.costmanagement.models.QueryColumn;
 import com.azure.resourcemanager.costmanagement.models.QueryResult;
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
@@ -29,12 +30,15 @@ public class QueryResultMapper {
     this.spendDataItemCategoryMapper = spendDataItemCategoryMapper;
   }
 
-  public SpendData mapQueryResult(QueryResult queryResult) {
-    return mapQueryResult(queryResult, null);
+  public SpendData mapQueryResult(QueryResult queryResult, OffsetDateTime from, OffsetDateTime to) {
+    return mapQueryResult(queryResult, null, from, to);
   }
 
   public SpendData mapQueryResult(
-      QueryResult queryResult, SpendCategoryType categorizeEverythingWith) {
+      QueryResult queryResult,
+      SpendCategoryType categorizeEverythingWith,
+      OffsetDateTime from,
+      OffsetDateTime to) {
     throwIfDataFormatIsNotValid(queryResult);
 
     var spendItems =
@@ -43,14 +47,14 @@ public class QueryResultMapper {
                 r ->
                     new SpendDataItem(
                         r.get(RESOURCE_TYPE_COLUMN_INDEX).toString(),
-                        Double.parseDouble(r.get(COST_COLUMN_INDEX).toString()),
+                        new BigDecimal(r.get(COST_COLUMN_INDEX).toString()),
                         r.get(CURRENCY_COLUMN_INDEX).toString(),
                         getCategory(
                             r.get(RESOURCE_TYPE_COLUMN_INDEX).toString(),
                             categorizeEverythingWith)))
             .toList();
 
-    return new SpendData(spendItems, OffsetDateTime.now(), OffsetDateTime.now().plusDays(30));
+    return new SpendData(spendItems, from, to);
   }
 
   private SpendCategoryType getCategory(

@@ -12,6 +12,7 @@ import com.azure.resourcemanager.resources.ResourceManager;
 import com.azure.resourcemanager.resources.models.GenericResource;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -20,7 +21,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class AzureSpendReportingService {
   public static final String K8S_RESOURCE_GROUP_NAME_PREFIX = "MC";
-  public static final String AZURE_KUBERNETES_RESOURCE_TYPE = "managedClusters";
+  public static final String AZURE_KUBERNETES_RESOURCE_TYPE = "managedclusters";
   private final AzureCostManagementQuery azureCostManagementQuery;
   private final CrlService crlService;
   private final QueryResultMapper queryResultMapper;
@@ -44,7 +45,7 @@ public class AzureSpendReportingService {
    * @param to End of the billing period
    * @return Spend data
    */
-  public SpendData getBillingProjectSpendData(
+  public SpendData getBillingProfileSpendData(
       BillingProfile billingProfile, OffsetDateTime from, OffsetDateTime to) {
     String k8sNodeResourceGroup =
         getK8sNodeResourceGroupName(
@@ -83,9 +84,9 @@ public class AzureSpendReportingService {
             subscriptionId, resourceGroupName, from, to);
     if (isK8sResourceGroup(resourceGroupName)) {
       return queryResultMapper.mapQueryResult(
-          costQueryResponse.getValue(), SpendCategoryType.COMPUTE);
+          costQueryResponse.getValue(), SpendCategoryType.COMPUTE, from, to);
     } else {
-      return queryResultMapper.mapQueryResult(costQueryResponse.getValue());
+      return queryResultMapper.mapQueryResult(costQueryResponse.getValue(), from, to);
     }
   }
 
@@ -104,7 +105,11 @@ public class AzureSpendReportingService {
     ResourceManager resourceManager = crlService.getResourceManager(tenantId, subscriptionId);
     Optional<GenericResource> k8sResource =
         resourceManager.genericResources().listByResourceGroup(resourceGroupName).stream()
-            .filter(gr -> gr.resourceType().startsWith(AZURE_KUBERNETES_RESOURCE_TYPE))
+            .filter(
+                gr ->
+                    gr.resourceType()
+                        .toLowerCase(Locale.ROOT)
+                        .startsWith(AZURE_KUBERNETES_RESOURCE_TYPE))
             .findFirst();
     if (k8sResource.isEmpty()) {
       throw new KubernetesResourceNotFound(

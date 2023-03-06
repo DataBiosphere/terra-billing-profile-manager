@@ -6,6 +6,7 @@ import bio.terra.profile.model.SpendReportingForDateRange;
 import bio.terra.profile.service.spendreporting.azure.model.SpendCategoryType;
 import bio.terra.profile.service.spendreporting.azure.model.SpendData;
 import bio.terra.profile.service.spendreporting.azure.model.SpendDataItem;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
@@ -28,8 +29,8 @@ public class SpendDataMapper {
                 kvp -> {
                   var categoryTotalCost =
                       kvp.getValue().stream()
-                          .mapToDouble(e -> Double.parseDouble(e.getCost()))
-                          .sum();
+                          .map(i -> new BigDecimal(i.getCost()))
+                          .reduce(BigDecimal.ZERO, BigDecimal::add);
                   var currency =
                       kvp.getValue().stream()
                           .findFirst()
@@ -44,7 +45,9 @@ public class SpendDataMapper {
             .cost(
                 String.format(
                     COST_FORMAT,
-                    data.getSpendDataItems().stream().mapToDouble(SpendDataItem::cost).sum()))
+                    data.getSpendDataItems().stream()
+                        .map(SpendDataItem::cost)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add)))
             .currency(data.getCurrency())
             .credits("0")
             .startTime(data.getFrom().toString())
@@ -60,16 +63,16 @@ public class SpendDataMapper {
   }
 
   private static SpendReportingForDateRange buildSpendReportingForDateRange(
-      Double cost, String currency, SpendCategoryType spendCategoryType) {
+      BigDecimal cost, String currency, SpendCategoryType spendCategoryType) {
     return new SpendReportingForDateRange()
-        .cost(cost.toString())
+        .cost(String.format(COST_FORMAT, cost))
         .currency(currency)
         .credits("0") // Azure doesn't provide such data
         .category(mapCategory(spendCategoryType));
   }
 
   private static SpendReportingForDateRange buildSpendReportingForDateRange(
-      Double cost, String currency, SpendReportingForDateRange.CategoryEnum categoryEnum) {
+      BigDecimal cost, String currency, SpendReportingForDateRange.CategoryEnum categoryEnum) {
     return new SpendReportingForDateRange()
         .cost(String.format(COST_FORMAT, cost))
         .currency(currency)
