@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import bio.terra.common.iam.AuthenticatedUserRequest;
+import bio.terra.profile.app.configuration.SpendReportingConfig;
 import bio.terra.profile.common.AuthRequestFixtures;
 import bio.terra.profile.common.BaseSpringUnitTest;
 import bio.terra.profile.service.iam.SamService;
@@ -28,6 +29,7 @@ class SpendReportingApiControllerTest extends BaseSpringUnitTest {
   @Autowired MockMvc mockMvc;
   @MockBean SamService samService;
   @MockBean SpendReportingService spendReportingService;
+  @Autowired SpendReportingConfig spendReportingConfig;
 
   private final AuthenticatedUserRequest userRequest = AuthRequestFixtures.buildAuthRequest();
 
@@ -95,10 +97,28 @@ class SpendReportingApiControllerTest extends BaseSpringUnitTest {
   }
 
   @Test
+  void getSpendReportWithDateRangeWhichExceedsMaxValue_returnBadRequest() throws Exception {
+    var profileId = UUID.randomUUID();
+    var from =
+        OffsetDateTime.now()
+            .minusDays(spendReportingConfig.getAzure().getMaxDateRangeDays() + 30 /*some extra*/);
+    var to = from.plusDays(spendReportingConfig.getAzure().getMaxDateRangeDays() + 10);
+    mockMvc
+        .perform(
+            get("/api/profiles/v1/{profileId}/spendReport", profileId.toString())
+                .queryParam("spendReportStartDate", from.format(DateTimeFormatter.ISO_DATE))
+                .queryParam("spendReportEndDate", to.format(DateTimeFormatter.ISO_DATE))
+                .header("Authorization", "Bearer " + userRequest.getToken()))
+        .andExpect(status().is(HttpStatus.BAD_REQUEST.value()))
+        .andExpect(
+            content().string(containsString("Provided dates exceed maximum report date range")));
+  }
+
+  @Test
   void getSpendReportWithWrongDateParameters_returnOk() throws Exception {
     var profileId = UUID.randomUUID();
-    var startDate = OffsetDateTime.now();
-    var endDate = startDate.plusDays(30);
+    var startDate = OffsetDateTime.now().minusMonths(3);
+    var endDate = startDate.plusMonths(2);
     mockMvc
         .perform(
             get("/api/profiles/v1/{profileId}/spendReport", profileId.toString())

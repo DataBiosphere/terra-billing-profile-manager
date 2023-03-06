@@ -3,6 +3,7 @@ package bio.terra.profile.service.spendreporting.azure;
 import bio.terra.profile.service.crl.CrlService;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.profile.service.spendreporting.azure.exception.KubernetesResourceNotFound;
+import bio.terra.profile.service.spendreporting.azure.exception.MultipleKubernetesResourcesFound;
 import bio.terra.profile.service.spendreporting.azure.model.SpendCategoryType;
 import bio.terra.profile.service.spendreporting.azure.model.SpendData;
 import bio.terra.profile.service.spendreporting.azure.model.mapper.QueryResultMapper;
@@ -13,13 +14,17 @@ import com.azure.resourcemanager.resources.models.GenericResource;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
 public class AzureSpendReportingService {
+  private static final Logger logger = LoggerFactory.getLogger(AzureSpendReportingService.class);
+
   public static final String K8S_RESOURCE_GROUP_NAME_PREFIX = "MC";
   public static final String AZURE_KUBERNETES_RESOURCE_TYPE = "managedclusters";
   private final AzureCostManagementQuery azureCostManagementQuery;
@@ -103,21 +108,34 @@ public class AzureSpendReportingService {
   private String getK8sNodeResourceGroupName(
       UUID tenantId, UUID subscriptionId, String resourceGroupName) {
     ResourceManager resourceManager = crlService.getResourceManager(tenantId, subscriptionId);
-    Optional<GenericResource> k8sResource =
+    List<GenericResource> k8sResources =
         resourceManager.genericResources().listByResourceGroup(resourceGroupName).stream()
             .filter(
                 gr ->
                     gr.resourceType()
                         .toLowerCase(Locale.ROOT)
                         .startsWith(AZURE_KUBERNETES_RESOURCE_TYPE))
-            .findFirst();
-    if (k8sResource.isEmpty()) {
+            .toList();
+    if (k8sResources.isEmpty()) {
       throw new KubernetesResourceNotFound(
           String.format(
               "Cannot find K8s resource in the managed resource group with name '%s'",
               resourceGroupName));
     }
+    // we don't expect multiple K8s resources in the MRG
+    if (k8sResources.size() > 1) {
+      logger.warn(
+          String.format(
+              "Resource group with name '%s' contains multiple k8s resources '%s'",
+              k8sResources.stream().map(gr -> gr.name()).collect(Collectors.joining(",")),
+              resourceGroupName));
+      throw new MultipleKubernetesResourcesFound(
+          String.format(
+              "Multiple k8s resources found in the resource group with name '%s'",
+              resourceGroupName));
+    }
 
+    GenericResource k8sResource = k8sResources.get(0);
     // by default, it follows this pattern - "MC_<resourcegroupname>_<clustername>_<location>"
     // where resourcegroupname is the name of managed resource group, clustername is the name of K8s
     // cluster, location is the region name.
@@ -125,7 +143,7 @@ public class AzureSpendReportingService {
         "%s_%s_%s_%s",
         K8S_RESOURCE_GROUP_NAME_PREFIX,
         resourceGroupName,
-        k8sResource.get().name(),
-        k8sResource.get().regionName());
+        k8sResource.name(),
+        k8sResource.regionName());
   }
 }

@@ -687,7 +687,9 @@ components:
           description: total cost for date range
         credits:
           type: string
-          description: credits towards reported cost. cost - credits = amount billed to users
+          description: |
+            credits towards reported cost. cost - credits = amount billed to users. 
+            This value is always be 0 in case of Azure billing profile.
         currency:
           type: string
           description: currency that cost and credits uses

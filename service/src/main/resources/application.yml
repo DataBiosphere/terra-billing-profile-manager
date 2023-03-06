@@ -141,3 +141,7 @@ terra.common:
   tracing:
     stackdriverExportEnabled: ${env.tracing.exportEnabled}
     samplingRate: ${env.tracing.samplingRate}
+
+spendreporting:
+  azure:
+    max-date-range-days: 90
