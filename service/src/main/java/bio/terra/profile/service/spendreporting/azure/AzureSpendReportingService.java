@@ -10,6 +10,7 @@ import bio.terra.profile.service.spendreporting.azure.model.mapper.QueryResultMa
 import com.azure.core.http.rest.Response;
 import com.azure.resourcemanager.costmanagement.models.QueryResult;
 import com.azure.resourcemanager.resources.ResourceManager;
+import com.azure.resourcemanager.resources.fluentcore.arm.models.HasName;
 import com.azure.resourcemanager.resources.models.GenericResource;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -127,8 +128,8 @@ public class AzureSpendReportingService {
       logger.warn(
           String.format(
               "Resource group with name '%s' contains multiple k8s resources '%s'",
-              k8sResources.stream().map(gr -> gr.name()).collect(Collectors.joining(",")),
-              resourceGroupName));
+              resourceGroupName,
+              k8sResources.stream().map(HasName::name).collect(Collectors.joining(","))));
       throw new MultipleKubernetesResourcesFound(
           String.format(
               "Multiple k8s resources found in the resource group with name '%s'",
