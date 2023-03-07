@@ -8,7 +8,8 @@ public enum SamAction {
   CREATE("create"),
   DELETE("delete"),
   UPDATE_BILLING_ACCOUNT("update_billing_account"),
-  LINK("link");
+  LINK("link"),
+  READ_SPEND_REPORT("read_spend_report");
 
   private final String samActionName;
 

@@ -8,6 +8,7 @@ import bio.terra.profile.service.crl.exception.CrlInternalException;
 import bio.terra.profile.service.crl.exception.CrlSecurityException;
 import com.azure.core.management.AzureEnvironment;
 import com.azure.core.management.profile.AzureProfile;
+import com.azure.resourcemanager.costmanagement.CostManagementManager;
 import com.azure.resourcemanager.managedapplications.ApplicationManager;
 import com.azure.resourcemanager.resources.ResourceManager;
 import com.azure.resourcemanager.resources.fluent.SubscriptionClient;
@@ -60,6 +61,14 @@ public class CrlService {
         new AzureProfile(null, subscriptionId.toString(), AzureEnvironment.AZURE);
 
     return ApplicationManager.authenticate(
+        azureConfiguration.buildManagedAppCredentials(), azureProfile);
+  }
+
+  public CostManagementManager getCostManagementManager(UUID subscriptionId) {
+    AzureProfile azureProfile =
+        new AzureProfile(null, subscriptionId.toString(), AzureEnvironment.AZURE);
+
+    return CostManagementManager.authenticate(
         azureConfiguration.buildManagedAppCredentials(), azureProfile);
   }
 

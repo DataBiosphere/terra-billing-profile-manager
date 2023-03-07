@@ -152,6 +152,33 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
 
+  /api/profiles/v1/{profileId}/spendReport:
+    parameters:
+      - $ref: '#/components/parameters/ProfileId'
+    get:
+      tags:
+        - Spend Reporting
+      summary: Get spend report for profile
+      operationId: getSpendReport
+      parameters:
+        - $ref: '#/components/parameters/SpendReportStartDate'
+        - $ref: '#/components/parameters/SpendReportEndDate'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpendReport'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/PermissionDenied'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
   /api/profiles/v1/{profileId}/policies:
     parameters:
       - $ref: '#/components/parameters/ProfileId'
@@ -329,6 +356,24 @@ components:
         type: integer
         minimum: 1
         default: 10
+
+    SpendReportStartDate:
+      name: spendReportStartDate
+      in: query
+      description: start date of report (YYYY-MM-DD). Data included in report will start at 12 AM UTC on this date.
+      required: true
+      schema:
+        type: string
+        format: date
+
+    SpendReportEndDate:
+      name: spendReportEndDate
+      in: query
+      description: end date of report (YYYY-MM-DD). Data included in report will end at 11:59 PM UTC on this date.
+      required: true
+      schema:
+        type: string
+        format: date
 
   schemas:
     CreateProfileRequest:
@@ -597,6 +642,72 @@ components:
       type: string
       description: Enum representing a cloud platform type.
       enum: [ 'AZURE', 'GCP' ]
+
+    SpendReport:
+      type: object
+      required:
+        - spendDetails
+        - spendSummary
+      properties:
+        spendDetails:
+          description: details of spend data, categorized by given key
+          type: array
+          items:
+            $ref: '#/components/schemas/SpendReportingAggregation'
+        spendSummary:
+          $ref: '#/components/schemas/SpendReportingForDateRange'
+
+    SpendReportingAggregation:
+      type: object
+      required:
+        - aggregationKey
+        - spendData
+      properties:
+        aggregationKey:
+          type: string
+          enum:
+            - Category
+          description: Key indicating how spendData has been aggregated.
+        spendData:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpendReportingForDateRange'
+
+    SpendReportingForDateRange:
+      required:
+        - cost
+        - credits
+        - currency
+        - startTime
+        - endTime
+      type: object
+      properties:
+        cost:
+          type: string
+          description: total cost for date range
+        credits:
+          type: string
+          description: |
+            credits towards reported cost. cost - credits = amount billed to users. 
+            This value is always be 0 in case of Azure billing profile.
+        currency:
+          type: string
+          description: currency that cost and credits uses
+        startTime:
+          type: string
+          format: timestamp
+          description: timestamp (UTC) marking the start of reported spend range (YYYY-MM-DDThh:mm:ss.fffZ)
+        endTime:
+          type: string
+          format: timestamp
+          description: timestamp (UTC) marking the end of reported spend range (YYYY-MM-DDThh:mm:ss.fffZ)
+        category:
+          type: string
+          enum:
+            - Storage
+            - Compute
+            - Other
+          description: if present, Terra spend category that cost falls into
 
   responses:
     StatusResponse:
