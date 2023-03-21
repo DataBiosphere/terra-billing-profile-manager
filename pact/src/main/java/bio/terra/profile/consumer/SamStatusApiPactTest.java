@@ -22,7 +22,6 @@ import java.io.IOException;
 public class SamStatusApiPactTest extends ConsumerPactTest {
 
 
-  @Pact(consumer = "bpm-consumer")
   @Override
   protected RequestResponsePact createPact(PactDslWithProvider builder) {
     return builder
