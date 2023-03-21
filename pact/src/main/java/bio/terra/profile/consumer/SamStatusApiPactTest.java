@@ -14,7 +14,10 @@ import java.io.IOException;
 
 
 /**
- * This is the one that actually 'works' (is generating a pact)
+ * The only way I've been able to get this to generate a pact successfully so far,
+ * has been running it directly in my IDE
+ * If I put it in a test folder, it doesn't get detected as containing any tests
+ * In this folder, the issue is that it isn't set up with a 'main' method
  */
 public class SamStatusApiPactTest extends ConsumerPactTest {
 
