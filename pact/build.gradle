@@ -5,7 +5,7 @@ buildscript {
 }
 plugins {
     id 'bio.terra.profile.java-spring-conventions'
-    id "au.com.dius.pact" version "4.2.9"
+    id "au.com.dius.pact" version "4.3.10"
 }
 
 
@@ -20,11 +20,3 @@ dependencies {
 test {
     systemProperties['pact.rootDir'] = "$buildDir/pacts"
 }
-/*
-pact {
-    publish {
-        //pactDirectory = '/pact/dir' // defaults to $buildDir/pacts
-        pactBrokerUrl = "https://pact-broker.dsp-eng-tools.broadinstitute.org/"
-    }
-
-}*/
