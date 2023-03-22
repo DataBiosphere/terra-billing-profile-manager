@@ -7,12 +7,14 @@ import au.com.dius.pact.core.model.RequestResponsePact;
 import au.com.dius.pact.core.model.annotations.Pact;
 import bio.terra.profile.common.BaseUnitTest;
 import org.broadinstitute.dsde.workbench.client.sam.api.StatusApi;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@Tag("pact-test")
 @ExtendWith(PactConsumerTestExt.class)
 public class SamStatusApiPactTest extends BaseUnitTest {
 
