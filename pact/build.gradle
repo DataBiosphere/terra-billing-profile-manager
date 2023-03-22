@@ -1,0 +1,20 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+}
+plugins {
+    id 'bio.terra.profile.java-spring-conventions'
+    id "au.com.dius.pact" version "4.3.10"
+}
+
+
+dependencies {
+    implementation 'au.com.dius.pact.consumer:junit:4.2.9'
+
+    implementation group: "org.broadinstitute.dsde.workbench", name: "sam-client_2.13", version: "0.1-e0d8da8"
+}
+
+test {
+    systemProperties['pact.rootDir'] = "$buildDir/pacts"
+}
