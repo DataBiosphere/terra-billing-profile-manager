@@ -10,7 +10,7 @@ plugins {
 
 
 dependencies {
-    implementation 'au.com.dius.pact.consumer:junit:4.2.9'
+    implementation 'au.com.dius.pact.consumer:junit:4.5.5'
 
     implementation group: "org.broadinstitute.dsde.workbench", name: "sam-client_2.13", version: "0.1-e0d8da8"
 }
