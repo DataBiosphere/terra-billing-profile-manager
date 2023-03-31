@@ -68,15 +68,34 @@ jobs:
         run: |
           NON_BREAKING_B64=$(cat service/build/pacts/bpm-consumer-sam-provider.json | base64 -w 0)
           echo "pact-b64=${NON_BREAKING_B64}" >> $GITHUB_OUTPUT
+
+  # Prevent untrusted sources from using PRs to publish contracts
+  # since access to secrets is not allowed.
   publish-contracts:
     runs-on: ubuntu-latest
-    needs: [init-github-context, bpm-consumer-contract-tests]
+    if: ${{ needs.init-github-context.outputs.fork == 'false' }}
+    needs: [ init-github-context, bpm-consumer-contract-tests ]
     steps:
       - name: Dispatch to terra-github-workflows
-        uses: aurelien-baudet/workflow-dispatch@93e95b157d791ae7f42aef8f8a0d3d723eba1c31 #commit sha for v2.1.1
+        uses: broadinstitute/workflow-dispatch@v3
         with:
-          workflow: publish-contracts
+          workflow: .github/workflows/publish-contracts.yaml
           repo: broadinstitute/terra-github-workflows
           ref: refs/heads/main
           token: ${{ secrets.BROADBOT_TOKEN }} # github token for access to kick off a job in the private repo
           inputs: '{ "pact-b64": "${{ needs.bpm-consumer-contract-tests.outputs.pact-b64 }}", "repo-owner": "${{ github.repository_owner }}", "repo-name": "${{ github.event.repository.name }}", "repo-branch": "${{ needs.init-github-context.outputs.repo-branch }}" }'
+
+  can-i-deploy:
+    runs-on: ubuntu-latest
+    if: ${{ needs.init-github-context.outputs.fork == 'false' }}
+    needs: [ init-github-context, publish-contracts ]
+    steps:
+      - name: Dispatch to terra-github-workflows
+        uses: broadinstitute/workflow-dispatch@v3
+        with:
+          workflow: .github/workflows/can-i-deploy.yaml
+          repo: broadinstitute/terra-github-workflows
+          ref: refs/heads/main
+          token: ${{ secrets.BROADBOT_TOKEN }} # github token for access to kick off a job in the private repo
+          inputs: '{ "pacticipant": "bpm-consumer", "version": "${{ needs.init-github-context.outputs.repo-version }}" }'
+
