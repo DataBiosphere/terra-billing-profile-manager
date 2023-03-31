@@ -61,7 +61,6 @@ jobs:
       - name: Output consumer contract as non-breaking base64 string
         id: encode-pact
         run: |
-          cd pact
           NON_BREAKING_B64=$(cat service/build/pacts/bpm-consumer-sam-provider.json | base64 -w 0)
           echo "pact-b64=${NON_BREAKING_B64}" >> $GITHUB_OUTPUT
   publish-contracts:
