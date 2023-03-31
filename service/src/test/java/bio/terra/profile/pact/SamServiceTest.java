@@ -1,4 +1,4 @@
-package bio.terra.profile.service.iam;
+package bio.terra.profile.pact;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -11,6 +11,7 @@ import au.com.dius.pact.core.model.RequestResponsePact;
 import au.com.dius.pact.core.model.annotations.Pact;
 import bio.terra.profile.app.configuration.SamConfiguration;
 import bio.terra.profile.common.BaseUnitTest;
+import bio.terra.profile.service.iam.SamService;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
