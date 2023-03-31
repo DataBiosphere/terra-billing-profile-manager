@@ -56,6 +56,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '17'
+          distribution: 'temurin'
       - name: Run consumer tests
         run: ./gradlew pactTests
       - name: Output consumer contract as non-breaking base64 string
