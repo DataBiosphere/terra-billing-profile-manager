@@ -42,6 +42,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.springframework.cache.CacheManager;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 @SpringJUnitConfig
@@ -69,6 +70,7 @@ class AzureSpendReportingServiceUnitTest extends BaseUnitTest {
   @Mock private AzureCostManagementQuery mockAzureCostManagementQuery;
   @Mock private CrlService mockCrlService;
   @Mock private QueryResultMapper mockQueryResultMapper;
+  @Mock private CacheManager mockCacheManager;
   @Captor private ArgumentCaptor<UUID> subscriptionIdCaptor;
   @Captor private ArgumentCaptor<String> resourceGroupCaptor;
   @Captor private ArgumentCaptor<OffsetDateTime> fromCaptor;
@@ -78,7 +80,7 @@ class AzureSpendReportingServiceUnitTest extends BaseUnitTest {
   void setup() {
     azureSpendReportingService =
         new AzureSpendReportingService(
-            mockAzureCostManagementQuery, mockCrlService, mockQueryResultMapper);
+            mockAzureCostManagementQuery, mockCrlService, mockQueryResultMapper, mockCacheManager);
   }
 
   @Test
