@@ -12,7 +12,7 @@ name: Consumer contract tests
 
 on:
   pull_request:
-    branches: [ '**' ]
+    branches: [ main ]
     paths-ignore: [ '**.md' ]
   push:
     branches: [ main ]
