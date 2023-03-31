@@ -51,8 +51,7 @@ dependencies {
 	}
 	// Allows us to mock final classes
 	testImplementation 'org.mockito:mockito-inline:5.2.0'
-	implementation 'au.com.dius.pact.consumer:junit5:4.1.7'
-	implementation "au.com.dius.pact.provider:junit5spring:4.1.7"
+	testImplementation 'au.com.dius.pact.consumer:junit5:4.1.7'
 }
 test {
 	systemProperties['pact.rootDir'] = "$buildDir/pacts"
