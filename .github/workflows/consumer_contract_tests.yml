@@ -12,20 +12,14 @@ name: Consumer contract tests
 
 on:
   pull_request:
-    branches:
-      - main
-    paths-ignore:
-      - 'README.md'
+    branches: [ '**' ]
+    paths-ignore: [ '**.md' ]
   push:
-    branches:
-      - main
-    paths-ignore:
-      - 'README.md'
+    branches: [ main ]
+    paths-ignore: [ '**.md' ]
   merge_group:
-    branches:
-      - main
-    paths-ignore:
-      - 'README.md'
+    branches: [ main ]
+    paths-ignore: [ '**.md' ]
 
 jobs:
   init-github-context:
