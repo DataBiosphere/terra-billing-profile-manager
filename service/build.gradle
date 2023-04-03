@@ -5,6 +5,8 @@ plugins {
 
 	id 'com.gorylenko.gradle-git-properties' version '2.4.1'
 	id 'org.sonarqube' version '4.0.0.2929'
+	id "au.com.dius.pact" version "4.3.10"
+
 }
 
 apply from: 'generators.gradle'
@@ -49,8 +51,12 @@ dependencies {
 	}
 	// Allows us to mock final classes
 	testImplementation 'org.mockito:mockito-inline:5.2.0'
+	testImplementation 'au.com.dius.pact.consumer:junit5:4.1.7'
 }
-
+test {
+	systemProperties['pact.rootDir'] = "$buildDir/pacts"
+	systemProperties['pact.provider.version'] = "$project.version"
+}
 sonarqube {
 	properties {
 		property "sonar.projectName", "terra-billing-profile-manager"
@@ -58,5 +64,11 @@ sonarqube {
 		property "sonar.organization", "broad-databiosphere"
 		property "sonar.host.url", "https://sonarcloud.io"
 		property "sonar.sources", "src/main/java"
+	}
+}
+
+tasks.register("pactTests", Test) {
+	useJUnitPlatform {
+		includeTags "pact-test"
 	}
 }
