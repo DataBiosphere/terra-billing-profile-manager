@@ -26,6 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       repo-branch: ${{ steps.extract-branch.outputs.repo-branch }}
+      repo-version: ${{ steps.extract-branch.outputs.repo-version }}
 
     steps:
       - uses: actions/checkout@v3
