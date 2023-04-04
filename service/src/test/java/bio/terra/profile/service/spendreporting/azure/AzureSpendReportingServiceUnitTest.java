@@ -12,6 +12,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import bio.terra.profile.app.configuration.CacheConfiguration;
 import bio.terra.profile.common.BaseUnitTest;
 import bio.terra.profile.common.SpendDataFixtures;
 import bio.terra.profile.model.CloudPlatform;
@@ -42,6 +43,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
@@ -227,6 +229,16 @@ class AzureSpendReportingServiceUnitTest extends BaseUnitTest {
     assertThrows(
         MultipleKubernetesResourcesFound.class,
         () -> azureSpendReportingService.getBillingProfileSpendData(billingProfile, from, to));
+  }
+
+  @Test
+  void testCleanUpAzureSpendReportCache_Success() {
+    var azureSpendReportCache = mock(Cache.class);
+    when(mockCacheManager.getCache(CacheConfiguration.AZURE_SPEND_REPORT_CACHE_NAME))
+        .thenReturn(azureSpendReportCache);
+    azureSpendReportingService.cleanUpAzureSpendReportCache();
+
+    verify(azureSpendReportCache, times(1)).clear();
   }
 
   private void setupMockResponseK8sResourceGroup(
