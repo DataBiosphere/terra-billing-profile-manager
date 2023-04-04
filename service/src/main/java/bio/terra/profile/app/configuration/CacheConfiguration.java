@@ -14,11 +14,6 @@ public class CacheConfiguration {
 
   @Bean
   public CacheManagerCustomizer<ConcurrentMapCacheManager> cacheManagerCustomizer() {
-    return new CacheManagerCustomizer<ConcurrentMapCacheManager>() {
-      @Override
-      public void customize(ConcurrentMapCacheManager cacheManager) {
-        cacheManager.setCacheNames(List.of(AZURE_SPEND_REPORT_CACHE_NAME));
-      }
-    };
+    return cacheManager -> cacheManager.setCacheNames(List.of(AZURE_SPEND_REPORT_CACHE_NAME));
   }
 }

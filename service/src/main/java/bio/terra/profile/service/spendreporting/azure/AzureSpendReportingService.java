@@ -14,7 +14,6 @@ import com.azure.resourcemanager.resources.ResourceManager;
 import com.azure.resourcemanager.resources.fluentcore.arm.models.HasName;
 import com.azure.resourcemanager.resources.models.GenericResource;
 import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -92,8 +91,8 @@ public class AzureSpendReportingService {
     logger.info(
         "Azure spend report data for billing profile with Id=`{}` and period from=`{}` to=`{}` received.",
         billingProfile.id(),
-        from.format(DateTimeFormatter.ISO_DATE),
-        to.format(DateTimeFormatter.ISO_DATE));
+        from,
+        to);
     return new SpendData(
         spendDataList.stream().flatMap(sp -> sp.getSpendDataItems().stream()).toList(), from, to);
   }
