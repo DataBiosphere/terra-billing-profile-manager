@@ -18,6 +18,7 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+
       - name: Gradle cache
         uses: actions/cache@v2
         with:
@@ -48,6 +49,7 @@ jobs:
           sarif_file: service/build/reports/spotbugs/main.sarif
 
   jib:
+    name: Build Docker image
     needs: [ build ]
     runs-on: ubuntu-latest
 
@@ -74,6 +76,7 @@ jobs:
           -Djib.console=plain
 
   unit-tests:
+    name: Run unit tests
     needs: [ build ]
     runs-on: ubuntu-latest
 
@@ -124,6 +127,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   notify-slack:
+    name: Notify Slack
     needs: [ build, jib, unit-tests ]
     runs-on: ubuntu-latest
 
@@ -141,11 +145,24 @@ jobs:
           fields: workflow,message
           text: 'Build failed :sadpanda:'
 
-  dispatch-tag:
-    needs: [ build, jib, unit-tests ]
+  bump-check:
+    name: Check if version bump
     runs-on: ubuntu-latest
+    outputs:
+      is-bump: ${{ steps.skiptest.outputs.is-bump }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Skip version bump merges
+        id: skiptest
+        uses: ./.github/actions/bump-skip
+        with:
+          event-name: ${{ github.event_name }}
 
-    if: success() && github.ref == 'refs/heads/main'
+  dispatch-tag:
+    name: Dispatch tag, publish and deploy
+    needs: [ build, jib, unit-tests, bump-check ]
+    runs-on: ubuntu-latest
+    if: success() &&  needs.bump-check.outputs.is-bump == 'no' && github.ref == 'refs/heads/main'
 
     steps:
       - name: Fire off publish action
