@@ -8,14 +8,31 @@ env:
   GOOGLE_PROJECT: broad-dsp-gcr-public
 
 jobs:
+  bump-check:
+    runs-on: ubuntu-latest
+    outputs:
+      is-bump: ${{ steps.skiptest.outputs.is-bump }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Skip version bump merges
+        id: skiptest
+        uses: ./.github/actions/bump-skip
+        with:
+          event-name: ${{ github.event_name }}
+
   tag:
+    needs: [ bump-check ]
+    if: needs.bump-check.outputs.is-bump == 'no'
     uses: ./.github/workflows/tag.yml
     secrets: inherit
 
-  publish-job:
+  publish:
     needs: [ tag ]
     runs-on: ubuntu-latest
     steps:
+      - name: tag
+        uses: ./.github/workflows/tag.yml
+        secrets: inherit
       - uses: actions/checkout@v2
       - name: Set up JDK 17
         uses: actions/setup-java@v2
