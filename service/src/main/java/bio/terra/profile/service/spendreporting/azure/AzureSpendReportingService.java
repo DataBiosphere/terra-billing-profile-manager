@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -162,9 +161,7 @@ public class AzureSpendReportingService {
         k8sResource.regionName());
   }
 
-  @Scheduled(
-      fixedDelayString = "${spendreporting.azure.cleanup-cache-after-minutes}",
-      timeUnit = TimeUnit.MINUTES)
+  @Scheduled(cron = "${spendreporting.azure.cleanup-cache-cron-schedule}", zone = "GMT+0")
   public void cleanUpAzureSpendReportCache() {
     var azureSpendReportCache =
         cacheManager.getCache(CacheConfiguration.AZURE_SPEND_REPORT_CACHE_NAME);

@@ -146,4 +146,4 @@ spendreporting:
   azure:
     max-date-range-days: 90
     # keep result for 24 hours
-    cleanup-cache-after-minutes: 1440
+    cleanup-cache-cron-schedule: "0 0 0 * * *"
