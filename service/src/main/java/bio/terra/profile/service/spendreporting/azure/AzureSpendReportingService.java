@@ -1,5 +1,6 @@
 package bio.terra.profile.service.spendreporting.azure;
 
+import bio.terra.profile.app.configuration.CacheConfiguration;
 import bio.terra.profile.service.crl.CrlService;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.profile.service.spendreporting.azure.exception.KubernetesResourceNotFound;
@@ -20,6 +21,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -31,14 +35,17 @@ public class AzureSpendReportingService {
   private final AzureCostManagementQuery azureCostManagementQuery;
   private final CrlService crlService;
   private final QueryResultMapper queryResultMapper;
+  private final CacheManager cacheManager;
 
   public AzureSpendReportingService(
       AzureCostManagementQuery azureCostManagementQuery,
       CrlService crlService,
-      QueryResultMapper queryResultMapper) {
+      QueryResultMapper queryResultMapper,
+      CacheManager cacheManager) {
     this.azureCostManagementQuery = azureCostManagementQuery;
     this.crlService = crlService;
     this.queryResultMapper = queryResultMapper;
+    this.cacheManager = cacheManager;
   }
 
   /**
@@ -51,6 +58,7 @@ public class AzureSpendReportingService {
    * @param to End of the billing period
    * @return Spend data
    */
+  @Cacheable(value = CacheConfiguration.AZURE_SPEND_REPORT_CACHE_NAME)
   public SpendData getBillingProfileSpendData(
       BillingProfile billingProfile, OffsetDateTime from, OffsetDateTime to) {
     String k8sNodeResourceGroup =
@@ -79,6 +87,11 @@ public class AzureSpendReportingService {
     List<SpendData> spendDataList =
         azureCostManagementQueriesFutures.stream().map(CompletableFuture::join).toList();
 
+    logger.info(
+        "Azure spend report data for billing profile with Id=`{}` and period from=`{}` to=`{}` received.",
+        billingProfile.id(),
+        from,
+        to);
     return new SpendData(
         spendDataList.stream().flatMap(sp -> sp.getSpendDataItems().stream()).toList(), from, to);
   }
@@ -146,5 +159,19 @@ public class AzureSpendReportingService {
         resourceGroupName,
         k8sResource.name(),
         k8sResource.regionName());
+  }
+
+  @Scheduled(cron = "${spendreporting.azure.cleanup-cache-cron-schedule}", zone = "GMT+0")
+  public void cleanUpAzureSpendReportCache() {
+    var azureSpendReportCache =
+        cacheManager.getCache(CacheConfiguration.AZURE_SPEND_REPORT_CACHE_NAME);
+    if (azureSpendReportCache != null) {
+      azureSpendReportCache.clear();
+      logger.info(
+          "Cache '{}' has been cleaned up.", CacheConfiguration.AZURE_SPEND_REPORT_CACHE_NAME);
+
+    } else {
+      logger.warn("Cache '{}' doesn't exist", CacheConfiguration.AZURE_SPEND_REPORT_CACHE_NAME);
+    }
   }
 }

@@ -145,3 +145,5 @@ terra.common:
 spendreporting:
   azure:
     max-date-range-days: 90
+    # keep result for 24 hours
+    cleanup-cache-cron-schedule: "0 0 0 * * *"
