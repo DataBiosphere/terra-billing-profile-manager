@@ -18,6 +18,7 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+
       - name: Gradle cache
         uses: actions/cache@v2
         with:
@@ -86,6 +87,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+        # Needed by sonar to get the git history for the branch the PR will be merged into.
+        with:
+          fetch-depth: 0
+
       - name: Set up JDK
         uses: actions/setup-java@v2
         with:
@@ -118,7 +123,7 @@ jobs:
         run: ./gradlew --build-cache test jacocoTestReport
 
       - name: SonarQube scan
-        run: ./gradlew --build-cache sonarqube
+        run: ./gradlew --build-cache sonar
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -141,11 +146,22 @@ jobs:
           fields: workflow,message
           text: 'Build failed :sadpanda:'
 
-  dispatch-tag:
-    needs: [ build, jib, unit-tests ]
+  bump-check:
     runs-on: ubuntu-latest
+    outputs:
+      is-bump: ${{ steps.skiptest.outputs.is-bump }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Skip version bump merges
+        id: skiptest
+        uses: ./.github/actions/bump-skip
+        with:
+          event-name: ${{ github.event_name }}
 
-    if: success() && github.ref == 'refs/heads/main'
+  dispatch-tag:
+    needs: [ build, jib, unit-tests, bump-check ]
+    runs-on: ubuntu-latest
+    if: success() &&  needs.bump-check.outputs.is-bump == 'no' && github.ref == 'refs/heads/main'
 
     steps:
       - name: Fire off publish action
