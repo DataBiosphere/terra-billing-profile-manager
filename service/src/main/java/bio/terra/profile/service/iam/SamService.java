@@ -189,7 +189,7 @@ public class SamService {
                   new SamPolicyModel()
                       .name(entry.getPolicyName())
                       .members(entry.getPolicy().getMemberEmails()))
-          .collect(Collectors.toList());
+          .toList();
     } catch (ApiException e) {
       throw SamExceptionFactory.create("Error retrieving profile policies from Sam", e);
     }
@@ -420,7 +420,7 @@ public class SamService {
       var result = new SystemStatusSystems().ok(samStatus.getOk());
       var samSystems = samStatus.getSystems();
       // Populate error message if Sam status is non-ok
-      if (samStatus.getOk() == false) {
+      if (!samStatus.getOk()) {
         String errorMsg = "Sam status check failed. Messages = " + samSystems;
         logger.error(errorMsg);
         result.addMessagesItem(errorMsg);

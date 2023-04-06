@@ -16,16 +16,8 @@ public class StairwayDatabaseConfiguration extends BaseDatabaseConfiguration {
    */
   private boolean forceClean;
 
-  public boolean getMigrateUpgrade() {
-    return migrateUpgrade;
-  }
-
   public void setMigrateUpgrade(boolean migrateUpgrade) {
     this.migrateUpgrade = migrateUpgrade;
-  }
-
-  public boolean getForceClean() {
-    return forceClean;
   }
 
   public void setForceClean(boolean forceClean) {

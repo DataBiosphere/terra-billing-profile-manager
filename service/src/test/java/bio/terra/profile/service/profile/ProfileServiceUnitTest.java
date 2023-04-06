@@ -37,7 +37,7 @@ import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 @SpringJUnitConfig
-public class ProfileServiceUnitTest extends BaseUnitTest {
+class ProfileServiceUnitTest extends BaseUnitTest {
 
   @Mock private ProfileDao profileDao;
   @Mock private SamService samService;
@@ -58,7 +58,7 @@ public class ProfileServiceUnitTest extends BaseUnitTest {
           .build();
 
   @BeforeEach
-  public void before() {
+  void before() {
     profileService = new ProfileService(profileDao, samService, jobService);
     user =
         AuthenticatedUserRequest.builder()
@@ -87,14 +87,14 @@ public class ProfileServiceUnitTest extends BaseUnitTest {
   }
 
   @Test
-  public void createProfile() {
+  void createProfile() {
     var jobBuilder = mock(JobBuilder.class);
 
     when(jobService.newJob()).thenReturn(jobBuilder);
     when(jobBuilder.description(anyString())).thenReturn(jobBuilder);
-    when(jobBuilder.flightClass(eq(CreateProfileFlight.class))).thenReturn(jobBuilder);
-    when(jobBuilder.request(eq(profile))).thenReturn(jobBuilder);
-    when(jobBuilder.userRequest(eq(user))).thenReturn(jobBuilder);
+    when(jobBuilder.flightClass(CreateProfileFlight.class)).thenReturn(jobBuilder);
+    when(jobBuilder.request(profile)).thenReturn(jobBuilder);
+    when(jobBuilder.userRequest(user)).thenReturn(jobBuilder);
     when(jobBuilder.submitAndWait(BillingProfile.class)).thenReturn(profile);
 
     BillingProfile result = profileService.createProfile(profile, user);
@@ -104,16 +104,16 @@ public class ProfileServiceUnitTest extends BaseUnitTest {
   }
 
   @Test
-  public void deleteProfile() throws InterruptedException {
+  void deleteProfile() throws InterruptedException {
     var jobBuilder = mock(JobBuilder.class);
     String jobId = "jobId";
 
     when(jobService.newJob()).thenReturn(jobBuilder);
     when(jobBuilder.submit()).thenReturn(jobId);
     when(jobBuilder.description(anyString())).thenReturn(jobBuilder);
-    when(jobBuilder.flightClass(eq(DeleteProfileFlight.class))).thenReturn(jobBuilder);
-    when(jobBuilder.userRequest(eq(user))).thenReturn(jobBuilder);
-    when(jobBuilder.addParameter(eq(ProfileMapKeys.PROFILE), eq(profile))).thenReturn(jobBuilder);
+    when(jobBuilder.flightClass(DeleteProfileFlight.class)).thenReturn(jobBuilder);
+    when(jobBuilder.userRequest(user)).thenReturn(jobBuilder);
+    when(jobBuilder.addParameter(ProfileMapKeys.PROFILE, profile)).thenReturn(jobBuilder);
     when(jobBuilder.addParameter(
             eq(JobMapKeys.CLOUD_PLATFORM.getKeyName()), eq(CloudPlatform.GCP.name())))
         .thenReturn(jobBuilder);
@@ -121,13 +121,12 @@ public class ProfileServiceUnitTest extends BaseUnitTest {
 
     profileService.deleteProfile(profile.id(), user);
     verify(samService)
-        .verifyAuthorization(
-            eq(user), eq(SamResourceType.PROFILE), eq(profile.id()), eq(SamAction.DELETE.DELETE));
+        .verifyAuthorization(user, SamResourceType.PROFILE, profile.id(), SamAction.DELETE.DELETE);
     verify(jobBuilder).submitAndWait(any());
   }
 
   @Test
-  public void deleteProfileNoAccess() throws InterruptedException {
+  void deleteProfileNoAccess() throws InterruptedException {
     doThrow(ForbiddenException.class)
         .when(samService)
         .verifyAuthorization(eq(user), eq(SamResourceType.PROFILE), any(), eq(SamAction.DELETE));
@@ -136,7 +135,7 @@ public class ProfileServiceUnitTest extends BaseUnitTest {
   }
 
   @Test
-  public void getProfile() throws InterruptedException {
+  void getProfile() throws InterruptedException {
     when(profileDao.getBillingProfileById(profile.id())).thenReturn(profile);
     when(samService.hasActions(eq(user), eq(SamResourceType.PROFILE), eq(profile.id())))
         .thenReturn(true);
@@ -146,15 +145,14 @@ public class ProfileServiceUnitTest extends BaseUnitTest {
   }
 
   @Test
-  public void getProfileNoAccess() throws InterruptedException {
-    when(samService.hasActions(eq(user), eq(SamResourceType.PROFILE), eq(profile.id())))
-        .thenReturn(false);
+  void getProfileNoAccess() throws InterruptedException {
+    when(samService.hasActions(user, SamResourceType.PROFILE, profile.id())).thenReturn(false);
     assertThrows(ForbiddenException.class, () -> profileService.getProfile(profile.id(), user));
   }
 
   @Test
-  public void listProfiles() throws InterruptedException {
-    when(samService.listProfileIds(eq(user))).thenReturn(List.of(profile.id()));
+  void listProfiles() throws InterruptedException {
+    when(samService.listProfileIds(user)).thenReturn(List.of(profile.id()));
     when(profileDao.listBillingProfiles(anyInt(), anyInt(), eq(List.of(profile.id()))))
         .thenReturn(List.of(profile));
     var result = profileService.listProfiles(user, 0, 0);
@@ -162,35 +160,29 @@ public class ProfileServiceUnitTest extends BaseUnitTest {
   }
 
   @Test
-  public void getProfilePolicies() throws InterruptedException {
-    when(samService.retrieveProfilePolicies(eq(user), eq(profile.id())))
-        .thenReturn(profilePolicies);
+  void getProfilePolicies() throws InterruptedException {
+    when(samService.retrieveProfilePolicies(user, profile.id())).thenReturn(profilePolicies);
     var result = profileService.getProfilePolicies(profile.id(), user);
     assertEquals(profilePolicies, result);
   }
 
   @Test
-  public void getProfilePolicies403() throws InterruptedException {
-    doThrow(ForbiddenException.class)
-        .when(samService)
-        .retrieveProfilePolicies(eq(user), eq(profile.id()));
+  void getProfilePolicies403() throws InterruptedException {
+    doThrow(ForbiddenException.class).when(samService).retrieveProfilePolicies(user, profile.id());
     assertThrows(
         ForbiddenException.class, () -> profileService.getProfilePolicies(profile.id(), user));
   }
 
   @Test
-  public void getProfilePolicies404() throws InterruptedException {
-    doThrow(NotFoundException.class)
-        .when(samService)
-        .retrieveProfilePolicies(eq(user), eq(profile.id()));
+  void getProfilePolicies404() throws InterruptedException {
+    doThrow(NotFoundException.class).when(samService).retrieveProfilePolicies(user, profile.id());
     assertThrows(
         NotFoundException.class, () -> profileService.getProfilePolicies(profile.id(), user));
   }
 
   @Test
-  public void addProfilePolicyMember() throws InterruptedException {
-    when(samService.addProfilePolicyMember(
-            eq(user), eq(profile.id()), eq("user"), eq("user@unit.com")))
+  void addProfilePolicyMember() throws InterruptedException {
+    when(samService.addProfilePolicyMember(user, profile.id(), "user", "user@unit.com"))
         .thenReturn(userPolicy);
     var result = profileService.addProfilePolicyMember(profile.id(), "user", "user@unit.com", user);
     assertEquals(userPolicy, result);
@@ -200,26 +192,25 @@ public class ProfileServiceUnitTest extends BaseUnitTest {
   public void addProfilePolicyMember403() throws InterruptedException {
     doThrow(ForbiddenException.class)
         .when(samService)
-        .addProfilePolicyMember(eq(user), eq(profile.id()), eq("user"), eq("user@unit.com"));
+        .addProfilePolicyMember(user, profile.id(), "user", "user@unit.com");
     assertThrows(
         ForbiddenException.class,
         () -> profileService.addProfilePolicyMember(profile.id(), "user", "user@unit.com", user));
   }
 
   @Test
-  public void addProfilePolicyMember404() throws InterruptedException {
+  void addProfilePolicyMember404() throws InterruptedException {
     doThrow(NotFoundException.class)
         .when(samService)
-        .addProfilePolicyMember(eq(user), eq(profile.id()), eq("user"), eq("user@unit.com"));
+        .addProfilePolicyMember(user, profile.id(), "user", "user@unit.com");
     assertThrows(
         NotFoundException.class,
         () -> profileService.addProfilePolicyMember(profile.id(), "user", "user@unit.com", user));
   }
 
   @Test
-  public void deleteProfilePolicyMember() throws InterruptedException {
-    when(samService.deleteProfilePolicyMember(
-            eq(user), eq(profile.id()), eq("owner"), eq("leaving@unit.com")))
+  void deleteProfilePolicyMember() throws InterruptedException {
+    when(samService.deleteProfilePolicyMember(user, profile.id(), "owner", "leaving@unit.com"))
         .thenReturn(ownerPolicy);
     var result =
         profileService.deleteProfilePolicyMember(profile.id(), "owner", "leaving@unit.com", user);
@@ -227,10 +218,10 @@ public class ProfileServiceUnitTest extends BaseUnitTest {
   }
 
   @Test
-  public void deleteProfilePolicyMember403() throws InterruptedException {
+  void deleteProfilePolicyMember403() throws InterruptedException {
     doThrow(ForbiddenException.class)
         .when(samService)
-        .deleteProfilePolicyMember(eq(user), eq(profile.id()), eq("user"), eq("user@unit.com"));
+        .deleteProfilePolicyMember(user, profile.id(), "user", "user@unit.com");
     assertThrows(
         ForbiddenException.class,
         () ->
@@ -238,10 +229,10 @@ public class ProfileServiceUnitTest extends BaseUnitTest {
   }
 
   @Test
-  public void deleteProfilePolicyMember404() throws InterruptedException {
+  void deleteProfilePolicyMember404() throws InterruptedException {
     doThrow(NotFoundException.class)
         .when(samService)
-        .deleteProfilePolicyMember(eq(user), eq(profile.id()), eq("user"), eq("user@unit.com"));
+        .deleteProfilePolicyMember(user, profile.id(), "user", "user@unit.com");
     assertThrows(
         NotFoundException.class,
         () ->
@@ -249,7 +240,7 @@ public class ProfileServiceUnitTest extends BaseUnitTest {
   }
 
   @Test
-  public void createProfileFlightSetup() {
+  void createProfileFlightSetup() {
     var billingCow = mock(CloudBillingClientCow.class);
     var iamPermissionsResponse =
         TestIamPermissionsResponse.newBuilder()

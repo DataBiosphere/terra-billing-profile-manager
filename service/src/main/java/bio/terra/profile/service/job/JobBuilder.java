@@ -121,10 +121,6 @@ public class JobBuilder {
     }
   }
 
-  private boolean shouldInsert(String mapKey, @Nullable Object value) {
-    return (value != null && !jobParameterMap.containsKey(mapKey));
-  }
-
   private boolean shouldInsert(JobMapKeys mapKey, @Nullable Object value) {
     return (value != null && !jobParameterMap.containsKey(mapKey.getKeyName()));
   }

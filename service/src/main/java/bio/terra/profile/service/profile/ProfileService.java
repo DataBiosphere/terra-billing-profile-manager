@@ -106,7 +106,7 @@ public class ProfileService {
     var hasActions =
         SamRethrow.onInterrupted(
             () -> samService.hasActions(user, SamResourceType.PROFILE, id), "hasActions");
-    if (!hasActions) {
+    if (Boolean.FALSE.equals(hasActions)) {
       throw new ForbiddenException("forbidden");
     }
     return profile;

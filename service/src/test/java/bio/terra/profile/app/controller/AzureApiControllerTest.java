@@ -1,6 +1,5 @@
 package bio.terra.profile.app.controller;
 
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -20,7 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.web.servlet.MockMvc;
 
 @AutoConfigureMockMvc
-public class AzureApiControllerTest extends BaseSpringUnitTest {
+class AzureApiControllerTest extends BaseSpringUnitTest {
 
   @Autowired MockMvc mockMvc;
 
@@ -35,7 +34,7 @@ public class AzureApiControllerTest extends BaseSpringUnitTest {
 
   @BeforeEach
   void setup() throws Exception {
-    when(samService.getUserStatusInfo(eq(userRequest.getToken())))
+    when(samService.getUserStatusInfo(userRequest.getToken()))
         .thenReturn(
             new UserStatusInfo()
                 .userSubjectId(userRequest.getSubjectId())

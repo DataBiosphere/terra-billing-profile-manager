@@ -11,7 +11,6 @@ import bio.terra.profile.service.profile.model.BillingProfile;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,7 +22,6 @@ public class ProfileApiController implements ProfileApi {
   private final HttpServletRequest request;
   private final ProfileService profileService;
   private final AuthenticatedUserRequestFactory authenticatedUserRequestFactory;
-  private final JobService jobService;
 
   @Autowired
   public ProfileApiController(
@@ -33,7 +31,6 @@ public class ProfileApiController implements ProfileApi {
       AuthenticatedUserRequestFactory authenticatedUserRequestFactory) {
     this.request = request;
     this.profileService = profileService;
-    this.jobService = jobService;
     this.authenticatedUserRequestFactory = authenticatedUserRequestFactory;
   }
 
@@ -59,10 +56,7 @@ public class ProfileApiController implements ProfileApi {
     List<BillingProfile> profiles = profileService.listProfiles(user, offset, limit);
     var response =
         new ProfileModelList()
-            .items(
-                profiles.stream()
-                    .map(BillingProfile::toApiProfileModel)
-                    .collect(Collectors.toList()));
+            .items(profiles.stream().map(BillingProfile::toApiProfileModel).toList());
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
