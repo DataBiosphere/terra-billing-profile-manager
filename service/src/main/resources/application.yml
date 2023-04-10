@@ -54,6 +54,10 @@ spring:
       static-locations: classpath:/api/
 
 management:
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
   server:
     port: 9098
   endpoints:
