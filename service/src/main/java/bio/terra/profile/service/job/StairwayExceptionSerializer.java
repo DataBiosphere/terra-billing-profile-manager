@@ -38,11 +38,11 @@ public class StairwayExceptionSerializer implements ExceptionSerializer {
             .setClassName(exception.getClass().getName())
             .setMessage(exception.getMessage());
 
-    if (exception instanceof ErrorReportException) {
+    if (exception instanceof ErrorReportException errorReportException) {
       fields
           .setApiErrorReportException(true)
-          .setErrorDetails(((ErrorReportException) exception).getCauses())
-          .setErrorCode(((ErrorReportException) exception).getStatusCode().value());
+          .setErrorDetails(errorReportException.getCauses())
+          .setErrorCode(errorReportException.getStatusCode().value());
     } else {
       fields.setApiErrorReportException(false);
     }

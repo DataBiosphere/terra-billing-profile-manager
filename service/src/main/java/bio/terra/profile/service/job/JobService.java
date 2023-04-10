@@ -141,9 +141,6 @@ public class JobService {
         if (state != null) {
           // Indicates job has completed, though not necessarily successfully.
           return;
-        } else {
-          // Indicates job has not completed yet, continue polling
-          continue;
         }
       }
     } catch (InterruptedException | ExecutionException stairwayEx) {
@@ -209,17 +206,14 @@ public class JobService {
       }
     }
 
-    JobReport jobReport =
-        new JobReport()
-            .id(flightState.getFlightId())
-            .description(description)
-            .status(jobStatus)
-            .statusCode(statusCode.value())
-            .submitted(submittedDate)
-            .completed(completedDate)
-            .resultURL(resultUrlFromFlightState(flightState));
-
-    return jobReport;
+    return new JobReport()
+        .id(flightState.getFlightId())
+        .description(description)
+        .status(jobStatus)
+        .statusCode(statusCode.value())
+        .submitted(submittedDate)
+        .completed(completedDate)
+        .resultURL(resultUrlFromFlightState(flightState));
   }
 
   private String resultUrlFromFlightState(FlightState flightState) {

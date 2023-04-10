@@ -26,6 +26,7 @@ public class GlobalExceptionHandler extends AbstractGlobalExceptionHandler<Error
     return new ErrorReport().message(ex.getMessage()).statusCode(statusCode.value()).causes(causes);
   }
 
+  @Override
   @ExceptionHandler({
     MethodArgumentTypeMismatchException.class,
     MissingServletRequestParameterException.class
