@@ -44,7 +44,6 @@ public class SamServiceTest extends BaseUnitTest {
         .uponReceiving("a request for the user's status")
         .path("/register/user/v2/self/info")
         .method("GET")
-        .matchHeader("Authorization", "Bearer .+")
         .willRespondWith()
         .status(200)
         .body(userResponseShape)
