@@ -10,7 +10,7 @@ import bio.terra.profile.app.configuration.AzureConfiguration;
 import bio.terra.profile.common.BaseUnitTest;
 import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.model.AzureManagedAppModel;
-import bio.terra.profile.service.crl.CrlService;
+import bio.terra.profile.service.crl.AzureCloudResources;
 import com.azure.resourcemanager.managedapplications.models.Application;
 import com.azure.resourcemanager.managedapplications.models.Plan;
 import com.google.common.collect.ImmutableSet;
@@ -81,7 +81,7 @@ public class AzureServiceUnitTest extends BaseUnitTest {
     when(appService.getApplicationsForSubscription(eq(subId))).thenReturn(appsList);
     when(appService.getTenantForSubscription(subId)).thenReturn(tenantId);
 
-    var crlService = mock(CrlService.class);
+    var crlService = mock(AzureCloudResources.class);
     var profileDao = mock(ProfileDao.class);
 
     var offer = new AzureConfiguration.AzureApplicationOffer();
@@ -112,7 +112,7 @@ public class AzureServiceUnitTest extends BaseUnitTest {
 
   @Test
   public void getManagedApps_dedupesApps() {
-    var crlService = mock(CrlService.class);
+    var crlService = mock(AzureCloudResources.class);
     var profileDao = mock(ProfileDao.class);
 
     var authedTerraApp = mock(Application.class);
@@ -152,7 +152,7 @@ public class AzureServiceUnitTest extends BaseUnitTest {
     var assignedTerraAppManagedResourceGroupId = "assigned_fake_mrg";
     var unassignedTerraAppManagedResourceGroupId = "unassigned_fake_mrg";
 
-    var crlService = mock(CrlService.class);
+    var crlService = mock(AzureCloudResources.class);
     var profileDao = mock(ProfileDao.class);
     when(profileDao.listManagedResourceGroupsInSubscription(subId))
         .thenReturn(List.of(assignedTerraAppManagedResourceGroupId));
@@ -245,7 +245,7 @@ public class AzureServiceUnitTest extends BaseUnitTest {
     when(appService.getApplicationsForSubscription(eq(subId))).thenReturn(appsList);
     when(appService.getTenantForSubscription(subId)).thenReturn(tenantId);
 
-    var crlService = mock(CrlService.class);
+    var crlService = mock(AzureCloudResources.class);
     var profileDao = mock(ProfileDao.class);
 
     var offer = new AzureConfiguration.AzureApplicationOffer();

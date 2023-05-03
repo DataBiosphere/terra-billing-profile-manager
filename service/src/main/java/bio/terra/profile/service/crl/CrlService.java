@@ -6,32 +6,22 @@ import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.app.configuration.AzureConfiguration;
 import bio.terra.profile.service.crl.exception.CrlInternalException;
 import bio.terra.profile.service.crl.exception.CrlSecurityException;
-import com.azure.core.management.AzureEnvironment;
-import com.azure.core.management.profile.AzureProfile;
-import com.azure.resourcemanager.costmanagement.CostManagementManager;
-import com.azure.resourcemanager.managedapplications.ApplicationManager;
-import com.azure.resourcemanager.resources.ResourceManager;
-import com.azure.resourcemanager.resources.fluent.SubscriptionClient;
-import com.azure.resourcemanager.resources.models.ResourceGroup;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
 import java.io.IOException;
-import java.util.Map;
-import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+/** Provides GCP Cloud resources for the application */
 @Component
 public class CrlService {
   /** The client name required by CRL. */
   private static final String CLIENT_NAME = "profile";
 
-  private final AzureConfiguration azureConfiguration;
   private final ClientConfig clientConfig;
 
   @Autowired
   public CrlService(AzureConfiguration azureConfiguration) {
-    this.azureConfiguration = azureConfiguration;
     this.clientConfig = buildClientConfig();
   }
 
@@ -42,56 +32,6 @@ public class CrlService {
     } catch (IOException e) {
       throw new CrlInternalException("Error creating billing client wrapper", e);
     }
-  }
-
-  /** Returns an Azure {@link ResourceManager} configured for use with CRL. */
-  public ResourceManager getResourceManager(UUID tenantId, UUID subscriptionId) {
-    AzureProfile azureProfile =
-        new AzureProfile(tenantId.toString(), subscriptionId.toString(), AzureEnvironment.AZURE);
-
-    // We must use FQDN because there are two `Defaults` symbols imported otherwise.
-    return bio.terra.cloudres.azure.resourcemanager.common.Defaults.crlConfigure(
-            clientConfig, ResourceManager.configure())
-        .authenticate(azureConfiguration.buildManagedAppCredentials(), azureProfile)
-        .withSubscription(subscriptionId.toString());
-  }
-
-  public ApplicationManager getApplicationManager(UUID subscriptionId) {
-    AzureProfile azureProfile =
-        new AzureProfile(null, subscriptionId.toString(), AzureEnvironment.AZURE);
-
-    return ApplicationManager.authenticate(
-        azureConfiguration.buildManagedAppCredentials(), azureProfile);
-  }
-
-  public CostManagementManager getCostManagementManager(UUID subscriptionId) {
-    AzureProfile azureProfile =
-        new AzureProfile(null, subscriptionId.toString(), AzureEnvironment.AZURE);
-
-    return CostManagementManager.authenticate(
-        azureConfiguration.buildManagedAppCredentials(), azureProfile);
-  }
-
-  public UUID getTenantForSubscription(UUID subscriptionId) {
-    // we are using the SubscriptionClient interface here instead of Subscriptions as the latter
-    // does not give us tenantId
-    var resourceManager =
-        getResourceManager(
-            UUID.fromString(azureConfiguration.managedAppTenantId()), subscriptionId);
-    SubscriptionClient sc = resourceManager.subscriptionClient();
-    var subscription = sc.getSubscriptions().get(subscriptionId.toString());
-    return UUID.fromString(subscription.tenantId());
-  }
-
-  public ResourceGroup getResourceGroup(UUID tenantId, UUID subscriptionId, String resourceId) {
-    var resourceManager = getResourceManager(tenantId, subscriptionId);
-    return resourceManager.resourceGroups().getByName(resourceId);
-  }
-
-  public void updateTagsForResource(
-      UUID tenantId, UUID subscriptionId, String resourceId, Map<String, String> tags) {
-    var resourceManager = getResourceManager(tenantId, subscriptionId);
-    resourceManager.tagOperations().updateTags(resourceId, tags);
   }
 
   private ClientConfig buildClientConfig() {

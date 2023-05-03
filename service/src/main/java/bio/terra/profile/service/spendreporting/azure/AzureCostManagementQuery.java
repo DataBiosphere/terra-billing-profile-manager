@@ -1,6 +1,6 @@
 package bio.terra.profile.service.spendreporting.azure;
 
-import bio.terra.profile.service.crl.CrlService;
+import bio.terra.profile.service.crl.AzureCloudResources;
 import com.azure.core.http.rest.Response;
 import com.azure.core.util.Context;
 import com.azure.resourcemanager.costmanagement.models.ExportType;
@@ -14,6 +14,7 @@ import com.azure.resourcemanager.costmanagement.models.TimeframeType;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -21,9 +22,10 @@ public class AzureCostManagementQuery {
   private static final String GROUPING_BY_RESOURCE_ID = "ResourceId";
   private static final String GROUPING_BY_RESOURCE_TYPE = "ResourceType";
 
-  private final CrlService crlService;
+  private final AzureCloudResources crlService;
 
-  public AzureCostManagementQuery(CrlService crlService) {
+  @Autowired
+  public AzureCostManagementQuery(AzureCloudResources crlService) {
     this.crlService = crlService;
   }
 

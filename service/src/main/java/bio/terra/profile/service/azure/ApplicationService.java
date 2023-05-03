@@ -1,9 +1,10 @@
 package bio.terra.profile.service.azure;
 
 import bio.terra.profile.service.azure.exception.InaccessibleSubscriptionException;
-import bio.terra.profile.service.crl.CrlService;
+import bio.terra.profile.service.crl.AzureCloudResources;
 import com.azure.core.management.exception.ManagementException;
 import com.azure.resourcemanager.managedapplications.models.Application;
+import com.azure.resourcemanager.resources.fluent.SubscriptionClient;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -19,10 +20,10 @@ public class ApplicationService {
   private static final Set<String> INACCESSIBLE_SUB_CODES =
       Set.of(AZURE_SUB_NOT_FOUND, AZURE_AUTH_FAILED, INVALID_AUTH_TOKEN);
 
-  private final CrlService crlService;
+  private final AzureCloudResources crlService;
 
   @Autowired
-  public ApplicationService(CrlService crlService) {
+  public ApplicationService(AzureCloudResources crlService) {
     this.crlService = crlService;
   }
 
@@ -46,7 +47,14 @@ public class ApplicationService {
    */
   public UUID getTenantForSubscription(UUID subscriptionId) {
     try {
-      return crlService.getTenantForSubscription(subscriptionId);
+      // we are using the SubscriptionClient interface here instead of Subscriptions as the latter
+      // does not give us tenantId
+      var resourceManager = crlService.getResourceManager(subscriptionId);
+      SubscriptionClient sc = resourceManager.subscriptionClient();
+      var subscription = sc.getSubscriptions().get(subscriptionId.toString());
+      return UUID.fromString(subscription.tenantId());
+
+      // return crlService.getTenantForSubscription(subscriptionId);
     } catch (ManagementException e) {
       if (INACCESSIBLE_SUB_CODES.contains(e.getValue().getCode())) {
         throw new InaccessibleSubscriptionException("Subscription not accessible", e);
