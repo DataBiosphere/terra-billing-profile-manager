@@ -1,7 +1,7 @@
 package bio.terra.profile.service.spendreporting.azure;
 
 import bio.terra.profile.app.configuration.CacheConfiguration;
-import bio.terra.profile.service.crl.CrlService;
+import bio.terra.profile.service.crl.AzureCloudResources;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.profile.service.spendreporting.azure.exception.KubernetesResourceNotFound;
 import bio.terra.profile.service.spendreporting.azure.exception.MultipleKubernetesResourcesFound;
@@ -33,13 +33,13 @@ public class AzureSpendReportingService {
   public static final String K8S_RESOURCE_GROUP_NAME_PREFIX = "MC";
   public static final String AZURE_KUBERNETES_RESOURCE_TYPE = "managedclusters";
   private final AzureCostManagementQuery azureCostManagementQuery;
-  private final CrlService crlService;
+  private final AzureCloudResources crlService;
   private final QueryResultMapper queryResultMapper;
   private final CacheManager cacheManager;
 
   public AzureSpendReportingService(
       AzureCostManagementQuery azureCostManagementQuery,
-      CrlService crlService,
+      AzureCloudResources crlService,
       QueryResultMapper queryResultMapper,
       CacheManager cacheManager) {
     this.azureCostManagementQuery = azureCostManagementQuery;
