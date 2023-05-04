@@ -14,20 +14,18 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class AzureCloudResources {
-  private static final String CLIENT_NAME = "profile";
 
   private final AzureConfiguration azureConfiguration;
   private final ClientConfig clientConfig;
 
   @Autowired
-  public AzureCloudResources(AzureConfiguration azureConfiguration) {
+  public AzureCloudResources(AzureConfiguration azureConfiguration, ClientConfig clientConfig) {
     this.azureConfiguration = azureConfiguration;
-    this.clientConfig = buildClientConfig();
+    this.clientConfig = clientConfig;
   }
 
   public ResourceManager getResourceManager(UUID subscriptionId) {
-    return getResourceManager(
-        UUID.fromString(azureConfiguration.managedAppTenantId()), subscriptionId);
+    return getResourceManager(UUID.fromString(azureConfiguration.managedAppTenantId()), subscriptionId);
   }
 
   /** Returns an Azure {@link ResourceManager} configured for use with CRL. */
@@ -58,15 +56,12 @@ public class AzureCloudResources {
         azureConfiguration.buildManagedAppCredentials(), azureProfile);
   }
 
+
+
   public void updateTagsForResource(
       UUID tenantId, UUID subscriptionId, String resourceId, Map<String, String> tags) {
     var resourceManager = getResourceManager(tenantId, subscriptionId);
     resourceManager.tagOperations().updateTags(resourceId, tags);
   }
 
-  // TODO: Note: could make this a bean, instead of duplicating here and CrlService?
-  private ClientConfig buildClientConfig() {
-    // Billing profile manager does not create any cloud resources, so no need to use Janitor.
-    return ClientConfig.Builder.newBuilder().setClient(CLIENT_NAME).build();
-  }
 }
