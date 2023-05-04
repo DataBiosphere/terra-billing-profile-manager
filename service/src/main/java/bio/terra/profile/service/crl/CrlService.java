@@ -3,9 +3,7 @@ package bio.terra.profile.service.crl;
 import bio.terra.cloudres.common.ClientConfig;
 import bio.terra.cloudres.google.billing.CloudBillingClientCow;
 import bio.terra.common.iam.AuthenticatedUserRequest;
-import bio.terra.profile.app.configuration.AzureConfiguration;
 import bio.terra.profile.service.crl.exception.CrlInternalException;
-import bio.terra.profile.service.crl.exception.CrlSecurityException;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
 import java.io.IOException;
@@ -29,14 +27,6 @@ public class CrlService {
       return new CloudBillingClientCow(clientConfig, getUserCredentials(user.getToken()));
     } catch (IOException e) {
       throw new CrlInternalException("Error creating billing client wrapper", e);
-    }
-  }
-
-  private GoogleCredentials getApplicationCredentials() {
-    try {
-      return GoogleCredentials.getApplicationDefault();
-    } catch (IOException e) {
-      throw new CrlSecurityException("Failed to get credentials", e);
     }
   }
 

@@ -29,12 +29,6 @@ public class AzureCostManagementQuery {
     this.crlService = crlService;
   }
 
-  public Response<QueryResult> resourceGroupCostQueryWithResourceIdGrouping(
-      UUID subscriptionId, String resourceGroupName, OffsetDateTime from, OffsetDateTime to) {
-    return resourceGroupCostQuery(
-        subscriptionId, resourceGroupName, from, to, GROUPING_BY_RESOURCE_ID);
-  }
-
   public Response<QueryResult> resourceGroupCostQueryWithResourceTypeGrouping(
       UUID subscriptionId, String resourceGroupName, OffsetDateTime from, OffsetDateTime to) {
     return resourceGroupCostQuery(
