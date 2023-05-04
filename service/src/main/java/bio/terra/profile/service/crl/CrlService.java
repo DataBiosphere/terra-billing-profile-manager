@@ -15,14 +15,12 @@ import org.springframework.stereotype.Component;
 /** Provides GCP Cloud resources for the application */
 @Component
 public class CrlService {
-  /** The client name required by CRL. */
-  private static final String CLIENT_NAME = "profile";
 
   private final ClientConfig clientConfig;
 
   @Autowired
-  public CrlService(AzureConfiguration azureConfiguration) {
-    this.clientConfig = buildClientConfig();
+  public CrlService(ClientConfig clientConfig) {
+    this.clientConfig = clientConfig;
   }
 
   /** Returns a GCP {@link CloudBillingClientCow} which wraps Google Billing API. */
@@ -32,11 +30,6 @@ public class CrlService {
     } catch (IOException e) {
       throw new CrlInternalException("Error creating billing client wrapper", e);
     }
-  }
-
-  private ClientConfig buildClientConfig() {
-    // Billing profile manager does not create any cloud resources, so no need to use Janitor.
-    return ClientConfig.Builder.newBuilder().setClient(CLIENT_NAME).build();
   }
 
   private GoogleCredentials getApplicationCredentials() {
