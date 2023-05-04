@@ -4,7 +4,6 @@ import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.app.configuration.AzureConfiguration;
 import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.model.CloudPlatform;
-import bio.terra.profile.service.azure.ApplicationService;
 import bio.terra.profile.service.azure.AzureService;
 import bio.terra.profile.service.crl.GcpCrlService;
 import bio.terra.profile.service.iam.SamService;
@@ -24,7 +23,6 @@ public class CreateProfileFlight extends Flight {
     GcpCrlService crlService = appContext.getBean(GcpCrlService.class);
     SamService samService = appContext.getBean(SamService.class);
     AzureService azureService = appContext.getBean(AzureService.class);
-    ApplicationService appService = appContext.getBean(ApplicationService.class);
     AzureConfiguration azureConfig = appContext.getBean(AzureConfiguration.class);
 
     BillingProfile profile =
@@ -48,7 +46,7 @@ public class CreateProfileFlight extends Flight {
 
     if (CloudPlatform.AZURE == profile.cloudPlatform()) {
       // we can link the profile to the MRG only after the Sam resource has been created
-      addStep(new LinkBillingProfileIdToMrgStep(appService, samService, profile, user));
+      addStep(new LinkBillingProfileIdToMrgStep(samService, profile, user));
     }
   }
 }

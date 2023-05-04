@@ -68,12 +68,10 @@ public class CreateProfileFlightUnitTest extends BaseUnitTest {
     var crlService = mock(GcpCrlService.class);
     var samService = mock(SamService.class);
     var azureService = mock(AzureService.class);
-    var appService = mock(ApplicationService.class);
     var azureConfig = mock(AzureConfiguration.class);
 
     var context =
-        setUpMockContext(
-            List.of(profileDao, crlService, samService, azureService, appService, azureConfig));
+        setUpMockContext(List.of(profileDao, crlService, samService, azureService, azureConfig));
 
     var tenantId = UUID.randomUUID();
     var subId = UUID.randomUUID();
