@@ -4,7 +4,7 @@ import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.app.configuration.AzureConfiguration;
 import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.model.AzureManagedAppModel;
-import bio.terra.profile.service.crl.AzureCloudResources;
+import bio.terra.profile.service.crl.AzureCrlService;
 import com.azure.resourcemanager.managedapplications.models.Application;
 import com.azure.resourcemanager.resources.models.Provider;
 import java.util.Arrays;
@@ -25,13 +25,13 @@ public class AzureService {
   private static final Logger logger = LoggerFactory.getLogger(AzureService.class);
 
   private final ApplicationService appService;
-  private final AzureCloudResources crlService;
+  private final AzureCrlService crlService;
   private final Set<AzureConfiguration.AzureApplicationOffer> azureAppOffers;
   private final ProfileDao profileDao;
 
   @Autowired
   public AzureService(
-      AzureCloudResources crlService,
+      AzureCrlService crlService,
       ApplicationService appService,
       AzureConfiguration azureConfiguration,
       ProfileDao profileDao) {

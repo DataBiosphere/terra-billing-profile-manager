@@ -6,7 +6,7 @@ import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.service.azure.ApplicationService;
 import bio.terra.profile.service.azure.AzureService;
-import bio.terra.profile.service.crl.CrlService;
+import bio.terra.profile.service.crl.GcpCrlService;
 import bio.terra.profile.service.iam.SamService;
 import bio.terra.profile.service.job.JobMapKeys;
 import bio.terra.profile.service.profile.model.BillingProfile;
@@ -21,7 +21,7 @@ public class CreateProfileFlight extends Flight {
 
     ApplicationContext appContext = (ApplicationContext) applicationContext;
     ProfileDao profileDao = appContext.getBean(ProfileDao.class);
-    CrlService crlService = appContext.getBean(CrlService.class);
+    GcpCrlService crlService = appContext.getBean(GcpCrlService.class);
     SamService samService = appContext.getBean(SamService.class);
     AzureService azureService = appContext.getBean(AzureService.class);
     ApplicationService appService = appContext.getBean(ApplicationService.class);

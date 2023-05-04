@@ -12,12 +12,12 @@ import org.springframework.stereotype.Component;
 
 /** Provides GCP Cloud resources for the application */
 @Component
-public class CrlService {
+public class GcpCrlService {
 
   private final ClientConfig clientConfig;
 
   @Autowired
-  public CrlService(ClientConfig clientConfig) {
+  public GcpCrlService(ClientConfig clientConfig) {
     this.clientConfig = clientConfig;
   }
 
