@@ -4,8 +4,11 @@ import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.app.configuration.AzureConfiguration;
 import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.model.AzureManagedAppModel;
+import bio.terra.profile.service.azure.exception.InaccessibleSubscriptionException;
 import bio.terra.profile.service.crl.AzureCrlService;
+import com.azure.core.management.exception.ManagementException;
 import com.azure.resourcemanager.managedapplications.models.Application;
+import com.azure.resourcemanager.resources.fluent.SubscriptionClient;
 import com.azure.resourcemanager.resources.models.Provider;
 import java.util.Arrays;
 import java.util.List;
@@ -24,19 +27,21 @@ public class AzureService {
 
   private static final Logger logger = LoggerFactory.getLogger(AzureService.class);
 
-  private final ApplicationService appService;
+  public static final String AZURE_SUB_NOT_FOUND = "SubscriptionNotFound";
+  public static final String AZURE_AUTH_FAILED = "AuthorizationFailed";
+  public static final String INVALID_AUTH_TOKEN = "InvalidAuthenticationTokenTenant";
+
+  private static final Set<String> INACCESSIBLE_SUB_CODES =
+      Set.of(AZURE_SUB_NOT_FOUND, AZURE_AUTH_FAILED, INVALID_AUTH_TOKEN);
+
   private final AzureCrlService crlService;
   private final Set<AzureConfiguration.AzureApplicationOffer> azureAppOffers;
   private final ProfileDao profileDao;
 
   @Autowired
   public AzureService(
-      AzureCrlService crlService,
-      ApplicationService appService,
-      AzureConfiguration azureConfiguration,
-      ProfileDao profileDao) {
+      AzureCrlService crlService, AzureConfiguration azureConfiguration, ProfileDao profileDao) {
     this.crlService = crlService;
-    this.appService = appService;
     this.azureAppOffers = azureConfiguration.getApplicationOffers();
     this.profileDao = profileDao;
   }
@@ -52,9 +57,9 @@ public class AzureService {
       UUID subscriptionId,
       Boolean includeAssignedApplications,
       AuthenticatedUserRequest userRequest) {
-    var tenantId = appService.getTenantForSubscription(subscriptionId);
+    var tenantId = getTenantForSubscription(subscriptionId);
 
-    Stream<Application> applications = appService.getApplicationsForSubscription(subscriptionId);
+    Stream<Application> applications = getApplicationsForSubscription(subscriptionId);
 
     List<String> assignedManagedResourceGroups =
         profileDao.listManagedResourceGroupsInSubscription(subscriptionId);
@@ -143,5 +148,39 @@ public class AzureService {
     }
 
     return false;
+  }
+
+  /**
+   * Retrieves the tenant associated with a given Azure subscription ID
+   *
+   * @param subscriptionId Azure subscription ID to be queried
+   * @return UUID for the associated tenant
+   * @throws InaccessibleSubscriptionException when the azure subscription is not accessible by BPM
+   */
+  private UUID getTenantForSubscription(UUID subscriptionId) {
+    try {
+      // we are using the SubscriptionClient interface here instead of Subscriptions as the latter
+      // does not give us tenantId
+      var resourceManager = crlService.getResourceManager(subscriptionId);
+      SubscriptionClient sc = resourceManager.subscriptionClient();
+      var subscription = sc.getSubscriptions().get(subscriptionId.toString());
+      return UUID.fromString(subscription.tenantId());
+    } catch (ManagementException e) {
+      if (INACCESSIBLE_SUB_CODES.contains(e.getValue().getCode())) {
+        throw new InaccessibleSubscriptionException("Subscription not accessible", e);
+      }
+      throw e;
+    }
+  }
+
+  /**
+   * Retrieves the managed applications for a given Azure subscription
+   *
+   * @param subscriptionId Azure subscription ID to be queried
+   * @return List of managed applications present in the subscription
+   */
+  private Stream<Application> getApplicationsForSubscription(UUID subscriptionId) {
+    var appMgr = crlService.getApplicationManager(subscriptionId);
+    return appMgr.applications().list().stream();
   }
 }
