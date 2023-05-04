@@ -8,7 +8,6 @@ import bio.terra.profile.app.configuration.AzureConfiguration;
 import bio.terra.profile.common.BaseUnitTest;
 import bio.terra.profile.common.ProfileFixtures;
 import bio.terra.profile.db.ProfileDao;
-import bio.terra.profile.service.azure.ApplicationService;
 import bio.terra.profile.service.azure.AzureService;
 import bio.terra.profile.service.crl.GcpCrlService;
 import bio.terra.profile.service.iam.SamService;
@@ -40,12 +39,10 @@ public class CreateProfileFlightUnitTest extends BaseUnitTest {
     var crlService = mock(GcpCrlService.class);
     var samService = mock(SamService.class);
     var azureService = mock(AzureService.class);
-    var appService = mock(ApplicationService.class);
     var azureConfig = mock(AzureConfiguration.class);
 
     var context =
-        setUpMockContext(
-            List.of(profileDao, crlService, samService, azureService, appService, azureConfig));
+        setUpMockContext(List.of(profileDao, crlService, samService, azureService, azureConfig));
 
     var profile = ProfileFixtures.createGcpBillingProfile("ABCD1234");
 
