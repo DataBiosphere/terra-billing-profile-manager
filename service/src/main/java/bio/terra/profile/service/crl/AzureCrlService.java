@@ -12,13 +12,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class AzureCloudResources {
+public class AzureCrlService {
 
   private final AzureConfiguration azureConfiguration;
   private final ClientConfig clientConfig;
 
   @Autowired
-  public AzureCloudResources(AzureConfiguration azureConfiguration, ClientConfig clientConfig) {
+  public AzureCrlService(AzureConfiguration azureConfiguration, ClientConfig clientConfig) {
     this.azureConfiguration = azureConfiguration;
     this.clientConfig = clientConfig;
   }

@@ -1,6 +1,6 @@
 package bio.terra.profile.service.spendreporting.azure;
 
-import bio.terra.profile.service.crl.AzureCloudResources;
+import bio.terra.profile.service.crl.AzureCrlService;
 import com.azure.core.http.rest.Response;
 import com.azure.core.util.Context;
 import com.azure.resourcemanager.costmanagement.models.ExportType;
@@ -22,10 +22,10 @@ public class AzureCostManagementQuery {
   private static final String GROUPING_BY_RESOURCE_ID = "ResourceId";
   private static final String GROUPING_BY_RESOURCE_TYPE = "ResourceType";
 
-  private final AzureCloudResources crlService;
+  private final AzureCrlService crlService;
 
   @Autowired
-  public AzureCostManagementQuery(AzureCloudResources crlService) {
+  public AzureCostManagementQuery(AzureCrlService crlService) {
     this.crlService = crlService;
   }
 

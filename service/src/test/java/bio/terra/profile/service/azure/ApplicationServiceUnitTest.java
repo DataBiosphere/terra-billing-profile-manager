@@ -6,7 +6,7 @@ import static org.mockito.Mockito.*;
 
 import bio.terra.profile.common.BaseUnitTest;
 import bio.terra.profile.service.azure.exception.InaccessibleSubscriptionException;
-import bio.terra.profile.service.crl.AzureCloudResources;
+import bio.terra.profile.service.crl.AzureCrlService;
 import com.azure.core.management.exception.ManagementError;
 import com.azure.core.management.exception.ManagementException;
 import com.azure.resourcemanager.resources.ResourceManager;
@@ -33,7 +33,7 @@ class ApplicationServiceUnitTest extends BaseUnitTest {
     var resourceManager = mock(ResourceManager.class);
     when(resourceManager.subscriptionClient()).thenReturn(subscriptionClient);
 
-    var crlService = mock(AzureCloudResources.class);
+    var crlService = mock(AzureCrlService.class);
     when(crlService.getResourceManager(subscriptionId)).thenReturn(resourceManager);
     var applicationService = new ApplicationService(crlService);
 
@@ -45,7 +45,7 @@ class ApplicationServiceUnitTest extends BaseUnitTest {
   @Test
   void getTenantForSubscription_inaccessibleSubscription() {
     var subscriptionId = UUID.randomUUID();
-    var crlService = mock(AzureCloudResources.class);
+    var crlService = mock(AzureCrlService.class);
     when(crlService.getResourceManager(subscriptionId))
         .thenThrow(
             new ManagementException(
@@ -63,7 +63,7 @@ class ApplicationServiceUnitTest extends BaseUnitTest {
   void getTenantForSubscription_otherMgmtError() {
     var subscriptionId = UUID.randomUUID();
 
-    var crlService = mock(AzureCloudResources.class);
+    var crlService = mock(AzureCrlService.class);
     when(crlService.getResourceManager(subscriptionId))
         .thenThrow(
             new ManagementException("error", null, new ManagementError("ExampleError", "example")));

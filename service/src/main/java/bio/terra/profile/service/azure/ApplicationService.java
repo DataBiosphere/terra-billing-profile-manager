@@ -1,7 +1,7 @@
 package bio.terra.profile.service.azure;
 
 import bio.terra.profile.service.azure.exception.InaccessibleSubscriptionException;
-import bio.terra.profile.service.crl.AzureCloudResources;
+import bio.terra.profile.service.crl.AzureCrlService;
 import com.azure.core.management.exception.ManagementException;
 import com.azure.resourcemanager.managedapplications.models.Application;
 import com.azure.resourcemanager.resources.fluent.SubscriptionClient;
@@ -20,10 +20,10 @@ public class ApplicationService {
   private static final Set<String> INACCESSIBLE_SUB_CODES =
       Set.of(AZURE_SUB_NOT_FOUND, AZURE_AUTH_FAILED, INVALID_AUTH_TOKEN);
 
-  private final AzureCloudResources crlService;
+  private final AzureCrlService crlService;
 
   @Autowired
-  public ApplicationService(AzureCloudResources crlService) {
+  public ApplicationService(AzureCrlService crlService) {
     this.crlService = crlService;
   }
 
