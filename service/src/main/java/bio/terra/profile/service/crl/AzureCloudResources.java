@@ -7,7 +7,6 @@ import com.azure.core.management.profile.AzureProfile;
 import com.azure.resourcemanager.costmanagement.CostManagementManager;
 import com.azure.resourcemanager.managedapplications.ApplicationManager;
 import com.azure.resourcemanager.resources.ResourceManager;
-import java.util.Map;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -25,7 +24,8 @@ public class AzureCloudResources {
   }
 
   public ResourceManager getResourceManager(UUID subscriptionId) {
-    return getResourceManager(UUID.fromString(azureConfiguration.managedAppTenantId()), subscriptionId);
+    return getResourceManager(
+        UUID.fromString(azureConfiguration.managedAppTenantId()), subscriptionId);
   }
 
   /** Returns an Azure {@link ResourceManager} configured for use with CRL. */
@@ -55,13 +55,4 @@ public class AzureCloudResources {
     return CostManagementManager.authenticate(
         azureConfiguration.buildManagedAppCredentials(), azureProfile);
   }
-
-
-
-  public void updateTagsForResource(
-      UUID tenantId, UUID subscriptionId, String resourceId, Map<String, String> tags) {
-    var resourceManager = getResourceManager(tenantId, subscriptionId);
-    resourceManager.tagOperations().updateTags(resourceId, tags);
-  }
-
 }
