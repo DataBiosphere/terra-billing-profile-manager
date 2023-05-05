@@ -224,7 +224,7 @@ public class AzureServiceUnitTest extends BaseUnitTest {
 
   private static Stream<Arguments> getAuthorizedEmails() {
     return Stream.of(
-        Arguments.of("foo@bar.com, " + authedUserEmail),
+        Arguments.of("foo@bar.com, ".concat(authedUserEmail)),
         Arguments.of(StringUtils.swapCase(authedUserEmail)));
   }
 
