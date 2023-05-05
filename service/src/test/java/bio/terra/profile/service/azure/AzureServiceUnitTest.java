@@ -20,13 +20,17 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 public class AzureServiceUnitTest extends BaseUnitTest {
 
   UUID subId = UUID.randomUUID();
   UUID tenantId = UUID.randomUUID();
-  String authedUserEmail = "profile@example.com";
+  private static String authedUserEmail = "profile@example.com";
   AuthenticatedUserRequest user =
       AuthenticatedUserRequest.builder()
           .setSubjectId("12345")
@@ -218,14 +222,21 @@ public class AzureServiceUnitTest extends BaseUnitTest {
     assertEquals(List.of(unassignedAzureManagedAppModel), excludeAssignedResult);
   }
 
-  @Test
-  public void getManagedApps_handlesMultipleEmails() {
+  private static Stream<Arguments> getAuthorizedEmails() {
+    return Stream.of(
+        Arguments.of("foo@bar.com, ".concat(authedUserEmail)),
+        Arguments.of(StringUtils.swapCase(authedUserEmail)));
+  }
+
+  @ParameterizedTest
+  @MethodSource("getAuthorizedEmails")
+  public void getManagedApps_handlesDifferentEmailFormats(String authorizedEmails) {
     var authedTerraApp = mock(Application.class);
     mockApplicationCalls(
         authedTerraApp,
         offerName,
         offerPublisher,
-        Optional.of("foo@bar.com, " + authedUserEmail),
+        Optional.of(authorizedEmails),
         "mrg_fake1",
         "fake_app_1");
 
@@ -260,7 +271,7 @@ public class AzureServiceUnitTest extends BaseUnitTest {
                 .subscriptionId(subId)
                 .assigned(false)
                 .region(regionName));
-    assertEquals(result, expected);
+    assertEquals(expected, result);
   }
 
   private void mockApplicationCalls(
