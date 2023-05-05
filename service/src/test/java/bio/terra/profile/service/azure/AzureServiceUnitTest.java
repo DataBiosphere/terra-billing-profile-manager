@@ -327,12 +327,8 @@ public class AzureServiceUnitTest extends BaseUnitTest {
   @MethodSource("getAuthorizedEmails")
   public void getManagedApps_handlesDifferentEmailFormats(String authorizedEmails) {
     var authedTerraApp =
-    mockApplicationCalls(
-        offerName,
-        offerPublisher,
-        Optional.of(authorizedEmails),
-        "mrg_fake1",
-        "fake_app_1");
+        mockApplicationCalls(
+            offerName, offerPublisher, Optional.of(authorizedEmails), "mrg_fake1", "fake_app_1");
 
     var appsList = List.of(authedTerraApp);
     var crlService = mock(AzureCrlService.class);

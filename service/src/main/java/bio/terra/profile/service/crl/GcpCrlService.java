@@ -10,7 +10,7 @@ import java.io.IOException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-/** Provides GCP Cloud resources for the application */
+/** Provides GCP Cloud Library resources for the application */
 @Component
 public class GcpCrlService {
 
