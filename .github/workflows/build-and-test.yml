@@ -44,7 +44,7 @@ jobs:
         run: ./gradlew --build-cache :service:build -x test
 
       - name: Upload spotbugs results
-        uses: github/codeql-action/upload-sarif@main
+        uses: github/codeql-action/upload-sarif@1e1aca816581927cd0a1d4ade4bed45cd6e86b2b
         with:
           sarif_file: service/build/reports/spotbugs/main.sarif
 
