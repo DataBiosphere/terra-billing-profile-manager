@@ -20,7 +20,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
-
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -225,20 +224,21 @@ public class AzureServiceUnitTest extends BaseUnitTest {
 
   private static Stream<Arguments> getAuthorizedEmails() {
     return Stream.of(
-            Arguments.of("foo@bar.com, " + authedUserEmail),
-            Arguments.of(StringUtils.swapCase(authedUserEmail)));
+        Arguments.of("foo@bar.com, " + authedUserEmail),
+        Arguments.of(StringUtils.swapCase(authedUserEmail)));
   }
+
   @ParameterizedTest
   @MethodSource("getAuthorizedEmails")
   public void getManagedApps_handlesDifferentEmailFormats(String authorizedEmails) {
     var authedTerraApp = mock(Application.class);
     mockApplicationCalls(
-            authedTerraApp,
-            offerName,
-            offerPublisher,
-            Optional.of(authorizedEmails),
-            "mrg_fake1",
-            "fake_app_1");
+        authedTerraApp,
+        offerName,
+        offerPublisher,
+        Optional.of(authorizedEmails),
+        "mrg_fake1",
+        "fake_app_1");
 
     var appsList = Stream.of(authedTerraApp);
     var appService = mock(ApplicationService.class);
@@ -254,23 +254,23 @@ public class AzureServiceUnitTest extends BaseUnitTest {
     offer.setAuthorizedUserKey(authorizedUserKey);
     var offers = Set.of(offer);
     var azureService =
-            new AzureService(
-                    crlService,
-                    appService,
-                    new AzureConfiguration("fake", "fake", "fake", offers, ImmutableSet.of()),
-                    profileDao);
+        new AzureService(
+            crlService,
+            appService,
+            new AzureConfiguration("fake", "fake", "fake", offers, ImmutableSet.of()),
+            profileDao);
 
     var result = azureService.getAuthorizedManagedAppDeployments(subId, true, user);
 
     var expected =
-            List.of(
-                    new AzureManagedAppModel()
-                            .applicationDeploymentName("fake_app_1")
-                            .tenantId(tenantId)
-                            .managedResourceGroupId("mrg_fake1")
-                            .subscriptionId(subId)
-                            .assigned(false)
-                            .region(regionName));
+        List.of(
+            new AzureManagedAppModel()
+                .applicationDeploymentName("fake_app_1")
+                .tenantId(tenantId)
+                .managedResourceGroupId("mrg_fake1")
+                .subscriptionId(subId)
+                .assigned(false)
+                .region(regionName));
     assertEquals(expected, result);
   }
 
