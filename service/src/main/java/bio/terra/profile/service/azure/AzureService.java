@@ -139,7 +139,7 @@ public class AzureService {
       var authedUsers = ((String) paramValues.get("value")).split(",");
 
       return Arrays.stream(authedUsers)
-          .anyMatch(user -> user.trim().equals(userRequest.getEmail()));
+          .anyMatch(user -> user.trim().equalsIgnoreCase(userRequest.getEmail()));
     }
 
     return false;
