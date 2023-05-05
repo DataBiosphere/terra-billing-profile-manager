@@ -30,7 +30,7 @@ public class AzureServiceUnitTest extends BaseUnitTest {
 
   UUID subId = UUID.randomUUID();
   UUID tenantId = UUID.randomUUID();
-  static String authedUserEmail = "profile@example.com";
+  private static String authedUserEmail = "profile@example.com";
   AuthenticatedUserRequest user =
       AuthenticatedUserRequest.builder()
           .setSubjectId("12345")
