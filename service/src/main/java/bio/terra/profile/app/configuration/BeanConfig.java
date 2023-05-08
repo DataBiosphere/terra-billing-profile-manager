@@ -20,6 +20,7 @@ public class BeanConfig {
   @Bean("crlClientConfig")
   public ClientConfig crlClientConfig() {
     // Billing profile manager does not create any cloud resources, so no need to use Janitor.
+    // If we did need Janitor, we'd need to add CleanupConfig
     return ClientConfig.Builder.newBuilder().setClient(CLIENT_NAME).build();
   }
 
