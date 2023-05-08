@@ -9,7 +9,7 @@ import bio.terra.cloudres.google.billing.CloudBillingClientCow;
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.common.BaseSpringUnitTest;
 import bio.terra.profile.model.CloudPlatform;
-import bio.terra.profile.service.crl.CrlService;
+import bio.terra.profile.service.crl.GcpCrlService;
 import bio.terra.profile.service.profile.exception.InaccessibleBillingAccountException;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.stairway.FlightContext;
@@ -28,7 +28,7 @@ import org.mockito.Mock;
 public class CreateProfileVerifyAccountStepTest extends BaseSpringUnitTest {
 
   @Mock private FlightContext flightContext;
-  @Mock private CrlService crlService;
+  @Mock private GcpCrlService crlService;
   @Mock private CloudBillingClientCow billingClientCow;
 
   private AuthenticatedUserRequest user;

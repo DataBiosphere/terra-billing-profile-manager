@@ -16,7 +16,7 @@ import bio.terra.profile.app.configuration.CacheConfiguration;
 import bio.terra.profile.common.BaseUnitTest;
 import bio.terra.profile.common.SpendDataFixtures;
 import bio.terra.profile.model.CloudPlatform;
-import bio.terra.profile.service.crl.CrlService;
+import bio.terra.profile.service.crl.AzureCrlService;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.profile.service.spendreporting.azure.exception.KubernetesResourceNotFound;
 import bio.terra.profile.service.spendreporting.azure.exception.MultipleKubernetesResourcesFound;
@@ -70,7 +70,7 @@ class AzureSpendReportingServiceUnitTest extends BaseUnitTest {
   private AzureSpendReportingService azureSpendReportingService;
 
   @Mock private AzureCostManagementQuery mockAzureCostManagementQuery;
-  @Mock private CrlService mockCrlService;
+  @Mock private AzureCrlService mockCrlService;
   @Mock private QueryResultMapper mockQueryResultMapper;
   @Mock private CacheManager mockCacheManager;
   @Captor private ArgumentCaptor<UUID> subscriptionIdCaptor;

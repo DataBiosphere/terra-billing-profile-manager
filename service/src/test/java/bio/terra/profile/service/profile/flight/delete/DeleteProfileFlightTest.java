@@ -11,9 +11,8 @@ import bio.terra.profile.common.BaseSpringUnitTest;
 import bio.terra.profile.common.ProfileFixtures;
 import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.model.CloudPlatform;
-import bio.terra.profile.service.azure.ApplicationService;
 import bio.terra.profile.service.azure.AzureService;
-import bio.terra.profile.service.crl.CrlService;
+import bio.terra.profile.service.crl.GcpCrlService;
 import bio.terra.profile.service.iam.SamService;
 import bio.terra.profile.service.profile.ProfileService;
 import io.micrometer.core.instrument.Metrics;
@@ -29,12 +28,11 @@ class DeleteProfileFlightTest extends BaseSpringUnitTest {
 
   @Autowired ProfileService profileService;
   @Autowired AzureConfiguration azureConfiguration;
-  @MockBean CrlService crlService;
+  @MockBean GcpCrlService crlService;
 
   @MockBean ProfileDao profileDao;
   @MockBean SamService samService;
   @MockBean AzureService azureService;
-  @MockBean ApplicationService applicationService;
 
   AuthenticatedUserRequest userRequest =
       AuthenticatedUserRequest.builder()

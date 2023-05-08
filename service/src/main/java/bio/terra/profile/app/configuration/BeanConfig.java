@@ -1,5 +1,6 @@
 package bio.terra.profile.app.configuration;
 
+import bio.terra.cloudres.common.ClientConfig;
 import bio.terra.profile.app.StartupInitializer;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,6 +15,14 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 @Configuration
 public class BeanConfig {
+  private static final String CLIENT_NAME = "profile";
+
+  @Bean("crlClientConfig")
+  public ClientConfig crlClientConfig() {
+    // Billing profile manager does not create any cloud resources, so no need to use Janitor.
+    // If we did need Janitor, we'd need to add CleanupConfig
+    return ClientConfig.Builder.newBuilder().setClient(CLIENT_NAME).build();
+  }
 
   @Bean("jdbcTemplate")
   public NamedParameterJdbcTemplate getNamedParameterJdbcTemplate(

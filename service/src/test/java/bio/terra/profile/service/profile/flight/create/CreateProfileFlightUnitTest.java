@@ -8,9 +8,8 @@ import bio.terra.profile.app.configuration.AzureConfiguration;
 import bio.terra.profile.common.BaseUnitTest;
 import bio.terra.profile.common.ProfileFixtures;
 import bio.terra.profile.db.ProfileDao;
-import bio.terra.profile.service.azure.ApplicationService;
 import bio.terra.profile.service.azure.AzureService;
-import bio.terra.profile.service.crl.CrlService;
+import bio.terra.profile.service.crl.GcpCrlService;
 import bio.terra.profile.service.iam.SamService;
 import bio.terra.profile.service.job.JobMapKeys;
 import bio.terra.stairway.FlightMap;
@@ -37,15 +36,13 @@ public class CreateProfileFlightUnitTest extends BaseUnitTest {
   @Test
   void createGcpProfileSteps() {
     var profileDao = mock(ProfileDao.class);
-    var crlService = mock(CrlService.class);
+    var crlService = mock(GcpCrlService.class);
     var samService = mock(SamService.class);
     var azureService = mock(AzureService.class);
-    var appService = mock(ApplicationService.class);
     var azureConfig = mock(AzureConfiguration.class);
 
     var context =
-        setUpMockContext(
-            List.of(profileDao, crlService, samService, azureService, appService, azureConfig));
+        setUpMockContext(List.of(profileDao, crlService, samService, azureService, azureConfig));
 
     var profile = ProfileFixtures.createGcpBillingProfile("ABCD1234");
 
@@ -65,15 +62,13 @@ public class CreateProfileFlightUnitTest extends BaseUnitTest {
   @Test
   void createAzureProfileSteps() {
     var profileDao = mock(ProfileDao.class);
-    var crlService = mock(CrlService.class);
+    var crlService = mock(GcpCrlService.class);
     var samService = mock(SamService.class);
     var azureService = mock(AzureService.class);
-    var appService = mock(ApplicationService.class);
     var azureConfig = mock(AzureConfiguration.class);
 
     var context =
-        setUpMockContext(
-            List.of(profileDao, crlService, samService, azureService, appService, azureConfig));
+        setUpMockContext(List.of(profileDao, crlService, samService, azureService, azureConfig));
 
     var tenantId = UUID.randomUUID();
     var subId = UUID.randomUUID();

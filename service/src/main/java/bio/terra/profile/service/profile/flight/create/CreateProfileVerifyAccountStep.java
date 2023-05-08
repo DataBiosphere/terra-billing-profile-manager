@@ -1,7 +1,7 @@
 package bio.terra.profile.service.profile.flight.create;
 
 import bio.terra.common.iam.AuthenticatedUserRequest;
-import bio.terra.profile.service.crl.CrlService;
+import bio.terra.profile.service.crl.GcpCrlService;
 import bio.terra.profile.service.profile.exception.InaccessibleBillingAccountException;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.stairway.FlightContext;
@@ -15,7 +15,8 @@ import java.util.List;
 
 /** Step to verify the user has access to a GCP profile's billing account. */
 public record CreateProfileVerifyAccountStep(
-    CrlService crlService, BillingProfile profile, AuthenticatedUserRequest user) implements Step {
+    GcpCrlService crlService, BillingProfile profile, AuthenticatedUserRequest user)
+    implements Step {
 
   public static final List<String> PERMISSIONS_TO_TEST =
       List.of("billing.resourceAssociations.create");
