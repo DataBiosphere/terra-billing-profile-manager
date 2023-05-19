@@ -4,7 +4,7 @@ plugins {
 	id 'com.google.cloud.tools.jib'
 
 	id 'com.gorylenko.gradle-git-properties' version '2.4.1'
-	id 'org.sonarqube' version '4.2.0.3129'
+	id 'org.sonarqube' version '4.0.0.2929'
 	id "au.com.dius.pact" version "4.3.19"
 
 }
@@ -13,7 +13,7 @@ apply from: 'generators.gradle'
 apply from: 'publishing.gradle'
 
 dependencies {
-	implementation 'io.sentry:sentry:6.21.0'
+	implementation 'io.sentry:sentry:6.18.1'
 
 	implementation('org.yaml:snakeyaml') {
 		version {
@@ -21,7 +21,7 @@ dependencies {
 		}
 		because 'previous versions have a security vulnerability - this is a direct dependency to force the version to override opencensus'
 	}
-	implementation 'bio.terra:terra-common-lib:0.0.88-SNAPSHOT'
+	implementation 'bio.terra:terra-common-lib:0.0.77-SNAPSHOT'
 
 	implementation 'org.apache.commons:commons-dbcp2'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
@@ -30,7 +30,7 @@ dependencies {
 	implementation 'org.springframework.retry:spring-retry'
 	implementation group: "org.apache.commons", name: "commons-lang3"
 
-	implementation 'org.springframework.boot:spring-boot-starter-actuator:2.7.12'
+	implementation 'org.springframework.boot:spring-boot-starter-actuator:2.7.11'
 	implementation 'io.micrometer:micrometer-registry-prometheus'
 
 	// Google dependencies
@@ -39,7 +39,7 @@ dependencies {
 	// Cloud Resource Library
 	implementation group: "com.azure.resourcemanager", name: "azure-resourcemanager-managedapplications", version: "1.0.0-beta.2"
 	implementation group: "com.azure.resourcemanager", name: "azure-resourcemanager-subscription", version: "1.0.0-beta.2"
-	implementation group: 'com.azure.resourcemanager', name: 'azure-resourcemanager-costmanagement', version: "1.0.0-beta.6"
+	implementation group: 'com.azure.resourcemanager', name: 'azure-resourcemanager-costmanagement', version: "1.0.0-beta.5"
 
 	implementation group: 'bio.terra', name: 'terra-cloud-resource-lib', version: "1.2.7-SNAPSHOT"
 
@@ -52,7 +52,10 @@ dependencies {
 	}
 	// Allows us to mock final classes
 	testImplementation 'org.mockito:mockito-inline:5.2.0'
+
 	testImplementation 'au.com.dius.pact.consumer:junit5:4.1.7'
+	testImplementation("au.com.dius.pact.provider:junit5:4.1.7")
+	testImplementation("au.com.dius.pact.provider:junit5spring:4.1.7")
 }
 test {
 	systemProperties['pact.rootDir'] = "$buildDir/pacts"
@@ -71,5 +74,11 @@ sonarqube {
 tasks.register("pactTests", Test) {
 	useJUnitPlatform {
 		includeTags "pact-test"
+	}
+}
+
+tasks.register("pactProviderTests", Test) {
+	useJUnitPlatform {
+		includeTags "provider-test"
 	}
 }
