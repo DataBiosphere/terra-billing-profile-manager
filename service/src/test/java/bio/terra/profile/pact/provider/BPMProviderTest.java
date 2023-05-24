@@ -1,7 +1,6 @@
 package bio.terra.profile.pact.provider;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
 import au.com.dius.pact.provider.junit5.HttpTestTarget;
@@ -20,7 +19,10 @@ import bio.terra.profile.service.crl.GcpCrlService;
 import bio.terra.profile.service.iam.SamService;
 import bio.terra.profile.service.iam.model.SamResourceType;
 import bio.terra.profile.service.job.JobService;
+import bio.terra.profile.service.profile.exception.ProfileNotFoundException;
+import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.profile.service.status.ProfileStatusService;
+import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -104,7 +106,6 @@ public class BPMProviderTest {
   void setUp(PactVerificationContext context) {
     when(authenticatedUserRequestFactory.from(any())).thenReturn(userRequest);
     context.setTarget(new HttpTestTarget("localhost", port, "/"));
-    context.setExecutionContext(ProviderStateData.providerStateValues);
   }
 
   @TestTemplate
@@ -116,7 +117,7 @@ public class BPMProviderTest {
   @State("a GCP billing profile")
   Map<String, Object> gcpBillingProfileState() throws InterruptedException {
     var profile = ProviderStateData.gcpBillingProfile;
-    when(profileDao.getBillingProfileById(profile.id())).thenReturn(profile);
+    setUpProfileDaoGets(List.of(profile));
     when(samService.hasActions(any(), eq(SamResourceType.PROFILE), eq(profile.id())))
         .thenReturn(true);
     return Map.of(
@@ -127,7 +128,7 @@ public class BPMProviderTest {
   @State("an Azure billing profile")
   Map<String, Object> azureBillingProfileState() throws InterruptedException {
     var profile = ProviderStateData.azureBillingProfile;
-    when(profileDao.getBillingProfileById(profile.id())).thenReturn(profile);
+    setUpProfileDaoGets(List.of(profile));
     when(samService.hasActions(any(), eq(SamResourceType.PROFILE), eq(profile.id())))
         .thenReturn(true);
     return Map.of(
@@ -135,5 +136,20 @@ public class BPMProviderTest {
         "tenantId", profile.tenantId().get().toString(),
         "subscriptionId", profile.subscriptionId().get().toString(),
         "managedResourceGroupId", profile.managedResourceGroupId().get());
+  }
+
+  /**
+   * Set up the mock profile dao so that it returns any profile in existingProfiles when queried by
+   * its id. Note: this won't work for combining states - we'll need a different solution for that.
+   */
+  void setUpProfileDaoGets(List<BillingProfile> existingProfiles) {
+    when(profileDao.getBillingProfileById(
+            argThat(argument -> existingProfiles.stream().noneMatch(p -> p.id().equals(argument)))))
+        .thenAnswer(
+            args -> {
+              throw new ProfileNotFoundException(
+                  "Profile not found for id: " + args.getArgument(0).toString());
+            });
+    existingProfiles.forEach(p -> when(profileDao.getBillingProfileById(p.id())).thenReturn(p));
   }
 }
