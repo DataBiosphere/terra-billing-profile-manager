@@ -11,7 +11,6 @@ import au.com.dius.pact.provider.junitsupport.loader.PactFolder;
 import au.com.dius.pact.provider.spring.junit5.PactVerificationSpringProvider;
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.common.iam.AuthenticatedUserRequestFactory;
-import bio.terra.profile.app.configuration.BeanConfig;
 import bio.terra.profile.app.controller.UnauthenticatedApiController;
 import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.service.crl.AzureCrlService;
@@ -35,54 +34,18 @@ import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.FilterType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+
 
 @Tag("provider-test")
 @Provider("bpm-provider")
 @PactFolder("pacts")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@SpringBootApplication(
-    scanBasePackages = {
-      // Dependencies for Stairway
-      "bio.terra.common.kubernetes",
-      // Scan for logging-related components & configs
-      "bio.terra.common.logging",
-      // Scan for Liquibase migration components & configs
-      "bio.terra.common.migrate",
-      // Transaction management and DB retry configuration
-      "bio.terra.common.retry.transaction",
-      // Stairway initialization and status
-      "bio.terra.common.stairway",
-      // Scan for tracing-related components & configs
-      "bio.terra.common.tracing",
-      // Scan all service-specific packages beneath the current package
-      "bio.terra.profile.app.controller",
-      "bio.terra.profile.service",
-    },
-    exclude = {
-      DataSourceAutoConfiguration.class,
-    })
-@ComponentScan(
-    basePackages = {"bio.terra.profile.app.controller", "bio.terra.profile.service"},
-    excludeFilters = {
-      @ComponentScan.Filter(
-          type = FilterType.ASSIGNABLE_TYPE,
-          value = {
-            AzureCrlService.class,
-            GcpCrlService.class,
-            SamService.class,
-            BeanConfig.class,
-            JobService.class,
-            ProfileStatusService.class,
-            UnauthenticatedApiController.class
-          })
-    })
+@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class,})
+@ComponentScan(basePackages = {"bio.terra.profile.app.controller", "bio.terra.profile.service"})
 @ConfigurationPropertiesScan(basePackages = {"bio.terra.profile"})
-@ServletComponentScan(basePackages = {"bio.terra.profile"})
 @ExtendWith(SpringExtension.class)
 public class BPMProviderTest {
 
@@ -94,13 +57,12 @@ public class BPMProviderTest {
   @MockBean SamService samService;
   @MockBean JobService jobService;
 
-  @MockBean AuthenticatedUserRequestFactory authenticatedUserRequestFactory;
-
-  @Mock AuthenticatedUserRequest userRequest;
-
   @MockBean ProfileStatusService profileStatusService;
   @MockBean CacheManager cacheManager;
   @MockBean UnauthenticatedApiController unauthenticatedApiController;
+
+  @MockBean AuthenticatedUserRequestFactory authenticatedUserRequestFactory;
+  @Mock AuthenticatedUserRequest userRequest;
 
   @BeforeEach
   void setUp(PactVerificationContext context) {
