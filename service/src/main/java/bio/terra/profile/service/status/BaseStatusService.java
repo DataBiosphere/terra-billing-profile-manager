@@ -19,14 +19,19 @@ import org.slf4j.LoggerFactory;
 
 public class BaseStatusService {
   private static final Logger logger = LoggerFactory.getLogger(BaseStatusService.class);
+
   /** cached status */
   private final AtomicReference<SystemStatus> cachedStatus;
+
   /** configuration parameters */
   private final StatusCheckConfiguration configuration;
+
   /** set of status methods to check */
   private final ConcurrentHashMap<String, Supplier<SystemStatusSystems>> statusCheckMap;
+
   /** scheduler */
   private final ScheduledExecutorService scheduler;
+
   /** last time cache was updated */
   private final AtomicReference<Instant> lastStatusUpdate;
 
