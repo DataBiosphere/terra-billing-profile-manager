@@ -18,6 +18,7 @@ public class ProfileDatabaseConfiguration extends BaseDatabaseConfiguration {
   // 3. initialize is false; upgrade is false - do nothing to the database
   /** If true, primary database will be wiped */
   private boolean initializeOnStart;
+
   /** If true, primary database will have changesets applied */
   private boolean upgradeOnStart;
 
