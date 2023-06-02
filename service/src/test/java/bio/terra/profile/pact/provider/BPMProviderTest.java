@@ -3,6 +3,7 @@ package bio.terra.profile.pact.provider;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
+import au.com.dius.pact.provider.junitsupport.loader.PactBroker;
 import au.com.dius.pact.provider.junit5.HttpTestTarget;
 import au.com.dius.pact.provider.junit5.PactVerificationContext;
 import au.com.dius.pact.provider.junitsupport.Provider;
@@ -39,6 +40,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @Tag("provider-test")
 @Provider("bpm-provider")
+@PactBroker
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @SpringBootApplication(exclude = DataSourceAutoConfiguration.class)
 @ComponentScan(basePackages = {"bio.terra.profile.app.controller", "bio.terra.profile.service"})
