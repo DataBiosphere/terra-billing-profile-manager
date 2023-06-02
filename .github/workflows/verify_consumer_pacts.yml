@@ -12,15 +12,14 @@ name: Verify consumer pacts
 # - PACT_BROKER_PASSWORD - the Pact Broker password
 on:
   pull_request:
-    branches:
-      - develop
-    paths-ignore:
-      - 'README.md'
+    branches: [ main ]
+    paths-ignore: [ '**.md' ]
   push:
-    branches:
-      - develop
-    paths-ignore:
-      - 'README.md'
+    branches: [ main ]
+    paths-ignore: [ '**.md' ]
+  merge_group:
+    branches: [ main ]
+    paths-ignore: [ '**.md' ]
   workflow_dispatch:
     inputs:
       pb-event-type:
