@@ -77,8 +77,17 @@ tasks.register("pactTests", Test) {
 	}
 }
 
-tasks.register("pactProviderTests", Test) {
+tasks.register("verifyPacts", Test) {
 	useJUnitPlatform {
 		includeTags "provider-test"
 	}
+	outputs.upToDateWhen { false } // always run this task even if it's up to date
+
+	systemProperty 'pact.provider.version', System.getenv('PACT_PROVIDER_COMMIT')
+	systemProperty 'pact.provider.branch', System.getenv('PACT_PROVIDER_BRANCH')
+	systemProperty 'pact.verifier.publishResults', true
+	systemProperty 'pactbroker.host', System.getenv('PACT_BROKER_URL')
+	systemProperty 'pactbroker.auth.username', System.getenv('PACT_BROKER_USERNAME')
+	systemProperty 'pactbroker.auth.password', System.getenv('PACT_BROKER_PASSWORD')
+	systemProperty 'pactbroker.scheme', 'https'
 }
