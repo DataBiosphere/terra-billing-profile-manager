@@ -12,6 +12,7 @@ import au.com.dius.pact.provider.spring.junit5.PactVerificationSpringProvider;
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.common.iam.AuthenticatedUserRequestFactory;
 import bio.terra.profile.app.Main;
+import bio.terra.profile.app.configuration.BeanConfig;
 import bio.terra.profile.app.controller.UnauthenticatedApiController;
 import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.service.crl.AzureCrlService;
@@ -30,6 +31,7 @@ import org.junit.jupiter.api.TestTemplate;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.data.jdbc.JdbcRepositoriesAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -37,6 +39,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 
 @Tag("provider-test")
 @Provider("bpm-provider")
@@ -44,9 +47,25 @@ import org.springframework.context.annotation.ComponentScan;
 // for local testing, put any test pacts in the service/pacts folder.
 // then comment out the above line, and uncomment the following line
 // @PactFolder("pacts")
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = Main.class)
-@EnableAutoConfiguration(exclude = DataSourceAutoConfiguration.class)
-@ComponentScan(basePackages = {"bio.terra.profile.app.controller", "bio.terra.profile.service"})
+@SpringBootTest(
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    classes = Main.class,
+    properties = {
+      "profile.profile-database.initialize-on-start=false",
+      "profile.profile-database.upgrade-on-start=false"
+    })
+@EnableAutoConfiguration(
+    exclude = {DataSourceAutoConfiguration.class, JdbcRepositoriesAutoConfiguration.class})
+@ComponentScan(
+    basePackages = {"bio.terra.profile.app.controller", "bio.terra.profile.service"},
+    excludeFilters = {
+      @ComponentScan.Filter(
+          type = FilterType.ASSIGNABLE_TYPE,
+          value = {BeanConfig.class, ProfileDao.class}),
+      @ComponentScan.Filter(
+          type = FilterType.REGEX,
+          pattern = {"jdbcDialect", "jdbcCustomConversions", "jdbcMappingContext"})
+    })
 @ConfigurationPropertiesScan(basePackages = {"bio.terra.profile"})
 public class BPMProviderTest {
 
