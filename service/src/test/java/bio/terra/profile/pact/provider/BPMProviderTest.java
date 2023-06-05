@@ -12,7 +12,6 @@ import au.com.dius.pact.provider.spring.junit5.PactVerificationSpringProvider;
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.common.iam.AuthenticatedUserRequestFactory;
 import bio.terra.profile.app.Main;
-import bio.terra.profile.app.configuration.BeanConfig;
 import bio.terra.profile.app.controller.UnauthenticatedApiController;
 import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.service.crl.AzureCrlService;
@@ -33,13 +32,10 @@ import org.mockito.Mock;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.data.jdbc.JdbcRepositoriesAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.cache.CacheManager;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.FilterType;
 
 @Tag("provider-test")
 @Provider("bpm-provider")
@@ -56,17 +52,6 @@ import org.springframework.context.annotation.FilterType;
     })
 @EnableAutoConfiguration(
     exclude = {DataSourceAutoConfiguration.class, JdbcRepositoriesAutoConfiguration.class})
-@ComponentScan(
-    basePackages = {"bio.terra.profile.app.controller", "bio.terra.profile.service"},
-    excludeFilters = {
-      @ComponentScan.Filter(
-          type = FilterType.ASSIGNABLE_TYPE,
-          value = {BeanConfig.class, ProfileDao.class}),
-      @ComponentScan.Filter(
-          type = FilterType.REGEX,
-          pattern = {"jdbcDialect", "jdbcCustomConversions", "jdbcMappingContext"})
-    })
-@ConfigurationPropertiesScan(basePackages = {"bio.terra.profile"})
 public class BPMProviderTest {
 
   @LocalServerPort int port;
