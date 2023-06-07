@@ -55,19 +55,23 @@ import org.springframework.cache.CacheManager;
 public class BPMProviderTest {
 
   @LocalServerPort int port;
-
-  @MockBean AzureCrlService azureCrlService;
-  @MockBean GcpCrlService gcpCrlService;
+  
   @MockBean ProfileDao profileDao;
   @MockBean SamService samService;
-  @MockBean JobService jobService;
 
-  @MockBean ProfileStatusService profileStatusService;
-  @MockBean CacheManager cacheManager;
   @MockBean UnauthenticatedApiController unauthenticatedApiController;
 
   @MockBean AuthenticatedUserRequestFactory authenticatedUserRequestFactory;
   @Mock AuthenticatedUserRequest userRequest;
+
+  // These mocks are just here so that spring can instantiate beans for the ApplicationContext
+  @MockBean AzureCrlService azureCrlService;
+  @MockBean GcpCrlService gcpCrlService;
+  @MockBean JobService jobService;
+  @MockBean CacheManager cacheManager;
+  @MockBean ProfileStatusService profileStatusService;
+
+
 
   @BeforeEach
   void setUp(PactVerificationContext context) {
