@@ -55,7 +55,7 @@ import org.springframework.cache.CacheManager;
 public class BPMProviderTest {
 
   @LocalServerPort int port;
-  
+
   @MockBean ProfileDao profileDao;
   @MockBean SamService samService;
 
@@ -70,8 +70,6 @@ public class BPMProviderTest {
   @MockBean JobService jobService;
   @MockBean CacheManager cacheManager;
   @MockBean ProfileStatusService profileStatusService;
-
-
 
   @BeforeEach
   void setUp(PactVerificationContext context) {
