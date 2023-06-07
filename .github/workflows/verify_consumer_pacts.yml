@@ -116,7 +116,7 @@ jobs:
           echo "CURRENT_BRANCH=${GITHUB_REF/refs\/heads\//""}" >> $GITHUB_ENV
           echo "CURRENT_SHA=$GITHUB_SHA" >> $GITHUB_ENV
 
-      - name: "This step will only run when this workflow is triggered by a Pact Broker webhook event"
+      - name: Set environment variables when triggered by a Pact Broker webhook event
         if: ${{ inputs.pb-event-type != '' }}
         run: |
           echo "pb-event-type=${{ inputs.pb-event-type }}"
