@@ -120,7 +120,7 @@ jobs:
           psql -h localhost -U postgres -f ./service/local-dev/local-postgres-init.sql
 
       - name: Test with coverage
-        run: ./gradlew --build-cache test jacocoTestReport
+        run: ./gradlew --build-cache test jacocoTestReport --scan
 
       - name: SonarQube scan
         run: ./gradlew --build-cache sonar
@@ -140,7 +140,7 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.BPM_SLACK_WEBHOOK }}
         with:
-          channel: '#terra-billing-profile-manager'
+          channel: '#dsp-workspace-test-alerts'
           status: failure
           author_name: Build on dev
           fields: workflow,message
