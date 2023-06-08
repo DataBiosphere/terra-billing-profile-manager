@@ -58,6 +58,14 @@ tasks.named('test') {
 version = gradle.releaseVersion
 group = 'bio.terra'
 
+// for scans
+if (hasProperty("buildScan")) {
+    buildScan {
+        termsOfServiceUrl = "https://gradle.com/terms-of-service"
+        termsOfServiceAgree = "yes"
+    }
+}
+
 spotless {
     java {
         targetExclude "${buildDir}/**"
