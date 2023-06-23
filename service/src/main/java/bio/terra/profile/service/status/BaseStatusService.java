@@ -55,12 +55,12 @@ public class BaseStatusService {
   }
 
   @VisibleForTesting
-  void registerStatusCheck(String name, Supplier<SystemStatusSystems> checkFn) {
+  public void registerStatusCheck(String name, Supplier<SystemStatusSystems> checkFn) {
     statusCheckMap.put(name, checkFn);
   }
 
   @VisibleForTesting
-  void checkStatus() {
+  public void checkStatus() {
     if (configuration.enabled()) {
       var newStatus = new SystemStatus();
       try {
