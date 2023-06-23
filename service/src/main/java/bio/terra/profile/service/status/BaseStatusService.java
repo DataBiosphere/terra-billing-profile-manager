@@ -55,7 +55,7 @@ public class BaseStatusService {
   }
 
   @VisibleForTesting
-  public void registerStatusCheck(String name, Supplier<SystemStatusSystems> checkFn) {
+  void registerStatusCheck(String name, Supplier<SystemStatusSystems> checkFn) {
     statusCheckMap.put(name, checkFn);
   }
 

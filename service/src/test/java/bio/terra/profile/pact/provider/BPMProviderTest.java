@@ -1,6 +1,7 @@
 package bio.terra.profile.pact.provider;
 
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
 import au.com.dius.pact.provider.junit5.HttpTestTarget;
@@ -37,6 +38,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.cache.CacheManager;
+import org.springframework.jdbc.core.ConnectionCallback;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 @Tag("provider-test")
 @Provider("bpm-provider")
@@ -68,6 +72,10 @@ public class BPMProviderTest {
   @MockBean GcpCrlService gcpCrlService;
   @MockBean JobService jobService;
   @MockBean CacheManager cacheManager;
+
+  // jdbcTemplate beans are used for profileStatusService when checking CloudSQL status
+  @MockBean NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+  @MockBean JdbcTemplate jdbcTemplate;
   @Autowired ProfileStatusService profileStatusService;
 
   @BeforeEach
@@ -85,7 +93,10 @@ public class BPMProviderTest {
   @State("BPM is ok")
   void getBpmStatus() {
     when(samService.status()).thenReturn(new SystemStatusSystems().ok(true));
-    profileStatusService.registerStatusCheck("CloudSQL", () -> new SystemStatusSystems().ok(true));
+    // For CloudSQL return value
+    doReturn(jdbcTemplate).when(namedParameterJdbcTemplate).getJdbcTemplate();
+    doReturn(true).when(jdbcTemplate).execute(any(ConnectionCallback.class));
+    // Checks status of services and stores result for the next time status endpoint is called
     profileStatusService.checkStatus();
   }
 
