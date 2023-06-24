@@ -1,6 +1,7 @@
 package bio.terra.profile.pact.provider;
 
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
 import au.com.dius.pact.provider.junit5.HttpTestTarget;
@@ -12,8 +13,8 @@ import au.com.dius.pact.provider.spring.junit5.PactVerificationSpringProvider;
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.common.iam.AuthenticatedUserRequestFactory;
 import bio.terra.profile.app.Main;
-import bio.terra.profile.app.controller.UnauthenticatedApiController;
 import bio.terra.profile.db.ProfileDao;
+import bio.terra.profile.model.SystemStatusSystems;
 import bio.terra.profile.service.crl.AzureCrlService;
 import bio.terra.profile.service.crl.GcpCrlService;
 import bio.terra.profile.service.iam.SamService;
@@ -29,6 +30,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.TestTemplate;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.data.jdbc.JdbcRepositoriesAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
@@ -36,13 +38,16 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.cache.CacheManager;
+import org.springframework.jdbc.core.ConnectionCallback;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 @Tag("provider-test")
 @Provider("bpm-provider")
 @PactBroker
 // for local testing, put any test pacts in the service/pacts folder.
 // then comment out the above line, and uncomment the following line
-// @PactFolder("pacts")
+// @PactFolder("src/test/java/bio/terra/profile/service/pacts")
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     classes = Main.class,
@@ -59,8 +64,6 @@ public class BPMProviderTest {
   @MockBean ProfileDao profileDao;
   @MockBean SamService samService;
 
-  @MockBean UnauthenticatedApiController unauthenticatedApiController;
-
   @MockBean AuthenticatedUserRequestFactory authenticatedUserRequestFactory;
   @Mock AuthenticatedUserRequest userRequest;
 
@@ -69,7 +72,11 @@ public class BPMProviderTest {
   @MockBean GcpCrlService gcpCrlService;
   @MockBean JobService jobService;
   @MockBean CacheManager cacheManager;
-  @MockBean ProfileStatusService profileStatusService;
+
+  // jdbcTemplate beans are used for profileStatusService when checking CloudSQL status
+  @MockBean NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+  @MockBean JdbcTemplate jdbcTemplate;
+  @Autowired ProfileStatusService profileStatusService;
 
   @BeforeEach
   void setUp(PactVerificationContext context) {
@@ -81,6 +88,16 @@ public class BPMProviderTest {
   @ExtendWith(PactVerificationSpringProvider.class)
   void verifyPact(PactVerificationContext context) {
     context.verifyInteraction();
+  }
+
+  @State("BPM is ok")
+  void getBpmStatus() {
+    when(samService.status()).thenReturn(new SystemStatusSystems().ok(true));
+    // For CloudSQL return value
+    doReturn(jdbcTemplate).when(namedParameterJdbcTemplate).getJdbcTemplate();
+    doReturn(true).when(jdbcTemplate).execute(any(ConnectionCallback.class));
+    // Checks status of services and stores result for the next time status endpoint is called
+    profileStatusService.checkStatus();
   }
 
   @State("a GCP billing profile")

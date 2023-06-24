@@ -60,7 +60,7 @@ public class BaseStatusService {
   }
 
   @VisibleForTesting
-  void checkStatus() {
+  public void checkStatus() {
     if (configuration.enabled()) {
       var newStatus = new SystemStatus();
       try {
