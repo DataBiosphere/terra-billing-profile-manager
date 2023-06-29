@@ -1,8 +1,8 @@
 package bio.terra.profile.pact.provider;
 
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 
 import au.com.dius.pact.provider.junit5.HttpTestTarget;
 import au.com.dius.pact.provider.junit5.PactVerificationContext;
@@ -14,13 +14,21 @@ import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.common.iam.AuthenticatedUserRequestFactory;
 import bio.terra.profile.app.Main;
 import bio.terra.profile.db.ProfileDao;
+import bio.terra.profile.model.AzureManagedAppModel;
+import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.model.SystemStatusSystems;
+import bio.terra.profile.service.azure.AzureService;
 import bio.terra.profile.service.crl.AzureCrlService;
 import bio.terra.profile.service.crl.GcpCrlService;
 import bio.terra.profile.service.iam.SamService;
 import bio.terra.profile.service.iam.model.SamResourceType;
+import bio.terra.profile.service.job.JobBuilder;
+import bio.terra.profile.service.job.JobMapKeys;
 import bio.terra.profile.service.job.JobService;
 import bio.terra.profile.service.profile.exception.ProfileNotFoundException;
+import bio.terra.profile.service.profile.flight.ProfileMapKeys;
+import bio.terra.profile.service.profile.flight.create.CreateProfileFlight;
+import bio.terra.profile.service.profile.flight.delete.DeleteProfileFlight;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.profile.service.status.ProfileStatusService;
 import java.util.List;
@@ -47,7 +55,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 @PactBroker
 // for local testing, put any test pacts in the service/pacts folder.
 // then comment out the above line, and uncomment the following line
-// @PactFolder("src/test/java/bio/terra/profile/service/pacts")
+// @PactFolder("pacts")
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     classes = Main.class,
@@ -77,6 +85,8 @@ public class BPMProviderTest {
   @MockBean NamedParameterJdbcTemplate namedParameterJdbcTemplate;
   @MockBean JdbcTemplate jdbcTemplate;
   @Autowired ProfileStatusService profileStatusService;
+
+  @MockBean AzureService azureService;
 
   @BeforeEach
   void setUp(PactVerificationContext context) {
@@ -122,6 +132,72 @@ public class BPMProviderTest {
         "tenantId", profile.tenantId().get().toString(),
         "subscriptionId", profile.subscriptionId().get().toString(),
         "managedResourceGroupId", profile.managedResourceGroupId().get());
+  }
+
+  @State("two billing profiles exist")
+  void twoProfilesExistState() throws InterruptedException {
+    var profilesIds =
+        List.of(
+            ProviderStateData.azureBillingProfile.id(), ProviderStateData.gcpBillingProfile.id());
+    when(samService.listProfileIds(any())).thenReturn(profilesIds);
+    when(profileDao.listBillingProfiles(anyInt(), anyInt(), eq(profilesIds)))
+        .thenReturn(
+            List.of(ProviderStateData.azureBillingProfile, ProviderStateData.gcpBillingProfile));
+  }
+
+  @State("a managed app exists")
+  Map<String, Object> managedAppExistsState() throws InterruptedException {
+    var profile = ProviderStateData.azureBillingProfile;
+    var subscriptionId = profile.subscriptionId().get();
+    when(azureService.getAuthorizedManagedAppDeployments(eq(subscriptionId), eq(false), any()))
+        .thenReturn(
+            List.of(
+                new AzureManagedAppModel()
+                    .subscriptionId(subscriptionId)
+                    .applicationDeploymentName("appDeploymentName")
+                    .region("dummyRegion")
+                    .assigned(false)
+                    .managedResourceGroupId(profile.managedResourceGroupId().get())
+                    .tenantId(profile.tenantId().get())));
+    return Map.of(
+        "subscriptionId", subscriptionId.toString(), "includeAssignedApplications", false);
+  }
+
+  @State("a creation mock JobService exists")
+  Map<String, Object> creationJobServiceExistsState() {
+    var jobBuilder = mock(JobBuilder.class);
+
+    var profile = ProviderStateData.azureBillingProfile;
+
+    when(jobService.newJob()).thenReturn(jobBuilder);
+    when(jobBuilder.description(anyString())).thenReturn(jobBuilder);
+    when(jobBuilder.flightClass(CreateProfileFlight.class)).thenReturn(jobBuilder);
+    when(jobBuilder.request(any())).thenReturn(jobBuilder);
+    when(jobBuilder.userRequest(any())).thenReturn(jobBuilder);
+    when(jobBuilder.submitAndWait(BillingProfile.class)).thenReturn(profile);
+
+    return Map.of(
+        "subscriptionId", profile.subscriptionId().get(),
+        "tenantId", profile.tenantId().get(),
+        "managedResourceGroupId", profile.managedResourceGroupId());
+  }
+
+  @State("a deletion mock JobService exists")
+  void deletionJobServiceExistsState() {
+    var jobBuilder = mock(JobBuilder.class);
+    String jobId = "jobId";
+
+    var profile = ProviderStateData.azureBillingProfile;
+
+    when(jobService.newJob()).thenReturn(jobBuilder);
+    when(jobBuilder.submit()).thenReturn(jobId);
+    when(jobBuilder.description(anyString())).thenReturn(jobBuilder);
+    when(jobBuilder.flightClass(DeleteProfileFlight.class)).thenReturn(jobBuilder);
+    when(jobBuilder.userRequest(any())).thenReturn(jobBuilder);
+    when(jobBuilder.addParameter(ProfileMapKeys.PROFILE, profile)).thenReturn(jobBuilder);
+    when(jobBuilder.addParameter(
+            eq(JobMapKeys.CLOUD_PLATFORM.getKeyName()), eq(CloudPlatform.AZURE.name())))
+        .thenReturn(jobBuilder);
   }
 
   /**
