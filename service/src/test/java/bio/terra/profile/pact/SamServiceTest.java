@@ -5,21 +5,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import au.com.dius.pact.consumer.MockServer;
 import au.com.dius.pact.consumer.dsl.PactDslJsonBody;
 import au.com.dius.pact.consumer.dsl.PactDslWithProvider;
-import au.com.dius.pact.consumer.junit5.PactConsumerTestExt;
+import au.com.dius.pact.consumer.junit5.PactConsumerTest;
 import au.com.dius.pact.consumer.junit5.PactTestFor;
 import au.com.dius.pact.core.model.PactSpecVersion;
 import au.com.dius.pact.core.model.RequestResponsePact;
 import au.com.dius.pact.core.model.annotations.Pact;
 import bio.terra.profile.app.configuration.SamConfiguration;
-import bio.terra.profile.common.BaseUnitTest;
 import bio.terra.profile.service.iam.SamService;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
 @Tag("pact-test")
-@ExtendWith(PactConsumerTestExt.class)
-public class SamServiceTest extends BaseUnitTest {
+@PactConsumerTest
+public class SamServiceTest {
 
   @Pact(consumer = "bpm-consumer", provider = "sam-provider")
   public RequestResponsePact statusApiPact(PactDslWithProvider builder) {
