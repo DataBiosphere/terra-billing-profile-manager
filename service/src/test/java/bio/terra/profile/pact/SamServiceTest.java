@@ -7,6 +7,7 @@ import au.com.dius.pact.consumer.dsl.PactDslJsonBody;
 import au.com.dius.pact.consumer.dsl.PactDslWithProvider;
 import au.com.dius.pact.consumer.junit5.PactConsumerTestExt;
 import au.com.dius.pact.consumer.junit5.PactTestFor;
+import au.com.dius.pact.core.model.PactSpecVersion;
 import au.com.dius.pact.core.model.RequestResponsePact;
 import au.com.dius.pact.core.model.annotations.Pact;
 import bio.terra.profile.app.configuration.SamConfiguration;
@@ -51,7 +52,7 @@ public class SamServiceTest extends BaseUnitTest {
   }
 
   @Test
-  @PactTestFor(pactMethod = "statusApiPact")
+  @PactTestFor(pactMethod = "statusApiPact", pactVersion = PactSpecVersion.V3)
   public void testSamServiceStatusCheck(MockServer mockServer) {
     SamConfiguration config = new SamConfiguration(mockServer.getUrl(), "test@test.com");
     var samService = new SamService(config);
@@ -64,7 +65,7 @@ public class SamServiceTest extends BaseUnitTest {
   }
 
   @Test
-  @PactTestFor(pactMethod = "userStatusPact")
+  @PactTestFor(pactMethod = "userStatusPact", pactVersion = PactSpecVersion.V3)
   public void testSamServiceUserStatusInfo(MockServer mockServer) throws Exception {
     SamConfiguration config = new SamConfiguration(mockServer.getUrl(), "test@test.com");
     var samService = new SamService(config);
