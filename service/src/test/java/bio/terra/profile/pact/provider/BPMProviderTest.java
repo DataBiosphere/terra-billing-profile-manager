@@ -16,11 +16,13 @@ import bio.terra.profile.app.Main;
 import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.model.AzureManagedAppModel;
 import bio.terra.profile.model.CloudPlatform;
+import bio.terra.profile.model.SamPolicyModel;
 import bio.terra.profile.model.SystemStatusSystems;
 import bio.terra.profile.service.azure.AzureService;
 import bio.terra.profile.service.crl.AzureCrlService;
 import bio.terra.profile.service.crl.GcpCrlService;
 import bio.terra.profile.service.iam.SamService;
+import bio.terra.profile.service.iam.model.SamAction;
 import bio.terra.profile.service.iam.model.SamResourceType;
 import bio.terra.profile.service.job.JobBuilder;
 import bio.terra.profile.service.job.JobMapKeys;
@@ -30,7 +32,13 @@ import bio.terra.profile.service.profile.flight.ProfileMapKeys;
 import bio.terra.profile.service.profile.flight.create.CreateProfileFlight;
 import bio.terra.profile.service.profile.flight.delete.DeleteProfileFlight;
 import bio.terra.profile.service.profile.model.BillingProfile;
+import bio.terra.profile.service.spendreporting.azure.AzureSpendReportingService;
+import bio.terra.profile.service.spendreporting.azure.model.SpendCategoryType;
+import bio.terra.profile.service.spendreporting.azure.model.SpendData;
+import bio.terra.profile.service.spendreporting.azure.model.SpendDataItem;
 import bio.terra.profile.service.status.ProfileStatusService;
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
@@ -85,6 +93,7 @@ public class BPMProviderTest {
   @MockBean NamedParameterJdbcTemplate namedParameterJdbcTemplate;
   @MockBean JdbcTemplate jdbcTemplate;
   @Autowired ProfileStatusService profileStatusService;
+  @MockBean AzureSpendReportingService azureSpendReportingService;
 
   @MockBean AzureService azureService;
 
@@ -159,8 +168,7 @@ public class BPMProviderTest {
                     .assigned(false)
                     .managedResourceGroupId(profile.managedResourceGroupId().get())
                     .tenantId(profile.tenantId().get())));
-    return Map.of(
-        "subscriptionId", subscriptionId.toString(), "includeAssignedApplications", false);
+    return Map.of("subscriptionId", subscriptionId.toString());
   }
 
   @State("a creation mock JobService exists")
@@ -198,6 +206,46 @@ public class BPMProviderTest {
     when(jobBuilder.addParameter(
             eq(JobMapKeys.CLOUD_PLATFORM.getKeyName()), eq(CloudPlatform.AZURE.name())))
         .thenReturn(jobBuilder);
+  }
+
+  @State("a mock Sam that supports user policy addition")
+  Map<String, Object> mockUserPolicyAdditionSam() throws InterruptedException {
+    var profile = ProviderStateData.azureBillingProfile;
+    var userEmail = "userEmail@foo.bar";
+    var policyName = "user";
+    when(samService.addProfilePolicyMember(any(), eq(profile.id()), eq(policyName), any()))
+        .thenReturn(new SamPolicyModel().name(policyName).members(List.of(userEmail)));
+    return Map.of(
+        "userEmail", userEmail,
+        "policyName", policyName);
+  }
+
+  @State("a mock Sam that supports user policy deletion")
+  Map<String, Object> mockUserPolicyDeletionSam() throws InterruptedException {
+    var profile = ProviderStateData.azureBillingProfile;
+    var policyName = "user";
+    when(samService.deleteProfilePolicyMember(any(), eq(profile.id()), eq(policyName), any()))
+        .thenReturn(new SamPolicyModel().name("user").members(List.of()));
+    return Map.of("userEmail", "userEmail@foo.bar", "policyName", policyName);
+  }
+
+  @State("a mock spend report service exists")
+  Map<String, Object> mockSpendReportService() throws InterruptedException {
+    var profile = ProviderStateData.azureBillingProfile;
+    doNothing()
+        .when(samService)
+        .verifyAuthorization(
+            any(), eq(SamResourceType.PROFILE), eq(profile.id()), eq(SamAction.READ_SPEND_REPORT));
+    var startTimeString = "2023-04-30T16:58:56.389Z";
+    var endTimeString = "2023-05-30T16:58:56.389Z";
+    var startTime = OffsetDateTime.parse(startTimeString);
+    var endTime = OffsetDateTime.parse(endTimeString);
+    var spendDataItem =
+        new SpendDataItem(
+            "microsoft.storage", new BigDecimal("10.55"), "USD", SpendCategoryType.COMPUTE);
+    when(azureSpendReportingService.getBillingProfileSpendData(eq(profile), any(), any()))
+        .thenReturn(new SpendData(List.of(spendDataItem), startTime, endTime));
+    return Map.of("startTime", startTimeString, "endTime", endTimeString);
   }
 
   /**
