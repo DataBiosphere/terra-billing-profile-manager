@@ -94,7 +94,6 @@ public class BPMProviderTest {
   @MockBean JdbcTemplate jdbcTemplate;
   @Autowired ProfileStatusService profileStatusService;
   @MockBean AzureSpendReportingService azureSpendReportingService;
-
   @MockBean AzureService azureService;
 
   @BeforeEach
@@ -171,7 +170,7 @@ public class BPMProviderTest {
     return Map.of("subscriptionId", subscriptionId.toString());
   }
 
-  @State("a creation mock JobService exists")
+  @State("a JobService that supports profile creation")
   Map<String, Object> creationJobServiceExistsState() {
     var jobBuilder = mock(JobBuilder.class);
 
@@ -190,7 +189,7 @@ public class BPMProviderTest {
         "managedResourceGroupId", profile.managedResourceGroupId());
   }
 
-  @State("a deletion mock JobService exists")
+  @State("a JobService that supports profile deletion")
   void deletionJobServiceExistsState() {
     var jobBuilder = mock(JobBuilder.class);
     String jobId = "jobId";
@@ -208,8 +207,8 @@ public class BPMProviderTest {
         .thenReturn(jobBuilder);
   }
 
-  @State("a mock Sam that supports user policy addition")
-  Map<String, Object> mockUserPolicyAdditionSam() throws InterruptedException {
+  @State("a Sam service that supports profile policy member addition")
+  Map<String, Object> userPolicyAdditionState() throws InterruptedException {
     var profile = ProviderStateData.azureBillingProfile;
     var userEmail = "userEmail@foo.bar";
     var policyName = "user";
@@ -220,8 +219,8 @@ public class BPMProviderTest {
         "policyName", policyName);
   }
 
-  @State("a mock Sam that supports user policy deletion")
-  Map<String, Object> mockUserPolicyDeletionSam() throws InterruptedException {
+  @State("a Sam service that supports profile policy member deletion")
+  Map<String, Object> userPolicyDeletionState() throws InterruptedException {
     var profile = ProviderStateData.azureBillingProfile;
     var policyName = "user";
     when(samService.deleteProfilePolicyMember(any(), eq(profile.id()), eq(policyName), any()))
@@ -229,8 +228,8 @@ public class BPMProviderTest {
     return Map.of("userEmail", "userEmail@foo.bar", "policyName", policyName);
   }
 
-  @State("a mock spend report service exists")
-  Map<String, Object> mockSpendReportService() throws InterruptedException {
+  @State("an Azure spend report service exists")
+  Map<String, Object> azureSpendReportServiceState() throws InterruptedException {
     var profile = ProviderStateData.azureBillingProfile;
     doNothing()
         .when(samService)
