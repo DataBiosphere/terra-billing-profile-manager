@@ -75,11 +75,17 @@ tasks.register("pactTests", Test) {
 	useJUnitPlatform {
 		includeTags "pact-test"
 	}
+	testLogging {
+		showStandardStreams = true
+	}
 }
 
 tasks.register("verifyPacts", Test) {
 	useJUnitPlatform {
 		includeTags "provider-test"
+	}
+	testLogging {
+		showStandardStreams = true
 	}
 	outputs.upToDateWhen { false } // always run this task even if it's up to date
 
