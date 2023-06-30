@@ -153,7 +153,7 @@ jobs:
             echo "git branch"
             git branch
           else
-          if [[ "${{ github.event_name }}" == "push" ]] || [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            if [[ "${{ github.event_name }}" == "push" ]] || [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
               echo "git checkout ${{ env.CURRENT_BRANCH }}"
               git checkout ${{ env.CURRENT_BRANCH }}
             else
