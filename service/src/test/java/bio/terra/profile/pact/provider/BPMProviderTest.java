@@ -1,8 +1,8 @@
 package bio.terra.profile.pact.provider;
 
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 
 import au.com.dius.pact.provider.junit5.HttpTestTarget;
 import au.com.dius.pact.provider.junit5.PactVerificationContext;
@@ -14,15 +14,31 @@ import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.common.iam.AuthenticatedUserRequestFactory;
 import bio.terra.profile.app.Main;
 import bio.terra.profile.db.ProfileDao;
+import bio.terra.profile.model.AzureManagedAppModel;
+import bio.terra.profile.model.CloudPlatform;
+import bio.terra.profile.model.SamPolicyModel;
 import bio.terra.profile.model.SystemStatusSystems;
+import bio.terra.profile.service.azure.AzureService;
 import bio.terra.profile.service.crl.AzureCrlService;
 import bio.terra.profile.service.crl.GcpCrlService;
 import bio.terra.profile.service.iam.SamService;
+import bio.terra.profile.service.iam.model.SamAction;
 import bio.terra.profile.service.iam.model.SamResourceType;
+import bio.terra.profile.service.job.JobBuilder;
+import bio.terra.profile.service.job.JobMapKeys;
 import bio.terra.profile.service.job.JobService;
 import bio.terra.profile.service.profile.exception.ProfileNotFoundException;
+import bio.terra.profile.service.profile.flight.ProfileMapKeys;
+import bio.terra.profile.service.profile.flight.create.CreateProfileFlight;
+import bio.terra.profile.service.profile.flight.delete.DeleteProfileFlight;
 import bio.terra.profile.service.profile.model.BillingProfile;
+import bio.terra.profile.service.spendreporting.azure.AzureSpendReportingService;
+import bio.terra.profile.service.spendreporting.azure.model.SpendCategoryType;
+import bio.terra.profile.service.spendreporting.azure.model.SpendData;
+import bio.terra.profile.service.spendreporting.azure.model.SpendDataItem;
 import bio.terra.profile.service.status.ProfileStatusService;
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,7 +63,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 @PactBroker
 // for local testing, put any test pacts in the service/pacts folder.
 // then comment out the above line, and uncomment the following line
-// @PactFolder("src/test/java/bio/terra/profile/service/pacts")
+// @PactFolder("pacts")
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     classes = Main.class,
@@ -77,6 +93,8 @@ public class BPMProviderTest {
   @MockBean NamedParameterJdbcTemplate namedParameterJdbcTemplate;
   @MockBean JdbcTemplate jdbcTemplate;
   @Autowired ProfileStatusService profileStatusService;
+  @MockBean AzureSpendReportingService azureSpendReportingService;
+  @MockBean AzureService azureService;
 
   @BeforeEach
   void setUp(PactVerificationContext context) {
@@ -122,6 +140,111 @@ public class BPMProviderTest {
         "tenantId", profile.tenantId().get().toString(),
         "subscriptionId", profile.subscriptionId().get().toString(),
         "managedResourceGroupId", profile.managedResourceGroupId().get());
+  }
+
+  @State("two billing profiles exist")
+  void twoProfilesExistState() throws InterruptedException {
+    var profilesIds =
+        List.of(
+            ProviderStateData.azureBillingProfile.id(), ProviderStateData.gcpBillingProfile.id());
+    when(samService.listProfileIds(any())).thenReturn(profilesIds);
+    when(profileDao.listBillingProfiles(anyInt(), anyInt(), eq(profilesIds)))
+        .thenReturn(
+            List.of(ProviderStateData.azureBillingProfile, ProviderStateData.gcpBillingProfile));
+  }
+
+  @State("a managed app exists")
+  Map<String, Object> managedAppExistsState() throws InterruptedException {
+    var profile = ProviderStateData.azureBillingProfile;
+    var subscriptionId = profile.subscriptionId().get();
+    when(azureService.getAuthorizedManagedAppDeployments(eq(subscriptionId), eq(false), any()))
+        .thenReturn(
+            List.of(
+                new AzureManagedAppModel()
+                    .subscriptionId(subscriptionId)
+                    .applicationDeploymentName("appDeploymentName")
+                    .region("dummyRegion")
+                    .assigned(false)
+                    .managedResourceGroupId(profile.managedResourceGroupId().get())
+                    .tenantId(profile.tenantId().get())));
+    return Map.of("subscriptionId", subscriptionId.toString());
+  }
+
+  @State("a JobService that supports profile creation")
+  Map<String, Object> creationJobServiceExistsState() {
+    var jobBuilder = mock(JobBuilder.class);
+
+    var profile = ProviderStateData.azureBillingProfile;
+
+    when(jobService.newJob()).thenReturn(jobBuilder);
+    when(jobBuilder.description(anyString())).thenReturn(jobBuilder);
+    when(jobBuilder.flightClass(CreateProfileFlight.class)).thenReturn(jobBuilder);
+    when(jobBuilder.request(any())).thenReturn(jobBuilder);
+    when(jobBuilder.userRequest(any())).thenReturn(jobBuilder);
+    when(jobBuilder.submitAndWait(BillingProfile.class)).thenReturn(profile);
+
+    return Map.of(
+        "subscriptionId", profile.subscriptionId().get(),
+        "tenantId", profile.tenantId().get(),
+        "managedResourceGroupId", profile.managedResourceGroupId());
+  }
+
+  @State("a JobService that supports profile deletion")
+  void deletionJobServiceExistsState() {
+    var jobBuilder = mock(JobBuilder.class);
+    String jobId = "jobId";
+
+    var profile = ProviderStateData.azureBillingProfile;
+
+    when(jobService.newJob()).thenReturn(jobBuilder);
+    when(jobBuilder.submit()).thenReturn(jobId);
+    when(jobBuilder.description(anyString())).thenReturn(jobBuilder);
+    when(jobBuilder.flightClass(DeleteProfileFlight.class)).thenReturn(jobBuilder);
+    when(jobBuilder.userRequest(any())).thenReturn(jobBuilder);
+    when(jobBuilder.addParameter(ProfileMapKeys.PROFILE, profile)).thenReturn(jobBuilder);
+    when(jobBuilder.addParameter(
+            eq(JobMapKeys.CLOUD_PLATFORM.getKeyName()), eq(CloudPlatform.AZURE.name())))
+        .thenReturn(jobBuilder);
+  }
+
+  @State("a Sam service that supports profile policy member addition")
+  Map<String, Object> userPolicyAdditionState() throws InterruptedException {
+    var profile = ProviderStateData.azureBillingProfile;
+    var userEmail = "userEmail@foo.bar";
+    var policyName = "user";
+    when(samService.addProfilePolicyMember(any(), eq(profile.id()), eq(policyName), any()))
+        .thenReturn(new SamPolicyModel().name(policyName).members(List.of(userEmail)));
+    return Map.of(
+        "userEmail", userEmail,
+        "policyName", policyName);
+  }
+
+  @State("a Sam service that supports profile policy member deletion")
+  Map<String, Object> userPolicyDeletionState() throws InterruptedException {
+    var profile = ProviderStateData.azureBillingProfile;
+    var policyName = "user";
+    when(samService.deleteProfilePolicyMember(any(), eq(profile.id()), eq(policyName), any()))
+        .thenReturn(new SamPolicyModel().name("user").members(List.of()));
+    return Map.of("userEmail", "userEmail@foo.bar", "policyName", policyName);
+  }
+
+  @State("an Azure spend report service exists")
+  Map<String, Object> azureSpendReportServiceState() throws InterruptedException {
+    var profile = ProviderStateData.azureBillingProfile;
+    doNothing()
+        .when(samService)
+        .verifyAuthorization(
+            any(), eq(SamResourceType.PROFILE), eq(profile.id()), eq(SamAction.READ_SPEND_REPORT));
+    var startTimeString = "2023-04-30T16:58:56.389Z";
+    var endTimeString = "2023-05-30T16:58:56.389Z";
+    var startTime = OffsetDateTime.parse(startTimeString);
+    var endTime = OffsetDateTime.parse(endTimeString);
+    var spendDataItem =
+        new SpendDataItem(
+            "microsoft.storage", new BigDecimal("10.55"), "USD", SpendCategoryType.COMPUTE);
+    when(azureSpendReportingService.getBillingProfileSpendData(eq(profile), any(), any()))
+        .thenReturn(new SpendData(List.of(spendDataItem), startTime, endTime));
+    return Map.of("startTime", startTimeString, "endTime", endTimeString);
   }
 
   /**

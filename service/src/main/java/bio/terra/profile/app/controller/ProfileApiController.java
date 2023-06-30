@@ -82,7 +82,7 @@ public class ProfileApiController implements ProfileApi {
     AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
     SamPolicyModel policy =
         profileService.addProfilePolicyMember(id, policyName, requestBody.getEmail(), user);
-    return new ResponseEntity<>(policy, HttpStatus.OK);
+    return new ResponseEntity<>(policy, HttpStatus.CREATED);
   }
 
   @Override
