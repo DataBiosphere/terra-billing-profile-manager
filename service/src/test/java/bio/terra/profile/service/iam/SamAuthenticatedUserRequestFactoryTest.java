@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.mock.web.MockHttpServletRequest;
 
-public class SamAuthenticatedUserRequestFactoryTest extends BaseSpringUnitTest {
+class SamAuthenticatedUserRequestFactoryTest extends BaseSpringUnitTest {
   private static final String EMAIL = "billing@unit.com";
   private static final String SUBJECT = "12345";
   private static final String TOKEN = "not-a-real-token";
@@ -35,7 +35,7 @@ public class SamAuthenticatedUserRequestFactoryTest extends BaseSpringUnitTest {
   }
 
   @Test
-  public void oauth2Token() {
+  void oauth2Token() {
     var request = new MockHttpServletRequest();
     request.addHeader("OAUTH2_CLAIM_access_token", TOKEN);
 
@@ -50,7 +50,7 @@ public class SamAuthenticatedUserRequestFactoryTest extends BaseSpringUnitTest {
   }
 
   @Test
-  public void bearerToken() {
+  void bearerToken() {
     var request = new MockHttpServletRequest();
     request.addHeader("Authorization", "Bearer " + TOKEN);
 
@@ -65,12 +65,12 @@ public class SamAuthenticatedUserRequestFactoryTest extends BaseSpringUnitTest {
   }
 
   @Test
-  public void noToken() {
+  void noToken() {
     assertThrows(UnauthorizedException.class, () -> factory.from(new MockHttpServletRequest()));
   }
 
   @Test
-  public void userDisabled() throws InterruptedException {
+  void userDisabled() throws InterruptedException {
     when(samService.getUserStatusInfo(eq(TOKEN))).thenReturn(SAM_DISABLED_USER);
 
     var request = new MockHttpServletRequest();

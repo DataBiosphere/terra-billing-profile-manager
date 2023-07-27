@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 
-public class CreateProfileVerifyAccountStepTest extends BaseSpringUnitTest {
+class CreateProfileVerifyAccountStepTest extends BaseSpringUnitTest {
 
   @Mock private FlightContext flightContext;
   @Mock private GcpCrlService crlService;
@@ -64,7 +64,7 @@ public class CreateProfileVerifyAccountStepTest extends BaseSpringUnitTest {
   }
 
   @Test
-  public void verifyAccount() throws InterruptedException {
+  void verifyAccount() throws InterruptedException {
     var captor = ArgumentCaptor.forClass(TestIamPermissionsRequest.class);
     when(billingClientCow.testIamPermissions(captor.capture()))
         .thenReturn(
@@ -82,7 +82,7 @@ public class CreateProfileVerifyAccountStepTest extends BaseSpringUnitTest {
   }
 
   @Test
-  public void verifyAccountNoAccess() throws InterruptedException {
+  void verifyAccountNoAccess() throws InterruptedException {
     var captor = ArgumentCaptor.forClass(TestIamPermissionsRequest.class);
     when(billingClientCow.testIamPermissions(captor.capture()))
         .thenReturn(

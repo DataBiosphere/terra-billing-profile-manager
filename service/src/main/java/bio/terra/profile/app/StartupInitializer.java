@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 
 public final class StartupInitializer {
-  private static final String changelogPath = "db/changelog.xml";
+  private static final String CHANGE_LOG_PATH = "db/changelog.xml";
   private static final Logger logger = LoggerFactory.getLogger(StartupInitializer.class);
 
   public static void initialize(ApplicationContext applicationContext) {
@@ -26,9 +26,9 @@ public final class StartupInitializer {
 
     // Migrate the database
     if (profileDatabaseConfiguration.isInitializeOnStart()) {
-      migrateService.initialize(changelogPath, profileDatabaseConfiguration.getDataSource());
+      migrateService.initialize(CHANGE_LOG_PATH, profileDatabaseConfiguration.getDataSource());
     } else if (profileDatabaseConfiguration.isUpgradeOnStart()) {
-      migrateService.upgrade(changelogPath, profileDatabaseConfiguration.getDataSource());
+      migrateService.upgrade(CHANGE_LOG_PATH, profileDatabaseConfiguration.getDataSource());
     }
 
     // The JobService initialization also handles Stairway initialization.

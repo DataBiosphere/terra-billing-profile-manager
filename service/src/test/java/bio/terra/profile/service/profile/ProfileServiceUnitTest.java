@@ -189,7 +189,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
   }
 
   @Test
-  public void addProfilePolicyMember403() throws InterruptedException {
+  void addProfilePolicyMember403() throws InterruptedException {
     doThrow(ForbiddenException.class)
         .when(samService)
         .addProfilePolicyMember(user, profile.id(), "user", "user@unit.com");

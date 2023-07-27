@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
-public class ProfileStatusServiceTest extends BaseSpringUnitTest {
+class ProfileStatusServiceTest extends BaseSpringUnitTest {
   @Autowired private ProfileStatusService statusService;
 
   @MockBean private SamService mockSamService;

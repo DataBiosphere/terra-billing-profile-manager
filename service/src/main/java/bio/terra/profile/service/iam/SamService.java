@@ -18,7 +18,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import okhttp3.OkHttpClient;
 import org.broadinstitute.dsde.workbench.client.sam.ApiClient;
@@ -160,7 +159,7 @@ public class SamService {
                   return Stream.empty();
                 }
               })
-          .collect(Collectors.toList());
+          .toList();
     } catch (ApiException e) {
       throw SamExceptionFactory.create("Error listing profile ids in Sam", e);
     }
@@ -347,7 +346,7 @@ public class SamService {
                   SamResourceType.PROFILE.getSamResourceName(), profileId.toString()));
       logger.info("Deleted Sam resource for profile {}", profileId);
     } catch (ApiException e) {
-      logger.info("Sam API error while deleting profile, code is " + e.getCode());
+      logger.info("Sam API error while deleting profile, code is {}", e.getCode());
       // Recover if the resource to delete is not found
       if (e.getCode() == HttpStatus.NOT_FOUND.value()) {
         return;
