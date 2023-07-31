@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 
-public class ProfileDaoTest extends BaseSpringUnitTest {
+class ProfileDaoTest extends BaseSpringUnitTest {
 
   @Autowired private ProfileDao profileDao;
   private AuthenticatedUserRequest user;
@@ -51,7 +51,7 @@ public class ProfileDaoTest extends BaseSpringUnitTest {
   }
 
   @Test
-  public void createAndGetProfile() {
+  void createAndGetProfile() {
     var profile = makeGCPProfile();
     var createResult = profileDao.createBillingProfile(profile, user);
     assertProfileEquals(profile, createResult);
@@ -60,7 +60,7 @@ public class ProfileDaoTest extends BaseSpringUnitTest {
   }
 
   @Test
-  public void createProfile_alreadyExists() {
+  void createProfile_alreadyExists() {
     var profile = makeGCPProfile();
     var createResult = profileDao.createBillingProfile(profile, user);
     assertProfileEquals(profile, createResult);
@@ -68,7 +68,7 @@ public class ProfileDaoTest extends BaseSpringUnitTest {
   }
 
   @Test
-  public void createProfile_duplicateManagedAppCoords() {
+  void createProfile_duplicateManagedAppCoords() {
     UUID tenantId = UUID.randomUUID();
     UUID subscriptionId = UUID.randomUUID();
     String managedResourceGroupId = "managedResourceGroupId";
@@ -111,7 +111,7 @@ public class ProfileDaoTest extends BaseSpringUnitTest {
   }
 
   @Test
-  public void createAndDeleteProfile() {
+  void createAndDeleteProfile() {
     var profile = makeGCPProfile();
     var createResult = profileDao.createBillingProfile(profile, user);
     assertProfileEquals(profile, createResult);
@@ -122,7 +122,7 @@ public class ProfileDaoTest extends BaseSpringUnitTest {
   }
 
   @Test
-  public void listProfiles() {
+  void listProfiles() {
     var profiles =
         Stream.generate(() -> profileDao.createBillingProfile(makeGCPProfile(), user))
             .limit(10)
@@ -133,7 +133,7 @@ public class ProfileDaoTest extends BaseSpringUnitTest {
   }
 
   @Test
-  public void listProfiles_subset() {
+  void listProfiles_subset() {
     var profiles =
         Stream.generate(() -> profileDao.createBillingProfile(makeGCPProfile(), user))
             .limit(10)
@@ -144,7 +144,7 @@ public class ProfileDaoTest extends BaseSpringUnitTest {
   }
 
   @Test
-  public void listProfiles_offset() {
+  void listProfiles_offset() {
     var profiles =
         Stream.generate(() -> profileDao.createBillingProfile(makeGCPProfile(), user))
             .limit(10)
@@ -155,7 +155,7 @@ public class ProfileDaoTest extends BaseSpringUnitTest {
   }
 
   @Test
-  public void listProfiles_limit() {
+  void listProfiles_limit() {
     var profiles =
         Stream.generate(() -> profileDao.createBillingProfile(makeGCPProfile(), user))
             .limit(10)
@@ -166,7 +166,7 @@ public class ProfileDaoTest extends BaseSpringUnitTest {
   }
 
   @Test
-  public void listManagedResourceGroupsInSubscription() {
+  void listManagedResourceGroupsInSubscription() {
     UUID tenantId = UUID.randomUUID();
     UUID subscriptionId = UUID.randomUUID();
     String managedResourceGroupId = "managedResourceGroupId";

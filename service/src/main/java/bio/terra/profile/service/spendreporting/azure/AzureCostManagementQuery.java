@@ -19,7 +19,6 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class AzureCostManagementQuery {
-  private static final String GROUPING_BY_RESOURCE_ID = "ResourceId";
   private static final String GROUPING_BY_RESOURCE_TYPE = "ResourceType";
 
   private final AzureCrlService crlService;

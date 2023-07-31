@@ -18,7 +18,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationContext;
 
-public class CreateProfileFlightUnitTest extends BaseUnitTest {
+class CreateProfileFlightUnitTest extends BaseUnitTest {
 
   AuthenticatedUserRequest userRequest =
       AuthenticatedUserRequest.builder()

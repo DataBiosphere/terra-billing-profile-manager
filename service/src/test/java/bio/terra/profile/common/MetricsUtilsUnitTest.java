@@ -12,7 +12,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class MetricsUtilsUnitTest extends BaseUnitTest {
+class MetricsUtilsUnitTest extends BaseUnitTest {
 
   private SimpleMeterRegistry meterRegistry;
 
@@ -36,8 +36,8 @@ public class MetricsUtilsUnitTest extends BaseUnitTest {
 
     var timer = meterRegistry.find("bpm.profile.creation.time").timer();
     assertNotNull(timer);
-    assertEquals(timer.count(), 1);
-    assertEquals(timer.getId().getTag("cloudPlatform"), CloudPlatform.GCP.toString());
+    assertEquals(1, timer.count());
+    assertEquals(CloudPlatform.GCP.toString(), timer.getId().getTag("cloudPlatform"));
   }
 
   @Test
@@ -49,7 +49,7 @@ public class MetricsUtilsUnitTest extends BaseUnitTest {
 
     var timer = meterRegistry.find("bpm.profile.creation.time").timer();
     assertNotNull(timer);
-    assertEquals(timer.count(), 1);
-    assertEquals(timer.getId().getTag("cloudPlatform"), CloudPlatform.AZURE.toString());
+    assertEquals(1, timer.count());
+    assertEquals(CloudPlatform.AZURE.toString(), timer.getId().getTag("cloudPlatform"));
   }
 }

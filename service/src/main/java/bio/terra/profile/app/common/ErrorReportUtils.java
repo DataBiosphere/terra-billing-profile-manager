@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 
 /** A common utility for building an ApiErrorReport from an exception. */
 public class ErrorReportUtils {
+  private ErrorReportUtils() {}
 
   public static ErrorReport buildApiErrorReport(Exception exception) {
     if (exception instanceof ErrorReportException errorReport) {

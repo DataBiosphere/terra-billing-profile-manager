@@ -10,6 +10,8 @@ public class MetricUtils {
   private static final String NAMESPACE = "bpm";
   private static final String CLOUD_PLATFORM_TAG = "cloudPlatform";
 
+  private MetricUtils() {}
+
   /**
    * Emit a metric for the duration of creating a billing profile.
    *

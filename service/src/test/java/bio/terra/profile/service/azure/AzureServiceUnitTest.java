@@ -35,7 +35,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-public class AzureServiceUnitTest extends BaseUnitTest {
+class AzureServiceUnitTest extends BaseUnitTest {
 
   UUID subId = UUID.randomUUID();
   UUID tenantId = UUID.randomUUID();
@@ -99,7 +99,7 @@ public class AzureServiceUnitTest extends BaseUnitTest {
   }
 
   @Test
-  public void getManagedApps() {
+  void getManagedApps() {
     var authedTerraApp =
         mockApplicationCalls(
             offerName, offerPublisher, Optional.of(authedUserEmail), "mrg_fake1", "fake_app_1");
@@ -153,7 +153,7 @@ public class AzureServiceUnitTest extends BaseUnitTest {
   }
 
   @Test
-  public void getManagedApps_dedupesApps() {
+  void getManagedApps_dedupesApps() {
     var crlService = mock(AzureCrlService.class);
     var profileDao = mock(ProfileDao.class);
 
@@ -181,11 +181,11 @@ public class AzureServiceUnitTest extends BaseUnitTest {
 
     var result = azureService.getAuthorizedManagedAppDeployments(subId, true, user);
 
-    assertEquals(result.size(), 1, "Duplicate app instances should be removed");
+    assertEquals(1, result.size(), "Duplicate app instances should be removed");
   }
 
   @Test
-  public void getManagedApps_excludingAssignedApplications() {
+  void getManagedApps_excludingAssignedApplications() {
     var applicationName = "fake_app_1";
     var assignedTerraAppManagedResourceGroupId = "assigned_fake_mrg";
     var unassignedTerraAppManagedResourceGroupId = "unassigned_fake_mrg";
@@ -252,7 +252,7 @@ public class AzureServiceUnitTest extends BaseUnitTest {
   }
 
   @Test
-  public void getManagedApps_includingAssignedApplications() {
+  void getManagedApps_includingAssignedApplications() {
     var applicationName = "fake_app_1";
     var assignedTerraAppManagedResourceGroupId = "assigned_fake_mrg";
     var unassignedTerraAppManagedResourceGroupId = "unassigned_fake_mrg";
@@ -325,7 +325,7 @@ public class AzureServiceUnitTest extends BaseUnitTest {
 
   @ParameterizedTest
   @MethodSource("getAuthorizedEmails")
-  public void getManagedApps_handlesDifferentEmailFormats(String authorizedEmails) {
+  void getManagedApps_handlesDifferentEmailFormats(String authorizedEmails) {
     var authedTerraApp =
         mockApplicationCalls(
             offerName, offerPublisher, Optional.of(authorizedEmails), "mrg_fake1", "fake_app_1");
