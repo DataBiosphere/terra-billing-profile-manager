@@ -4,7 +4,7 @@ plugins {
     id 'bio.terra.profile.java-library-conventions'
     id 'maven-publish'
     id 'io.spring.dependency-management'
-    id 'com.jfrog.artifactory' version '5.0.3'
+    id 'com.jfrog.artifactory' version '5.1.0'
     id 'org.hidetake.swagger.generator'
 }
 
