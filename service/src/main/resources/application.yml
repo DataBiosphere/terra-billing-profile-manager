@@ -120,6 +120,7 @@ profile:
       - "Microsoft.KeyVault"
       - "Microsoft.ContainerService"
       - "Microsoft.Relay"
+      - "Microsoft.ManagedIdentity"
 
   sentry:
     dsn: ${env.sentry.dsn}
