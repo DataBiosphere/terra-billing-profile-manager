@@ -47,3 +47,6 @@ config/
 
 ### jEnv
 .java-version
+
+### Python
+**/__pycache__/
