@@ -21,7 +21,7 @@ class BPMSmokeTestCase(TestCase):
 
     @staticmethod
     @cache
-    def call_bpm(url: str, user_token: str = None) -> Response:
+    def call_bpm(url: str, params: dict = None, user_token: str = None) -> Response:
         """Function is memoized so that we only make the call once"""
         headers = {"Authorization": f"Bearer {user_token}"} if user_token else {}
-        return requests.get(url, headers=headers)
+        return requests.get(url, params=params, headers=headers)

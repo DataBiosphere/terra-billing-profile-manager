@@ -7,6 +7,8 @@ import requests
 
 from tests.bpm_smoke_test_case import BPMSmokeTestCase
 from tests.unauthenticated.bpm_status_tests import BPMStatusTests
+from tests.authenticated.azure.managed_apps_tests import BPMManagedAppsTests
+from tests.authenticated.billing_profiles import BillingProfileTests
 
 DESCRIPTION = """
 BPM Smoke Test
@@ -15,13 +17,16 @@ instance running on that host is minimally functional.
 """
 
 
-def gather_tests(is_authenticated: bool = False) -> TestSuite:
+def gather_tests(is_authenticated: bool = False, azureSubscription: bool = False) -> TestSuite:
     suite = unittest.TestSuite()
-
     status_tests = unittest.defaultTestLoader.loadTestsFromTestCase(BPMStatusTests)
-
     suite.addTests(status_tests)
-
+    if is_authenticated:
+        profile_tests = unittest.defaultTestLoader.loadTestsFromTestCase(BillingProfileTests)
+        suite.addTests(profile_tests)
+        if azureSubscription:
+            managed_apps_tests = unittest.defaultTestLoader.loadTestsFromTestCase(BPMManagedAppsTests)
+            suite.addTests(managed_apps_tests)
     return suite
 
 
@@ -31,8 +36,9 @@ def main(main_args):
 
     BPMSmokeTestCase.BPM_HOST = main_args.bpm_host
     BPMSmokeTestCase.USER_TOKEN = main_args.user_token
+    BPMManagedAppsTests.AZURE_SUBSCRIPTION_ID = main_args.azure_sub_id
 
-    test_suite = gather_tests(main_args.user_token)
+    test_suite = gather_tests(main_args.user_token, main_args.azure_sub_id)
 
     runner = unittest.TextTestRunner(verbosity=main_args.verbosity)
     runner.run(test_suite)
@@ -49,6 +55,21 @@ def parse_args():
         description=DESCRIPTION,
     )
     parser.add_argument(
+        "bpm_host",
+        help="domain with optional port number of the BPM host you want to test"
+    )
+    parser.add_argument(
+        "user_token",
+        nargs='?',
+        default=None,
+        help="Optional. If present, will test additional authenticated endpoints using the specified token"
+    )
+    parser.add_argument(
+        "--azure_sub_id",
+        type=str,
+        help="Optional Azure SubscriptionId. If present, will test retrieving azure managed apps using the specified id"
+    )
+    parser.add_argument(
         "-v",
         "--verbosity",
         type=int,
@@ -59,21 +80,11 @@ def parse_args():
     1: Minimal - (default) Prints number of tests executed plus a dot for each success and an F for each failure
     2: Verbose - Help string and its result will be printed for each test"""
     )
-    parser.add_argument(
-        "bpm_host",
-        help="domain with optional port number of the BPM host you want to test"
-    )
-    parser.add_argument(
-        "user_token",
-        nargs='?',
-        default=None,
-        help="Optional. If present, will test additional authenticated endpoints using the specified token"
-    )
-    args = parser.parse_args()
+    parsed_args = parser.parse_args()
     # Need to pop off sys.argv values to avoid messing with args passed to unittest.main()
     for _ in range(len(sys.argv[1:])):
         sys.argv.pop()
-    return args
+    return parsed_args
 
 
 if __name__ == "__main__":
