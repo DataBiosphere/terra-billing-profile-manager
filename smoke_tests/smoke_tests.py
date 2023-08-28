@@ -4,28 +4,27 @@ import unittest
 from unittest import TestSuite
 import requests
 
-
-from tests.bpm_smoke_test_case import BPMSmokeTestCase
-from tests.unauthenticated.bpm_status_tests import BPMStatusTests
-from tests.authenticated.azure.managed_apps_tests import BPMManagedAppsTests
+from tests.smoke_test_case import SmokeTestCase
+from tests.unauthenticated.status_tests import StatusTests
+from tests.authenticated.azure.managed_apps_tests import ManagedAppsTests
 from tests.authenticated.billing_profiles import BillingProfileTests
 
 DESCRIPTION = """
 BPM Smoke Test
-Enter the host (domain and optional port) of the BPM instance you want to to test.  This test will ensure that the BPM 
+Enter the host (domain and optional port) of the BPM instance you want to to test. This test will ensure that the BPM 
 instance running on that host is minimally functional.
 """
 
 
-def gather_tests(is_authenticated: bool = False, azureSubscription: bool = False) -> TestSuite:
+def gather_tests(is_authenticated: bool = False, azure_subscription: bool = False) -> TestSuite:
     suite = unittest.TestSuite()
-    status_tests = unittest.defaultTestLoader.loadTestsFromTestCase(BPMStatusTests)
+    status_tests = unittest.defaultTestLoader.loadTestsFromTestCase(StatusTests)
     suite.addTests(status_tests)
     if is_authenticated:
         profile_tests = unittest.defaultTestLoader.loadTestsFromTestCase(BillingProfileTests)
         suite.addTests(profile_tests)
-        if azureSubscription:
-            managed_apps_tests = unittest.defaultTestLoader.loadTestsFromTestCase(BPMManagedAppsTests)
+        if azure_subscription:
+            managed_apps_tests = unittest.defaultTestLoader.loadTestsFromTestCase(ManagedAppsTests)
             suite.addTests(managed_apps_tests)
     return suite
 
@@ -34,9 +33,9 @@ def main(main_args):
     if main_args.user_token:
         verify_user_token(main_args.user_token)
 
-    BPMSmokeTestCase.BPM_HOST = main_args.bpm_host
-    BPMSmokeTestCase.USER_TOKEN = main_args.user_token
-    BPMManagedAppsTests.AZURE_SUBSCRIPTION_ID = main_args.azure_sub_id
+    SmokeTestCase.BPM_HOST = main_args.bpm_host
+    SmokeTestCase.USER_TOKEN = main_args.user_token
+    ManagedAppsTests.AZURE_SUBSCRIPTION_ID = main_args.azure_sub_id
 
     test_suite = gather_tests(main_args.user_token, main_args.azure_sub_id)
 
@@ -44,7 +43,7 @@ def main(main_args):
     runner.run(test_suite)
 
 
-def verify_user_token(user_token: str) -> bool:
+def verify_user_token(user_token: str):
     response = requests.get(f"https://www.googleapis.com/oauth2/v1/tokeninfo?access_token={user_token}")
     assert response.status_code == 200, "User Token is no longer valid.  Please generate a new token and try again."
 
@@ -91,4 +90,3 @@ if __name__ == "__main__":
     args = parse_args()
     main(args)
     sys.exit(0)
-

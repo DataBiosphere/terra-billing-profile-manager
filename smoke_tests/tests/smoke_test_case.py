@@ -7,17 +7,17 @@ import requests
 from requests import Response
 
 
-class BPMSmokeTestCase(TestCase):
+class SmokeTestCase(TestCase):
     BPM_HOST = None
     USER_TOKEN = None
 
     @staticmethod
     def build_bpm_url(path: str) -> str:
-        assert BPMSmokeTestCase.BPM_HOST, "ERROR - BPMSmokeTests.BPM_HOST not properly set"
-        if re.match(r"^\s*https?://", BPMSmokeTestCase.BPM_HOST):
-            return urljoin(BPMSmokeTestCase.BPM_HOST, path)
+        assert SmokeTestCase.BPM_HOST, "ERROR - BPMSmokeTests.BPM_HOST not properly set"
+        if re.match(r"^\s*https?://", SmokeTestCase.BPM_HOST):
+            return urljoin(SmokeTestCase.BPM_HOST, path)
         else:
-            return urljoin(f"https://{BPMSmokeTestCase.BPM_HOST}", path)
+            return urljoin(f"https://{SmokeTestCase.BPM_HOST}", path)
 
     @staticmethod
     @cache
