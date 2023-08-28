@@ -55,7 +55,7 @@ def parse_args():
     )
     parser.add_argument(
         "bpm_host",
-        help="domain with optional port number of the BPM host you want to test"
+        help="Required domain with optional port number of the BPM host you want to test"
     )
     parser.add_argument(
         "user_token",
