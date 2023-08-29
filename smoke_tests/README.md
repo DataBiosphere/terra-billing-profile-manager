@@ -16,12 +16,13 @@ Verifying _basic_ functionality, based on arguments passed:
 
 
 ## Setup
-
-* Install [poetry](https://python-poetry.org)
+* From the smoke_tests directory
+* Install [poetry](https://python-poetry.org) or `brew install poetry` on a mac
 * Install dependencies: `poetry install`
 * Get a shell in the created venv to run the scripts: `poetry shell`
 * Run the test: `python smoke_tests.py <args>`
 * For full usage information: `python smoke_tests.py -h`
+
 
 ## Running as part of post-deployment steps:
 * Do setup as described above above
