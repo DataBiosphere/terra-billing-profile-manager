@@ -1,5 +1,4 @@
 import re
-from functools import cache
 from unittest import TestCase
 from urllib.parse import urljoin
 
@@ -20,7 +19,6 @@ class SmokeTestCase(TestCase):
             return urljoin(f"https://{SmokeTestCase.BPM_HOST}", path)
 
     @staticmethod
-    @cache
     def call_bpm(url: str, params: dict = None, user_token: str = None) -> Response:
         """Function is memoized so that we only make the call once"""
         headers = {"Authorization": f"Bearer {user_token}"} if user_token else {}
