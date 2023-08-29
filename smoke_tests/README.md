@@ -28,4 +28,4 @@ Verifying _basic_ functionality, based on arguments passed:
 * Do setup as described above above
 * Get a user access token (any user that has access to BPM should be sufficient). Eg: `gcloud auth print-access-token`
 * Get an Azure subscription id
-* Run script in poetry shell: `python smoke_tests.py "${BPM_HOST}" "${USER_ACCESS_TOKEN}"  --azure-sub-id="${SUBSCRIPTION_ID}`
+* Run script in poetry shell: `python smoke_tests.py "${BPM_HOST}" "${USER_ACCESS_TOKEN}"  --azure_sub_id="${SUBSCRIPTION_ID}`
