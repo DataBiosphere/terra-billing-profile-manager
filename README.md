@@ -53,6 +53,9 @@ sleep 5                # wait until service comes up
 ./gradlew :integration:runTest --args="suites/FullIntegration.json /tmp/test"
 ```
 
+### To run smoke tests
+See `smoke_tests/README.md`
+
 ## Running Billing Profile Manager Locally
 
 ```sh
