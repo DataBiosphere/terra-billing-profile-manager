@@ -30,22 +30,22 @@ def gather_tests(is_authenticated: bool = False, azure_subscription: bool = Fals
 
 
 def main(main_args):
-    if main_args.user_token:
-        verify_user_token(main_args.user_token)
-
     SmokeTestCase.BPM_HOST = main_args.bpm_host
     SmokeTestCase.USER_TOKEN = main_args.user_token
     ManagedAppsTests.AZURE_SUBSCRIPTION_ID = main_args.azure_sub_id
 
-    test_suite = gather_tests(main_args.user_token, main_args.azure_sub_id)
+    valid_user_token = main_args.user_token is not None and verify_user_token(main_args.user_token)
+    sub_id_provided = main_args.azure_sub_id is str and len(main_args.azure_sub_id)
+    test_suite = gather_tests(valid_user_token, sub_id_provided)
 
     runner = unittest.TextTestRunner(verbosity=main_args.verbosity)
     runner.run(test_suite)
 
 
-def verify_user_token(user_token: str):
+def verify_user_token(user_token: str) -> bool:
     response = requests.get(f"https://www.googleapis.com/oauth2/v1/tokeninfo?access_token={user_token}")
     assert response.status_code == 200, "User Token is no longer valid.  Please generate a new token and try again."
+    return True
 
 
 def parse_args():
@@ -55,12 +55,14 @@ def parse_args():
     )
     parser.add_argument(
         "bpm_host",
+        type=str,
         help="Required domain with optional port number of the BPM host you want to test"
     )
     parser.add_argument(
         "user_token",
         nargs='?',
         default=None,
+        type=str,
         help="Optional. If present, will test additional authenticated endpoints using the specified token"
     )
     parser.add_argument(
