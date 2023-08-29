@@ -35,7 +35,6 @@ def main(main_args):
     ManagedAppsTests.AZURE_SUBSCRIPTION_ID = main_args.azure_sub_id
 
     valid_user_token = main_args.user_token is not None and verify_user_token(main_args.user_token)
-    sub_id_provided = main_args.azure_sub_id is str and len(main_args.azure_sub_id)
     sub_id_provided = type(main_args.azure_sub_id) is str and len(main_args.azure_sub_id) > 0
     test_suite = gather_tests(valid_user_token, sub_id_provided)
 
