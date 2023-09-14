@@ -44,6 +44,13 @@ dependencies {
 
     implementation 'org.slf4j:slf4j-api:1.7.35'
 
+    // Transitive dependency constraints due to security vulnerabilities in prior versions.
+    // These are not directly included, they are just constrained if they are pulled in as
+    // transitive dependencies.
+    constraints {
+        spotbugs('org.apache.bcel:bcel:6.6.0')
+    }
+
     testImplementation 'ch.qos.logback:logback-classic:1.2.10'
     testImplementation 'org.hamcrest:hamcrest:2.2'
 }
