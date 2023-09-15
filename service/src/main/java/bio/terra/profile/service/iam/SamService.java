@@ -286,7 +286,7 @@ public class SamService {
       throws InterruptedException {
     ResourcesApi resourcesApi = samResourcesApi(userRequest.getToken());
 
-    Map<String, AccessPolicyMembershipV2> policyMap = new HashMap<>();
+    Map<String, AccessPolicyMembershipRequest> policyMap = new HashMap<>();
 
     // BPM-configured group has Admin role
     // TODO: configure admin group
@@ -299,18 +299,18 @@ public class SamService {
     // Calling user has Owner role
     policyMap.put(
         SamRole.OWNER.getSamRoleName(),
-        new AccessPolicyMembershipV2()
+        new AccessPolicyMembershipRequest()
             .addRolesItem(SamRole.OWNER.getSamRoleName())
             .addMemberEmailsItem(userRequest.getEmail()));
 
     // Create empty User policy which can be modified later
     policyMap.put(
         SamRole.USER.getSamRoleName(),
-        new AccessPolicyMembershipV2().addRolesItem(SamRole.USER.getSamRoleName()));
+        new AccessPolicyMembershipRequest().addRolesItem(SamRole.USER.getSamRoleName()));
 
     policyMap.put(
         SamRole.PET_CREATOR.getSamRoleName(),
-        new AccessPolicyMembershipV2().addRolesItem(SamRole.PET_CREATOR.getSamRoleName()));
+        new AccessPolicyMembershipRequest().addRolesItem(SamRole.PET_CREATOR.getSamRoleName()));
 
     CreateResourceRequestV2 profileRequest =
         new CreateResourceRequestV2()
