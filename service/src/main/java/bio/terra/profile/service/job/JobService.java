@@ -1,8 +1,8 @@
 package bio.terra.profile.service.job;
 
 import bio.terra.common.iam.AuthenticatedUserRequest;
-import bio.terra.common.stairway.StairwayComponent;
 import bio.terra.common.stairway.MonitoringHook;
+import bio.terra.common.stairway.StairwayComponent;
 import bio.terra.profile.app.common.ErrorReportUtils;
 import bio.terra.profile.app.common.MdcHook;
 import bio.terra.profile.app.configuration.IngressConfiguration;

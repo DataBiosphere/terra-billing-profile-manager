@@ -2,8 +2,8 @@ package bio.terra.profile.service.job;
 
 import bio.terra.common.exception.MissingRequiredFieldException;
 import bio.terra.common.iam.AuthenticatedUserRequest;
-import bio.terra.common.stairway.StairwayComponent;
 import bio.terra.common.stairway.MonitoringHook;
+import bio.terra.common.stairway.StairwayComponent;
 import bio.terra.profile.app.common.MdcHook;
 import bio.terra.profile.service.job.exception.InvalidJobIdException;
 import bio.terra.profile.service.job.exception.InvalidJobParameterException;
@@ -105,7 +105,8 @@ public class JobBuilder {
     // Always add the MDC logging and tracing span parameters for the mdc hook
     addParameter(MdcHook.MDC_FLIGHT_MAP_KEY, mdcHook.getSerializedCurrentContext());
     addParameter(
-        MonitoringHook.SUBMISSION_SPAN_CONTEXT_MAP_KEY, MonitoringHook.serializeCurrentTracingContext());
+        MonitoringHook.SUBMISSION_SPAN_CONTEXT_MAP_KEY,
+        MonitoringHook.serializeCurrentTracingContext());
 
     // Convert the any other members that were set into parameters. However, if they were
     // explicitly added with addParameter during construction, we do not overwrite them.
