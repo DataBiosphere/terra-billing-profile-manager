@@ -50,7 +50,7 @@ dependencies {
 	// These are not directly included, they are just constrained if they are pulled in as
 	// transitive dependencies.
 	constraints {
-		implementation('org.json:json:20230227')
+		implementation('org.json:json:20230618')
 	}
 
 	// Test deps
