@@ -24,7 +24,7 @@ dependencies {
     // transitive dependencies.
     constraints {
         implementation('org.json:json:20230618')
-        implementation('org.graalvm.sdk:graal-sdk:22.3.2')
+        implementation('org.graalvm.sdk:graal-sdk:23.1.0')
     }
 }
 
