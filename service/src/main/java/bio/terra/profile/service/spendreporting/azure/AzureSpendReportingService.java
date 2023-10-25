@@ -9,6 +9,7 @@ import bio.terra.profile.service.spendreporting.azure.model.SpendCategoryType;
 import bio.terra.profile.service.spendreporting.azure.model.SpendData;
 import bio.terra.profile.service.spendreporting.azure.model.mapper.QueryResultMapper;
 import com.azure.core.http.rest.Response;
+import com.azure.resourcemanager.containerservice.ContainerServiceManager;
 import com.azure.resourcemanager.costmanagement.models.QueryResult;
 import com.azure.resourcemanager.resources.ResourceManager;
 import com.azure.resourcemanager.resources.fluentcore.arm.models.HasName;
@@ -30,7 +31,6 @@ import org.springframework.stereotype.Component;
 public class AzureSpendReportingService {
   private static final Logger logger = LoggerFactory.getLogger(AzureSpendReportingService.class);
 
-  public static final String K8S_RESOURCE_GROUP_NAME_PREFIX = "MC";
   public static final String AZURE_KUBERNETES_RESOURCE_TYPE = "managedclusters";
   private final AzureCostManagementQuery azureCostManagementQuery;
   private final AzureCrlService crlService;
@@ -75,14 +75,16 @@ public class AzureSpendReportingService {
                         billingProfile.getRequiredSubscriptionId(),
                         billingProfile.getRequiredManagedResourceGroupId(),
                         from,
-                        to)),
+                        to,
+                        false)),
             CompletableFuture.supplyAsync(
                 () ->
                     querySpendDataForResourceGroup(
                         billingProfile.getRequiredSubscriptionId(),
                         k8sNodeResourceGroup,
                         from,
-                        to)));
+                        to,
+                        true)));
 
     List<SpendData> spendDataList =
         azureCostManagementQueriesFutures.stream().map(CompletableFuture::join).toList();
@@ -97,20 +99,20 @@ public class AzureSpendReportingService {
   }
 
   private SpendData querySpendDataForResourceGroup(
-      UUID subscriptionId, String resourceGroupName, OffsetDateTime from, OffsetDateTime to) {
+      UUID subscriptionId,
+      String resourceGroupName,
+      OffsetDateTime from,
+      OffsetDateTime to,
+      boolean isAksResourceGroup) {
     Response<QueryResult> costQueryResponse =
         azureCostManagementQuery.resourceGroupCostQueryWithResourceTypeGrouping(
             subscriptionId, resourceGroupName, from, to);
-    if (isK8sResourceGroup(resourceGroupName)) {
+    if (isAksResourceGroup) {
       return queryResultMapper.mapQueryResult(
           costQueryResponse.getValue(), SpendCategoryType.COMPUTE, from, to);
     } else {
       return queryResultMapper.mapQueryResult(costQueryResponse.getValue(), from, to);
     }
-  }
-
-  private boolean isK8sResourceGroup(String resourceGroupName) {
-    return resourceGroupName.startsWith(K8S_RESOURCE_GROUP_NAME_PREFIX);
   }
 
   /**
@@ -149,16 +151,15 @@ public class AzureSpendReportingService {
               resourceGroupName));
     }
 
-    GenericResource k8sResource = k8sResources.get(0);
-    // by default, it follows this pattern - "MC_<resourcegroupname>_<clustername>_<location>"
-    // where resourcegroupname is the name of managed resource group, clustername is the name of K8s
-    // cluster, location is the region name.
-    return String.format(
-        "%s_%s_%s_%s",
-        K8S_RESOURCE_GROUP_NAME_PREFIX,
-        resourceGroupName,
-        k8sResource.name(),
-        k8sResource.regionName());
+    ContainerServiceManager containerServiceManager =
+        crlService.getContainerServiceManager(subscriptionId);
+    // don't need to make any assumption about format of the node resource group;
+    // just read name of the existing node resource group directly from the aks
+    var aks =
+        containerServiceManager
+            .kubernetesClusters()
+            .getByResourceGroup(resourceGroupName, k8sResources.get(0).name());
+    return aks.nodeResourceGroup();
   }
 
   @Scheduled(cron = "${spendreporting.azure.cleanup-cache-cron-schedule}", zone = "GMT+0")

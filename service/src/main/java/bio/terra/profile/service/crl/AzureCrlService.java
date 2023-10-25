@@ -4,6 +4,7 @@ import bio.terra.cloudres.common.ClientConfig;
 import bio.terra.profile.app.configuration.AzureConfiguration;
 import com.azure.core.management.AzureEnvironment;
 import com.azure.core.management.profile.AzureProfile;
+import com.azure.resourcemanager.containerservice.ContainerServiceManager;
 import com.azure.resourcemanager.costmanagement.CostManagementManager;
 import com.azure.resourcemanager.managedapplications.ApplicationManager;
 import com.azure.resourcemanager.resources.ResourceManager;
@@ -54,6 +55,14 @@ public class AzureCrlService {
         new AzureProfile(null, subscriptionId.toString(), AzureEnvironment.AZURE);
 
     return CostManagementManager.authenticate(
+        azureConfiguration.buildManagedAppCredentials(), azureProfile);
+  }
+
+  public ContainerServiceManager getContainerServiceManager(UUID subscriptionId) {
+    AzureProfile azureProfile =
+        new AzureProfile(null, subscriptionId.toString(), AzureEnvironment.AZURE);
+
+    return ContainerServiceManager.authenticate(
         azureConfiguration.buildManagedAppCredentials(), azureProfile);
   }
 }
