@@ -6,6 +6,7 @@ import bio.terra.common.iam.AuthenticatedUserRequestFactory;
 import bio.terra.profile.api.ProfileApi;
 import bio.terra.profile.model.*;
 import bio.terra.profile.service.job.JobService;
+import bio.terra.profile.service.policy.TpsConversionUtils;
 import bio.terra.profile.service.profile.ProfileService;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import jakarta.servlet.http.HttpServletRequest;
@@ -38,7 +39,8 @@ public class ProfileApiController implements ProfileApi {
   public ResponseEntity<ProfileModel> createProfile(CreateProfileRequest body) {
     AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
     BillingProfile profile = BillingProfile.fromApiCreateProfileRequest(body);
-    BillingProfile result = profileService.createProfile(profile, user);
+    var policies = TpsConversionUtils.tpsFromApiTpsPolicyInputs(body.getPolicies());
+    BillingProfile result = profileService.createProfile(profile, policies, user);
     return new ResponseEntity<>(result.toApiProfileModel(), HttpStatus.CREATED);
   }
 

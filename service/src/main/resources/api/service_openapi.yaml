@@ -413,6 +413,8 @@ components:
         managedResourceGroupId:
           type: string
           description: ID of the Azure managed resource group, of the form mrg-terra-integration-test-20211118
+        policies:
+          $ref: '#/components/schemas/BPMPolicyInputs'
 
     UpdateProfileRequest:
       type: object
@@ -642,6 +644,40 @@ components:
       type: string
       description: Enum representing a cloud platform type.
       enum: [ 'AZURE', 'GCP' ]
+
+    BPMPolicyInputs:
+      type: object
+      required: [ inputs ]
+      properties:
+        inputs:
+          type: array
+          items:
+            $ref: '#/components/schemas/BPMPolicyInput'
+
+    BPMPolicyInput:
+      type: object
+      required: [ namespace, name ]
+      properties:
+        namespace:
+          description: Namespace of the policy input; e.g., 'terra'
+          type: string
+        name:
+          description: Name of the policy input; e.g., 'region-constraint'
+          type: string
+        additionalData:
+          description: Key-value pairs of additional data
+          type: array
+          items:
+            $ref: '#/components/schemas/BPMPolicyPair'
+
+    BPMPolicyPair:
+      description: Container for key-value pairs of policy inputs
+      type: object
+      properties:
+        key:
+          type: string
+        value:
+          type: string
 
     SpendReport:
       type: object
