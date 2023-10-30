@@ -24,6 +24,9 @@ import bio.terra.profile.service.spendreporting.azure.model.SpendCategoryType;
 import bio.terra.profile.service.spendreporting.azure.model.mapper.QueryResultMapper;
 import com.azure.core.http.rest.PagedIterable;
 import com.azure.core.http.rest.Response;
+import com.azure.resourcemanager.containerservice.ContainerServiceManager;
+import com.azure.resourcemanager.containerservice.models.KubernetesCluster;
+import com.azure.resourcemanager.containerservice.models.KubernetesClusters;
 import com.azure.resourcemanager.costmanagement.models.QueryResult;
 import com.azure.resourcemanager.resources.ResourceManager;
 import com.azure.resourcemanager.resources.models.GenericResource;
@@ -37,7 +40,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
-import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -54,11 +56,12 @@ class AzureSpendReportingServiceUnitTest extends BaseUnitTest {
   private static final String RESOURCE_GROUP_NAME = UUID.randomUUID().toString();
   private static final UUID BILLING_PROFILE_ID = UUID.randomUUID();
   private static final String K8S_RESOURCE_NAME = "k8sResource";
-  private static final String REGION = "useast2";
   private static final String K8S_RESOURCE_NAME2 = "k8sResource2";
 
   private static final String COMPUTE_RESOURCE_TYPE = "microsoft.compute";
   private static final String STORAGE_RESOURCE_TYPE = "microsoft.storage";
+
+  private static final String K8S_NODE_RESOURCE_GROUP_NAME = "mrgName_aks";
 
   private static final Map<String, List<Object>> QUERY_RESULT_DATA =
       Map.of(
@@ -86,6 +89,7 @@ class AzureSpendReportingServiceUnitTest extends BaseUnitTest {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   void testGetBillingProfileSpendData_K8sResourceGroupExists_Success() {
     var billingProfile =
         buildAzureBillingProfile(
@@ -99,7 +103,8 @@ class AzureSpendReportingServiceUnitTest extends BaseUnitTest {
 
     setupMockResponseK8sResourceGroup(
         billingProfile.getRequiredManagedResourceGroupId(),
-        List.of(Pair.of(K8S_RESOURCE_NAME, REGION)),
+        K8S_NODE_RESOURCE_GROUP_NAME,
+        List.of(K8S_RESOURCE_NAME),
         true);
     Response<QueryResult> response1 = mock(Response.class);
     QueryResult queryResult1 = mock(QueryResult.class);
@@ -109,20 +114,12 @@ class AzureSpendReportingServiceUnitTest extends BaseUnitTest {
             SUBSCRIPTION_ID, RESOURCE_GROUP_NAME, from, to))
         .thenReturn(response1);
 
-    String k8sResourceGroupName =
-        String.format(
-            "%s_%s_%s_%s",
-            AzureSpendReportingService.K8S_RESOURCE_GROUP_NAME_PREFIX,
-            billingProfile.getRequiredManagedResourceGroupId(),
-            K8S_RESOURCE_NAME,
-            REGION);
-
     Response<QueryResult> response2 = mock(Response.class);
     QueryResult queryResult2 = mock(QueryResult.class);
     when(queryResult2.rows()).thenReturn(List.of(QUERY_RESULT_DATA.get(STORAGE_RESOURCE_TYPE)));
     when(response2.getValue()).thenReturn(queryResult2);
     when(mockAzureCostManagementQuery.resourceGroupCostQueryWithResourceTypeGrouping(
-            SUBSCRIPTION_ID, k8sResourceGroupName, from, to))
+            SUBSCRIPTION_ID, K8S_NODE_RESOURCE_GROUP_NAME, from, to))
         .thenReturn(response2);
 
     var spendData1 =
@@ -163,7 +160,7 @@ class AzureSpendReportingServiceUnitTest extends BaseUnitTest {
             .count());
     assertNotNull(resourceGroupCaptor.getAllValues());
     assertEquals(2, resourceGroupCaptor.getAllValues().size());
-    assertTrue(resourceGroupCaptor.getAllValues().contains(k8sResourceGroupName));
+    assertTrue(resourceGroupCaptor.getAllValues().contains(K8S_NODE_RESOURCE_GROUP_NAME));
     assertTrue(resourceGroupCaptor.getAllValues().contains(RESOURCE_GROUP_NAME));
     assertNotNull(fromCaptor.getAllValues());
     assertEquals(2, fromCaptor.getAllValues().size());
@@ -202,7 +199,10 @@ class AzureSpendReportingServiceUnitTest extends BaseUnitTest {
     var to = from.plusDays(30);
 
     setupMockResponseK8sResourceGroup(
-        billingProfile.getRequiredManagedResourceGroupId(), null, false);
+        billingProfile.getRequiredManagedResourceGroupId(),
+        K8S_NODE_RESOURCE_GROUP_NAME,
+        null,
+        false);
 
     assertThrows(
         KubernetesResourceNotFound.class,
@@ -223,7 +223,8 @@ class AzureSpendReportingServiceUnitTest extends BaseUnitTest {
 
     setupMockResponseK8sResourceGroup(
         billingProfile.getRequiredManagedResourceGroupId(),
-        List.of(Pair.of(K8S_RESOURCE_NAME, REGION), Pair.of(K8S_RESOURCE_NAME2, REGION)),
+        K8S_NODE_RESOURCE_GROUP_NAME,
+        List.of(K8S_RESOURCE_NAME, K8S_RESOURCE_NAME2),
         true);
 
     assertThrows(
@@ -243,21 +244,22 @@ class AzureSpendReportingServiceUnitTest extends BaseUnitTest {
 
   private void setupMockResponseK8sResourceGroup(
       String resourceGroupName,
-      /*left is name, right is region*/
-      List<Pair<String, String>> pairOfK8sDetails,
+      String nodeResourceGroupName,
+      List<String> k8sNames,
       boolean responseExists) {
     ResourceManager mockResourceManager = mock(ResourceManager.class);
+    ContainerServiceManager mockContainerServiceManager = mock(ContainerServiceManager.class);
     when(mockCrlService.getResourceManager(any(), any())).thenReturn(mockResourceManager);
+    when(mockCrlService.getContainerServiceManager(any())).thenReturn(mockContainerServiceManager);
 
     GenericResources mockGenericResources = mock(GenericResources.class);
     PagedIterable<GenericResource> mockPagedIterable = mock(PagedIterable.class);
 
     if (responseExists) {
       List<GenericResource> mockK8sResources = new ArrayList<>();
-      for (Pair<String, String> k8sDetails : pairOfK8sDetails) {
+      for (String name : k8sNames) {
         GenericResource mockK8sResource = mock(GenericResource.class);
-        when(mockK8sResource.name()).thenReturn(k8sDetails.getLeft());
-        when(mockK8sResource.regionName()).thenReturn(k8sDetails.getRight());
+        when(mockK8sResource.name()).thenReturn(name);
         when(mockK8sResource.resourceType())
             .thenReturn(AzureSpendReportingService.AZURE_KUBERNETES_RESOURCE_TYPE);
         mockK8sResources.add(mockK8sResource);
@@ -269,6 +271,12 @@ class AzureSpendReportingServiceUnitTest extends BaseUnitTest {
 
     when(mockGenericResources.listByResourceGroup(resourceGroupName)).thenReturn(mockPagedIterable);
     when(mockResourceManager.genericResources()).thenReturn(mockGenericResources);
+
+    KubernetesClusters mockKubernetesClusters = mock(KubernetesClusters.class);
+    when(mockContainerServiceManager.kubernetesClusters()).thenReturn(mockKubernetesClusters);
+    KubernetesCluster mockKubernetesCluster = mock(KubernetesCluster.class);
+    when(mockKubernetesCluster.nodeResourceGroup()).thenReturn(nodeResourceGroupName);
+    when(mockKubernetesClusters.getByResourceGroup(any(), any())).thenReturn(mockKubernetesCluster);
   }
 
   private BillingProfile buildAzureBillingProfile(
