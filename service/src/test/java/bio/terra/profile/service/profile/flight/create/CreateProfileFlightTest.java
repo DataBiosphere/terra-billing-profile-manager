@@ -8,6 +8,10 @@ import bio.terra.cloudres.google.billing.CloudBillingClientCow;
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.common.sam.exception.SamExceptionFactory;
 import bio.terra.common.sam.exception.SamInterruptedException;
+import bio.terra.policy.model.TpsComponent;
+import bio.terra.policy.model.TpsObjectType;
+import bio.terra.policy.model.TpsPolicyInput;
+import bio.terra.policy.model.TpsPolicyInputs;
 import bio.terra.profile.app.common.MetricUtils;
 import bio.terra.profile.app.configuration.AzureConfiguration;
 import bio.terra.profile.common.BaseSpringUnitTest;
@@ -18,6 +22,7 @@ import bio.terra.profile.service.azure.AzureService;
 import bio.terra.profile.service.crl.GcpCrlService;
 import bio.terra.profile.service.iam.SamService;
 import bio.terra.profile.service.policy.TpsApiDispatch;
+import bio.terra.profile.service.policy.exception.PolicyServiceAPIException;
 import bio.terra.profile.service.profile.ProfileService;
 import bio.terra.profile.service.profile.exception.InaccessibleApplicationDeploymentException;
 import bio.terra.profile.service.profile.exception.InaccessibleBillingAccountException;
@@ -118,6 +123,52 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
   }
 
   @Test
+  void createGcpProfile_withPolicy() throws InterruptedException {
+    var billingCow = mock(CloudBillingClientCow.class);
+    when(crlService.getBillingClientCow(any())).thenReturn(billingCow);
+    var iamPermissionsResponse =
+        TestIamPermissionsResponse.newBuilder()
+            .addAllPermissions(CreateProfileVerifyAccountStep.PERMISSIONS_TO_TEST)
+            .build();
+    when(billingCow.testIamPermissions(any())).thenReturn(iamPermissionsResponse);
+    var profile = ProfileFixtures.createGcpBillingProfile("ABCD1234");
+    var policies =
+        new TpsPolicyInputs()
+            .addInputsItem(new TpsPolicyInput().namespace("terra").name("protected-data"));
+
+    profileService.createProfile(profile, policies, userRequest);
+
+    verify(tpsApiDispatch)
+        .createPao(profile.id(), policies, TpsComponent.BPM, TpsObjectType.BILLING_PROFILE);
+  }
+
+  @Test
+  void createGcpProfile_deletePolicyOnFailure() throws InterruptedException {
+    var billingCow = mock(CloudBillingClientCow.class);
+    when(crlService.getBillingClientCow(any())).thenReturn(billingCow);
+    var iamPermissionsResponse =
+        TestIamPermissionsResponse.newBuilder()
+            .addAllPermissions(CreateProfileVerifyAccountStep.PERMISSIONS_TO_TEST)
+            .build();
+    when(billingCow.testIamPermissions(any())).thenReturn(iamPermissionsResponse);
+    doThrow(new PolicyServiceAPIException("foo"))
+        .when(tpsApiDispatch)
+        .createPao(any(), any(), any(), any());
+    var profile = ProfileFixtures.createGcpBillingProfile("ABCD1234");
+    var policies =
+        new TpsPolicyInputs()
+            .addInputsItem(new TpsPolicyInput().namespace("terra").name("protected-data"));
+
+    assertThrows(
+        PolicyServiceAPIException.class,
+        () -> profileService.createProfile(profile, policies, userRequest));
+
+    verify(tpsApiDispatch)
+        .createPao(profile.id(), policies, TpsComponent.BPM, TpsObjectType.BILLING_PROFILE);
+    verify(tpsApiDispatch).deletePao(profile.id());
+  }
+
+  @Test
   void createAzureProfileInaccessibleAppDeployment() {
     when(azureService.getAuthorizedManagedAppDeployments(any(), any(), any()))
         .thenReturn(Collections.emptyList());
@@ -176,6 +227,64 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
         () -> profileService.createProfile(profile, null, userRequest));
 
     verify(samService).deleteManagedResourceGroup(profile.id(), userRequest);
+  }
+
+  @Test
+  void createAzureProfile_withPolicy() throws InterruptedException {
+    var subId = UUID.randomUUID();
+    var tenantId = UUID.randomUUID();
+    var mrgId = "fake-mrg";
+
+    when(azureService.getAuthorizedManagedAppDeployments(any(), any(), any()))
+        .thenReturn(
+            Collections.singletonList(
+                new AzureManagedAppModel()
+                    .tenantId(tenantId)
+                    .subscriptionId(subId)
+                    .managedResourceGroupId(mrgId)));
+    when(azureService.getRegisteredProviderNamespacesForSubscription(any(), any()))
+        .thenReturn(azureConfiguration.getRequiredProviders());
+    var profile = ProfileFixtures.createAzureBillingProfile(tenantId, subId, mrgId);
+    var policies =
+        new TpsPolicyInputs()
+            .addInputsItem(new TpsPolicyInput().namespace("terra").name("protected-data"));
+
+    profileService.createProfile(profile, policies, userRequest);
+
+    verify(tpsApiDispatch)
+        .createPao(profile.id(), policies, TpsComponent.BPM, TpsObjectType.BILLING_PROFILE);
+  }
+
+  @Test
+  void createAzureProfile_deletePolicyOnFailure() throws InterruptedException {
+    var subId = UUID.randomUUID();
+    var tenantId = UUID.randomUUID();
+    var mrgId = "fake-mrg";
+
+    when(azureService.getAuthorizedManagedAppDeployments(any(), any(), any()))
+        .thenReturn(
+            Collections.singletonList(
+                new AzureManagedAppModel()
+                    .tenantId(tenantId)
+                    .subscriptionId(subId)
+                    .managedResourceGroupId(mrgId)));
+    when(azureService.getRegisteredProviderNamespacesForSubscription(any(), any()))
+        .thenReturn(azureConfiguration.getRequiredProviders());
+    doThrow(new PolicyServiceAPIException("foo"))
+        .when(tpsApiDispatch)
+        .createPao(any(), any(), any(), any());
+    var profile = ProfileFixtures.createAzureBillingProfile(tenantId, subId, mrgId);
+    var policies =
+        new TpsPolicyInputs()
+            .addInputsItem(new TpsPolicyInput().namespace("terra").name("protected-data"));
+
+    assertThrows(
+        PolicyServiceAPIException.class,
+        () -> profileService.createProfile(profile, policies, userRequest));
+
+    verify(tpsApiDispatch)
+        .createPao(profile.id(), policies, TpsComponent.BPM, TpsObjectType.BILLING_PROFILE);
+    verify(tpsApiDispatch).deletePao(profile.id());
   }
 
   @Test
