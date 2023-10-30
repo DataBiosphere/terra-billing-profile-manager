@@ -17,6 +17,7 @@ import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.service.azure.AzureService;
 import bio.terra.profile.service.crl.GcpCrlService;
 import bio.terra.profile.service.iam.SamService;
+import bio.terra.profile.service.policy.TpsApiDispatch;
 import bio.terra.profile.service.profile.ProfileService;
 import bio.terra.profile.service.profile.exception.InaccessibleApplicationDeploymentException;
 import bio.terra.profile.service.profile.exception.InaccessibleBillingAccountException;
@@ -39,6 +40,7 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
 
   @MockBean SamService samService;
   @MockBean AzureService azureService;
+  @MockBean TpsApiDispatch tpsApiDispatch;
 
   AuthenticatedUserRequest userRequest =
       AuthenticatedUserRequest.builder()
@@ -58,7 +60,7 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
     when(billingCow.testIamPermissions(any())).thenReturn(iamPermissionsResponse);
     var profile = ProfileFixtures.createGcpBillingProfile("ABCD1234");
 
-    var createdProfile = profileService.createProfile(profile, userRequest);
+    var createdProfile = profileService.createProfile(profile, null, userRequest);
 
     assertEquals(createdProfile.id(), profile.id());
     assertEquals(createdProfile.biller(), profile.biller());
@@ -96,7 +98,7 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
 
     assertThrows(
         MissingRequiredFieldsException.class,
-        () -> profileService.createProfile(profile, userRequest));
+        () -> profileService.createProfile(profile, null, userRequest));
   }
 
   @Test
@@ -112,7 +114,7 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
 
     assertThrows(
         InaccessibleBillingAccountException.class,
-        () -> profileService.createProfile(profile, userRequest));
+        () -> profileService.createProfile(profile, null, userRequest));
   }
 
   @Test
@@ -125,7 +127,7 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
 
     assertThrows(
         InaccessibleApplicationDeploymentException.class,
-        () -> profileService.createProfile(profile, userRequest));
+        () -> profileService.createProfile(profile, null, userRequest));
   }
 
   @Test
@@ -145,7 +147,7 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
         .thenReturn(azureConfiguration.getRequiredProviders());
     var profile = ProfileFixtures.createAzureBillingProfile(tenantId, subId, mrgId);
 
-    profileService.createProfile(profile, userRequest);
+    profileService.createProfile(profile, null, userRequest);
 
     verify(samService).createManagedResourceGroup(profile, userRequest);
   }
@@ -170,7 +172,8 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
     var profile = ProfileFixtures.createAzureBillingProfile(tenantId, subId, mrgId);
 
     assertThrows(
-        SamInterruptedException.class, () -> profileService.createProfile(profile, userRequest));
+        SamInterruptedException.class,
+        () -> profileService.createProfile(profile, null, userRequest));
 
     verify(samService).deleteManagedResourceGroup(profile.id(), userRequest);
   }
@@ -182,7 +185,7 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
       metricsMock
           .when(() -> MetricUtils.recordProfileCreation(any(), eq(CloudPlatform.GCP)))
           .thenReturn(profile);
-      profileService.createProfile(profile, userRequest);
+      profileService.createProfile(profile, null, userRequest);
       metricsMock.verify(() -> MetricUtils.recordProfileCreation(any(), eq(CloudPlatform.GCP)));
     }
   }

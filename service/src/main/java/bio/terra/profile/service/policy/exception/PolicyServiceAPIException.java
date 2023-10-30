@@ -2,10 +2,9 @@ package bio.terra.profile.service.policy.exception;
 
 import bio.terra.common.exception.ErrorReportException;
 import bio.terra.policy.client.ApiException;
-import org.springframework.http.HttpStatus;
-
 import java.util.Collections;
 import java.util.List;
+import org.springframework.http.HttpStatus;
 
 /** Wrapper exception for non-200 responses from calls to Terra Policy Service. */
 public class PolicyServiceAPIException extends ErrorReportException {

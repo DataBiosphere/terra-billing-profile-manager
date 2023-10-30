@@ -1,16 +1,15 @@
 package bio.terra.profile.service.policy;
 
-import bio.terra.policy.client.ApiException;
-import org.apache.http.HttpStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.time.Instant.now;
 
+import bio.terra.policy.client.ApiException;
 import java.net.SocketTimeoutException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
-
-import static java.time.Instant.now;
+import org.apache.http.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is a clone of the TCL SamRetry. Since the definition of ApiException is different
@@ -65,8 +64,7 @@ public class TpsRetry {
         && apiException.getCause() instanceof SocketTimeoutException;
   }
 
-  public static <T> T retry(TpsFunction<T> function)
-      throws ApiException, InterruptedException {
+  public static <T> T retry(TpsFunction<T> function) throws ApiException, InterruptedException {
     TpsRetry TpsRetry = new TpsRetry();
     return TpsRetry.perform(function);
   }
@@ -77,8 +75,7 @@ public class TpsRetry {
     return TpsRetry.perform(function);
   }
 
-  public static void retry(TpsVoidFunction function)
-      throws ApiException, InterruptedException {
+  public static void retry(TpsVoidFunction function) throws ApiException, InterruptedException {
     TpsRetry TpsRetry = new TpsRetry();
     TpsRetry.performVoid(function);
   }
@@ -89,8 +86,7 @@ public class TpsRetry {
     TpsRetry.performVoid(function);
   }
 
-  private <T> T perform(TpsFunction<T> function)
-      throws ApiException, InterruptedException {
+  private <T> T perform(TpsFunction<T> function) throws ApiException, InterruptedException {
     while (true) {
       try {
         return function.apply();
@@ -113,8 +109,7 @@ public class TpsRetry {
         || apiException.getCode() == HttpStatus.SC_GATEWAY_TIMEOUT;
   }
 
-  private void performVoid(TpsVoidFunction function)
-      throws ApiException, InterruptedException {
+  private void performVoid(TpsVoidFunction function) throws ApiException, InterruptedException {
     perform(
         () -> {
           function.apply();

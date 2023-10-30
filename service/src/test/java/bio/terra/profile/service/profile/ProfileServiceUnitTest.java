@@ -95,10 +95,11 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     when(jobBuilder.description(anyString())).thenReturn(jobBuilder);
     when(jobBuilder.flightClass(CreateProfileFlight.class)).thenReturn(jobBuilder);
     when(jobBuilder.request(profile)).thenReturn(jobBuilder);
+    when(jobBuilder.addParameter(ProfileMapKeys.POLICIES, null)).thenReturn(jobBuilder);
     when(jobBuilder.userRequest(user)).thenReturn(jobBuilder);
     when(jobBuilder.submitAndWait(BillingProfile.class)).thenReturn(profile);
 
-    BillingProfile result = profileService.createProfile(profile, user);
+    BillingProfile result = profileService.createProfile(profile, null, user);
 
     verify(jobBuilder).submitAndWait(any());
     assertEquals(profile, result);
@@ -259,7 +260,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     var profile = ProfileFixtures.createGcpBillingProfile("ABCD1234");
     doReturn(profile).when(builder).submitAndWait(eq(BillingProfile.class));
 
-    var createdProfile = profileService.createProfile(profile, userRequest);
+    var createdProfile = profileService.createProfile(profile, null, userRequest);
 
     assertEquals(createdProfile.id(), profile.id());
     assertEquals(createdProfile.biller(), profile.biller());
