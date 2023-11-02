@@ -69,7 +69,10 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
     classes = Main.class,
     properties = {
       "profile.profile-database.initialize-on-start=false",
-      "profile.profile-database.upgrade-on-start=false"
+      "profile.profile-database.upgrade-on-start=false",
+      // Disable instrumentation for spring-webmvc because pact still uses javax libs which causes
+      // opentelemetry to try to load the same bean name twice, once for javax and once for jakarta
+      "otel.instrumentation.spring-webmvc.enabled=false"
     })
 @EnableAutoConfiguration(
     exclude = {DataSourceAutoConfiguration.class, JdbcRepositoriesAutoConfiguration.class})

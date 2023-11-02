@@ -44,7 +44,7 @@ dependencies {
 
     implementation 'org.slf4j:slf4j-api'
 
-    testImplementation 'ch.qos.logback:logback-classic:1.2.10'
+    testImplementation 'ch.qos.logback:logback-classic'
     testImplementation 'org.hamcrest:hamcrest:2.2'
 
     var openTelemetryVersion = '1.31.0'
@@ -56,7 +56,7 @@ dependencies {
     implementation "io.opentelemetry.instrumentation:opentelemetry-spring-webmvc-6.0:${openTelemetryVersion}-alpha"
     implementation "io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:${openTelemetryVersion}"
     implementation "io.opentelemetry.instrumentation:opentelemetry-spring-boot:${openTelemetryVersion}-alpha"
-    implementation "com.google.cloud.opentelemetry:exporter-trace:0.25.2"
+    implementation "com.google.cloud.opentelemetry:exporter-trace:0.25.2" exclude(group: 'commons-logging')
 }
 
 // Modify the standard :test task to only include unit-tagged tests.
