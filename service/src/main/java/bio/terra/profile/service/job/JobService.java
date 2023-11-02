@@ -32,7 +32,8 @@ import bio.terra.stairway.exception.StairwayException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import io.opencensus.contrib.spring.aop.Traced;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,6 +63,7 @@ public class JobService {
   private final ApplicationContext context;
   private final Logger logger = LoggerFactory.getLogger(JobService.class);
   private final ObjectMapper objectMapper;
+  private final OpenTelemetry openTelemetry;
   private FlightDebugInfo flightDebugInfo;
 
   @Autowired
@@ -72,7 +74,8 @@ public class JobService {
       MdcHook mdcHook,
       StairwayComponent stairwayComponent,
       ApplicationContext context,
-      ObjectMapper objectMapper) {
+      ObjectMapper objectMapper,
+      OpenTelemetry openTelemetry) {
     this.jobConfig = jobConfig;
     this.ingressConfig = ingressConfig;
     this.stairwayDatabaseConfiguration = stairwayDatabaseConfiguration;
@@ -81,11 +84,12 @@ public class JobService {
     this.stairwayComponent = stairwayComponent;
     this.context = context;
     this.objectMapper = objectMapper;
+    this.openTelemetry = openTelemetry;
   }
 
   // Fully fluent style of JobBuilder
   public JobBuilder newJob() {
-    return new JobBuilder(this, stairwayComponent, mdcHook);
+    return new JobBuilder(this, stairwayComponent, mdcHook, openTelemetry);
   }
 
   // submit a new job to stairway
@@ -162,7 +166,7 @@ public class JobService {
             .dataSource(stairwayDatabaseConfiguration.getDataSource())
             .context(context)
             .addHook(mdcHook)
-            .addHook(new MonitoringHook())
+            .addHook(new MonitoringHook(openTelemetry))
             .exceptionSerializer(new StairwayExceptionSerializer(objectMapper)));
   }
 
@@ -262,7 +266,7 @@ public class JobService {
     return jobReportList;
   }
 
-  @Traced
+  @WithSpan
   public JobReport retrieveJob(String jobId, AuthenticatedUserRequest userRequest) {
 
     try {
@@ -294,7 +298,7 @@ public class JobService {
    * @param jobId to process
    * @return object of the result class pulled from the result map
    */
-  @Traced
+  @WithSpan
   public <T> JobResultOrException<T> retrieveJobResult(
       String jobId, Class<T> resultClass, AuthenticatedUserRequest userRequest) {
 

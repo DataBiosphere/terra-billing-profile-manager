@@ -142,10 +142,23 @@ terra.common:
 
   tracing:
     stackdriverExportEnabled: ${env.tracing.exportEnabled}
-    samplingRate: ${env.tracing.samplingRate}
 
 spendreporting:
   azure:
     max-date-range-days: 90
     # keep result for 24 hours
     cleanup-cache-cron-schedule: "0 0 0 * * *"
+
+otel:
+  sdk:
+    disabled: false # set to true to disable all open telemetry features
+  traces:
+    sampler:
+      probability: ${env.tracing.samplingRate}
+
+  springboot:
+    resource:
+      attributes:
+        service:
+          name: ${spring.application.name}
+          version: ${bpm.version.gitTag:unknown}

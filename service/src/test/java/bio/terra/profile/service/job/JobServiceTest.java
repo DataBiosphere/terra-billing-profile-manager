@@ -15,7 +15,6 @@ import bio.terra.profile.service.job.exception.InvalidJobIdException;
 import bio.terra.profile.service.job.exception.InvalidResultStateException;
 import bio.terra.profile.service.job.exception.JobNotFoundException;
 import bio.terra.stairway.FlightDebugInfo;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
@@ -39,7 +38,6 @@ class JobServiceTest extends BaseSpringUnitTest {
   @MockBean private SamService mockSamService;
 
   @BeforeEach
-  @SuppressFBWarnings(value = "DE_MIGHT_IGNORE", justification = "Mockito flakiness")
   void setup() {
     try {
       Mockito.doReturn(true).when(mockSamService.isAuthorized(any(), any(), any(), any()));

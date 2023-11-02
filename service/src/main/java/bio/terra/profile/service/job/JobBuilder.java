@@ -9,8 +9,9 @@ import bio.terra.profile.service.job.exception.InvalidJobIdException;
 import bio.terra.profile.service.job.exception.InvalidJobParameterException;
 import bio.terra.stairway.Flight;
 import bio.terra.stairway.FlightMap;
-import io.opencensus.contrib.spring.aop.Traced;
-import javax.annotation.Nullable;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
+import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 
 public class JobBuilder {
@@ -18,16 +19,22 @@ public class JobBuilder {
   private final StairwayComponent stairwayComponent;
   private final MdcHook mdcHook;
   private final FlightMap jobParameterMap;
+  private final OpenTelemetry openTelemetry;
   @Nullable private Class<? extends Flight> flightClass;
   @Nullable private String jobId;
   @Nullable private String description;
   @Nullable private Object request;
   @Nullable private AuthenticatedUserRequest userRequest;
 
-  public JobBuilder(JobService jobService, StairwayComponent stairwayComponent, MdcHook mdcHook) {
+  public JobBuilder(
+      JobService jobService,
+      StairwayComponent stairwayComponent,
+      MdcHook mdcHook,
+      OpenTelemetry openTelemetry) {
     this.jobService = jobService;
     this.stairwayComponent = stairwayComponent;
     this.mdcHook = mdcHook;
+    this.openTelemetry = openTelemetry;
     this.jobParameterMap = new FlightMap();
   }
 
@@ -85,7 +92,7 @@ public class JobBuilder {
    * @param resultClass Class of the job's result
    * @return Result of the finished job.
    */
-  @Traced
+  @WithSpan
   public <T> T submitAndWait(Class<T> resultClass) {
     populateInputParams();
     return jobService.submitAndWait(flightClass, jobParameterMap, resultClass, jobId);
@@ -106,7 +113,7 @@ public class JobBuilder {
     addParameter(MdcHook.MDC_FLIGHT_MAP_KEY, mdcHook.getSerializedCurrentContext());
     addParameter(
         MonitoringHook.SUBMISSION_SPAN_CONTEXT_MAP_KEY,
-        MonitoringHook.serializeCurrentTracingContext());
+        MonitoringHook.serializeCurrentTracingContext(openTelemetry));
 
     // Convert the any other members that were set into parameters. However, if they were
     // explicitly added with addParameter during construction, we do not overwrite them.
