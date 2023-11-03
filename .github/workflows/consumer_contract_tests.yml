@@ -72,7 +72,7 @@ jobs:
       - name: Output consumer contract as non-breaking base64 string
         id: encode-pact
         run: |
-          NON_BREAKING_B64=$(cat service/build/pacts/bpm-consumer-sam-provider.json | base64 -w 0)
+          NON_BREAKING_B64=$(cat service/build/pacts/bpm-sam.json | base64 -w 0)
           echo "pact-b64=${NON_BREAKING_B64}" >> $GITHUB_OUTPUT
 
   publish-contracts:
@@ -100,5 +100,4 @@ jobs:
 #          repo: broadinstitute/terra-github-workflows
 #          ref: refs/heads/main
 #          token: ${{ secrets.BROADBOT_TOKEN }} # github token for access to kick off a job in the private repo
-#          inputs: '{ "pacticipant": "bpm-consumer", "version": "${{ needs.init-github-context.outputs.repo-version }}" }'
-
+#          inputs: '{ "pacticipant": "bpm", "version": "${{ needs.init-github-context.outputs.repo-version }}" }'

@@ -59,7 +59,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 @Tag("provider-test")
-@Provider("bpm-provider")
+@Provider("bpm")
 @PactBroker
 // for local testing, put any test pacts in the service/pacts folder.
 // then comment out the above line, and uncomment the following line
