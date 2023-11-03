@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test;
 @PactConsumerTest
 public class SamServiceTest {
 
-  @Pact(consumer = "bpm-consumer", provider = "sam-provider")
+  @Pact(consumer = "bpm", provider = "sam")
   public RequestResponsePact statusApiPact(PactDslWithProvider builder) {
     return builder
         .given("Sam is ok")
@@ -32,7 +32,7 @@ public class SamServiceTest {
         .toPact();
   }
 
-  @Pact(consumer = "bpm-consumer", provider = "sam-provider")
+  @Pact(consumer = "bpm", provider = "sam")
   public RequestResponsePact userStatusPact(PactDslWithProvider builder) {
     var userResponseShape =
         new PactDslJsonBody()
