@@ -15,19 +15,15 @@ apply from: 'publishing.gradle'
 dependencies {
 	implementation 'io.sentry:sentry:6.32.0'
 
-	implementation('org.yaml:snakeyaml') {
-		version {
-			require "1.32"
-		}
-		because 'previous versions have a security vulnerability - this is a direct dependency to force the version to override opencensus'
-	}
-	implementation 'bio.terra:terra-common-lib:0.0.94-SNAPSHOT'
+	implementation 'bio.terra:terra-common-lib:0.1.0-SNAPSHOT'
 
 	implementation 'org.apache.commons:commons-dbcp2'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-cache'
 	implementation 'org.springframework.retry:spring-retry'
+	implementation 'org.springframework:spring-aop'
+	implementation 'org.springframework:spring-aspects'
 	implementation group: "org.apache.commons", name: "commons-lang3"
 
 	implementation 'org.springframework.boot:spring-boot-starter-actuator:2.7.17'
@@ -64,6 +60,7 @@ dependencies {
 	testImplementation 'au.com.dius.pact.consumer:junit5:4.6.3'
 	testImplementation("au.com.dius.pact.provider:junit5:4.6.3")
 	testImplementation("au.com.dius.pact.provider:junit5spring:4.6.3")
+	testImplementation 'com.google.code.findbugs:annotations:3.0.1'
 }
 test {
 	systemProperties['pact.rootDir'] = "$buildDir/pacts"

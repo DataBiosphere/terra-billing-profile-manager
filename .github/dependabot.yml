@@ -17,7 +17,5 @@ updates:
     commit-message:
       prefix: "[No Ticket]"
     ignore:
-      - dependency-name: "org.springframework.boot:spring-boot-gradle-plugin"
-        update-types: ["version-update:semver-major"]
       - dependency-name: "au.com.dius.pact*"
         update-types: [ "version-update:semver-major", "version-update:semver-minor" ]

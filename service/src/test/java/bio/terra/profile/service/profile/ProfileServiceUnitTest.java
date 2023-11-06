@@ -27,6 +27,7 @@ import bio.terra.profile.service.profile.flight.create.CreateProfileVerifyAccoun
 import bio.terra.profile.service.profile.flight.delete.DeleteProfileFlight;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import com.google.iam.v1.TestIamPermissionsResponse;
+import io.opentelemetry.api.OpenTelemetry;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -249,7 +250,10 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     when(billingCow.testIamPermissions(any())).thenReturn(iamPermissionsResponse);
     StairwayComponent stairwayComponent = mock(StairwayComponent.class);
 
-    var builder = spy(new JobBuilder(jobService, stairwayComponent, mock(MdcHook.class)));
+    var builder =
+        spy(
+            new JobBuilder(
+                jobService, stairwayComponent, mock(MdcHook.class), OpenTelemetry.noop()));
     when(jobService.newJob()).thenReturn(builder);
 
     var profile = ProfileFixtures.createGcpBillingProfile("ABCD1234");

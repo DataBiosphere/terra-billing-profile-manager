@@ -12,7 +12,7 @@ import bio.terra.profile.service.iam.model.SamResourceType;
 import bio.terra.profile.service.iam.model.SamRole;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import com.google.common.annotations.VisibleForTesting;
-import io.opencensus.contrib.spring.aop.Traced;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -49,7 +49,7 @@ public class SamService {
    * Wrapper around isAuthorized which throws an appropriate exception if a user does not have
    * access to a resource.
    */
-  @Traced
+  @WithSpan
   public void verifyAuthorization(
       AuthenticatedUserRequest userRequest,
       SamResourceType resourceType,
@@ -138,7 +138,7 @@ public class SamService {
    * @return list of profiles
    * @throws InterruptedException
    */
-  @Traced
+  @WithSpan
   public List<UUID> listProfileIds(AuthenticatedUserRequest userRequest)
       throws InterruptedException {
     ResourcesApi resourceApi = samResourcesApi(userRequest.getToken());

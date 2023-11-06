@@ -1,9 +1,9 @@
 package bio.terra.profile.app.configuration;
 
+import jakarta.servlet.*;
+import jakarta.servlet.annotation.WebFilter;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import javax.servlet.*;
-import javax.servlet.annotation.WebFilter;
-import javax.servlet.http.HttpServletResponse;
 
 @WebFilter(urlPatterns = {"/api/*"})
 public class NoCacheFilter implements Filter {
