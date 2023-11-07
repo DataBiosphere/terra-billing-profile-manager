@@ -1,0 +1,49 @@
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: terra-billing-profile-manager
+  description: |
+    Terra Billing Profile Manager provides an API 
+    to set up and control access to billing within 
+    Terra across cloud platforms.
+  tags:
+    - java
+    - dsp
+    - terra
+    - springboot
+    - broadworkspaces
+  annotations:
+    github.com/project-slug: databiosphere/terra-billing-profile-manager
+spec:
+  type: service
+  lifecycle: production
+  owner: broadworkspaces
+  system: terra
+  dependsOn:
+    - component:sam
+  providesApis:
+    - terra-billing-profile-manager-api
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: terra-billing-profile-manager-api
+  description: |
+    Placeholder API description...
+  tags:
+    - java
+    - dsp
+    - terra
+    - springboot
+    - broadworkspaces
+  annotations:
+    github.com/project-slug: databiosphere/terra-billing-profile-manager
+spec:
+  type: openapi
+  lifecycle: production
+  system: terra
+  owner: broadworkspaces
+  definition:
+    $text: ./service/src/main/resources/api/service_openapi.yml
+---
