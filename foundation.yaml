@@ -20,6 +20,8 @@ spec:
   lifecycle: production
   owner: broadworkspaces
   system: terra
+  dependsOn:
+    - component:sam
   providesApis:
     - terra-billing-profile-manager-api
 ---
