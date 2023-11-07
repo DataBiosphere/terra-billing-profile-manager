@@ -297,6 +297,7 @@ class AzureSpendReportingServiceUnitTest extends BaseUnitTest {
         managedResourceGroup,
         Instant.now(),
         Instant.now(),
-        "testUser");
+        "testUser",
+        Optional.empty());
   }
 }

@@ -95,7 +95,8 @@ class ProfileDaoTest extends BaseSpringUnitTest {
             Optional.of(managedResourceGroupId),
             null,
             null,
-            null);
+            null,
+            Optional.empty());
 
     assertThrows(
         DuplicateManagedApplicationException.class,
@@ -199,7 +200,8 @@ class ProfileDaoTest extends BaseSpringUnitTest {
         Optional.empty(),
         null,
         null,
-        null);
+        null,
+        Optional.empty());
   }
 
   private BillingProfile makeAzureProfile(
@@ -218,7 +220,8 @@ class ProfileDaoTest extends BaseSpringUnitTest {
         Optional.of(managedResourceGroupId),
         null,
         null,
-        null);
+        null,
+        Optional.empty());
   }
 
   // Tests profile equality, ignoring createdTime and createdBy

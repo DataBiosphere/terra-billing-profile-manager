@@ -3,18 +3,18 @@ package bio.terra.profile.service.policy;
 import bio.terra.policy.model.TpsPolicyInput;
 import bio.terra.policy.model.TpsPolicyInputs;
 import bio.terra.policy.model.TpsPolicyPair;
-import bio.terra.profile.model.BPMPolicyInput;
-import bio.terra.profile.model.BPMPolicyInputs;
-import bio.terra.profile.model.BPMPolicyPair;
+import bio.terra.profile.model.BpmApiPolicyInput;
+import bio.terra.profile.model.BpmApiPolicyInputs;
+import bio.terra.profile.model.BpmApiPolicyPair;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
 
 public class TpsConversionUtils {
 
-  public static TpsPolicyInput tpsFromApiPolicyInput(BPMPolicyInput apiInput) {
+  public static TpsPolicyInput tpsFromBpmApiPolicyInput(BpmApiPolicyInput apiInput) {
     List<TpsPolicyPair> additionalData = new ArrayList<>();
-    for (BPMPolicyPair apiPair : apiInput.getAdditionalData()) {
+    for (BpmApiPolicyPair apiPair : apiInput.getAdditionalData()) {
       additionalData.add(new TpsPolicyPair().key(apiPair.getKey()).value(apiPair.getValue()));
     }
 
@@ -24,13 +24,37 @@ public class TpsConversionUtils {
         .additionalData(additionalData);
   }
 
-  public static @Nullable TpsPolicyInputs tpsFromApiTpsPolicyInputs(
-      @Nullable BPMPolicyInputs apiInputs) {
+  public static @Nullable TpsPolicyInputs tpsFromBpmApiPolicyInputs(
+      @Nullable BpmApiPolicyInputs apiInputs) {
     if (apiInputs == null) {
       return null;
     }
     return new TpsPolicyInputs()
         .inputs(
-            apiInputs.getInputs().stream().map(TpsConversionUtils::tpsFromApiPolicyInput).toList());
+            apiInputs.getInputs().stream()
+                .map(TpsConversionUtils::tpsFromBpmApiPolicyInput)
+                .toList());
+  }
+
+  public static BpmApiPolicyInput bpmFromTpsPolicyInput(TpsPolicyInput tpsInput) {
+    List<BpmApiPolicyPair> additionalData = new ArrayList<>();
+    for (TpsPolicyPair tpsPair : tpsInput.getAdditionalData()) {
+      additionalData.add(new BpmApiPolicyPair().key(tpsPair.getKey()).value(tpsPair.getValue()));
+    }
+
+    return new BpmApiPolicyInput()
+        .namespace(tpsInput.getNamespace())
+        .name(tpsInput.getName())
+        .additionalData(additionalData);
+  }
+
+  public static BpmApiPolicyInputs bpmFromTpsPolicyInputs(TpsPolicyInputs tpsInputs) {
+    if (tpsInputs == null) {
+      return null;
+    }
+
+    return new BpmApiPolicyInputs()
+        .inputs(
+            tpsInputs.getInputs().stream().map(TpsConversionUtils::bpmFromTpsPolicyInput).toList());
   }
 }

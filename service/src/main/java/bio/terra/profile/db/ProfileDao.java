@@ -94,7 +94,8 @@ public class ProfileDao {
           profile.managedResourceGroupId(),
           keyHolder.getInstant("created_date"),
           keyHolder.getInstant("last_modified"),
-          keyHolder.getString("created_by"));
+          keyHolder.getString("created_by"),
+          Optional.empty());
     } catch (DuplicateKeyException ex) {
       if (ex.getMessage() != null
           && ex.getMessage()
@@ -171,7 +172,8 @@ public class ProfileDao {
           Optional.ofNullable(rs.getString("managed_resource_group_id")),
           rs.getTimestamp("created_date").toInstant(),
           rs.getTimestamp("last_modified").toInstant(),
-          rs.getString("created_by"));
+          rs.getString("created_by"),
+          Optional.empty());
     }
   }
 }

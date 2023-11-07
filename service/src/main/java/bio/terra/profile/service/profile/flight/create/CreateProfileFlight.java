@@ -48,7 +48,7 @@ public class CreateProfileFlight extends Flight {
         break;
     }
     addStep(new CreateProfileAuthzIamStep(samService, profile, user));
-    addStep(new CreateProfilePoliciesStep(tpsApiDispatch, profile, policies, user));
+    addStep(new CreateProfilePoliciesStep(tpsApiDispatch, profile, user));
 
     if (CloudPlatform.AZURE == profile.cloudPlatform()) {
       // we can link the profile to the MRG only after the Sam resource has been created

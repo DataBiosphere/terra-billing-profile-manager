@@ -1,5 +1,6 @@
 package bio.terra.profile.common;
 
+import bio.terra.policy.model.TpsPolicyInputs;
 import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import java.util.Optional;
@@ -9,6 +10,11 @@ public class ProfileFixtures {
 
   public static BillingProfile createAzureBillingProfile(
       UUID tenantId, UUID subscriptionId, String mrgId) {
+    return createAzureBillingProfile(tenantId, subscriptionId, mrgId, Optional.empty());
+  }
+
+  public static BillingProfile createAzureBillingProfile(
+      UUID tenantId, UUID subscriptionId, String mrgId, Optional<TpsPolicyInputs> policies) {
     var bpId = UUID.randomUUID();
     return new BillingProfile(
         bpId,
@@ -22,10 +28,16 @@ public class ProfileFixtures {
         Optional.of(mrgId),
         null,
         null,
-        null);
+        null,
+        policies);
   }
 
   public static BillingProfile createGcpBillingProfile(String billingAccountId) {
+    return createGcpBillingProfile(billingAccountId, Optional.empty());
+  }
+
+  public static BillingProfile createGcpBillingProfile(
+      String billingAccountId, Optional<TpsPolicyInputs> policies) {
     var bpId = UUID.randomUUID();
     return new BillingProfile(
         bpId,
@@ -39,6 +51,7 @@ public class ProfileFixtures {
         Optional.empty(),
         null,
         null,
-        null);
+        null,
+        policies);
   }
 }

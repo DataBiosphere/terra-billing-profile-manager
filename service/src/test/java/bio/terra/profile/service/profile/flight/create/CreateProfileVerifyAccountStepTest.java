@@ -56,7 +56,8 @@ class CreateProfileVerifyAccountStepTest extends BaseSpringUnitTest {
             Optional.empty(),
             Instant.now(),
             Instant.now(),
-            "creator");
+            "creator",
+            Optional.empty());
 
     step = new CreateProfileVerifyAccountStep(crlService, profile, user);
 

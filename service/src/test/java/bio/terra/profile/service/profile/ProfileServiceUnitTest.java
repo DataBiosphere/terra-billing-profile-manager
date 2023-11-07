@@ -60,7 +60,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
 
   @BeforeEach
   void before() {
-    profileService = new ProfileService(profileDao, samService, jobService);
+    profileService = new ProfileService(profileDao, samService, jobService, null);
     user =
         AuthenticatedUserRequest.builder()
             .setSubjectId("12345")
@@ -80,7 +80,8 @@ class ProfileServiceUnitTest extends BaseUnitTest {
             Optional.empty(),
             Instant.now(),
             Instant.now(),
-            "creator");
+            "creator",
+            Optional.empty());
 
     userPolicy = new SamPolicyModel().name("user").members(List.of("user@unit.com"));
     ownerPolicy = new SamPolicyModel().name("owner").members(List.of("owner@unit.com"));
@@ -99,7 +100,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     when(jobBuilder.userRequest(user)).thenReturn(jobBuilder);
     when(jobBuilder.submitAndWait(BillingProfile.class)).thenReturn(profile);
 
-    BillingProfile result = profileService.createProfile(profile, null, user);
+    BillingProfile result = profileService.createProfile(profile, user);
 
     verify(jobBuilder).submitAndWait(any());
     assertEquals(profile, result);
@@ -260,7 +261,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     var profile = ProfileFixtures.createGcpBillingProfile("ABCD1234");
     doReturn(profile).when(builder).submitAndWait(eq(BillingProfile.class));
 
-    var createdProfile = profileService.createProfile(profile, null, userRequest);
+    var createdProfile = profileService.createProfile(profile, userRequest);
 
     assertEquals(createdProfile.id(), profile.id());
     assertEquals(createdProfile.biller(), profile.biller());

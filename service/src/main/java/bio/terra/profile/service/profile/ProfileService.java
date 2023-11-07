@@ -12,15 +12,19 @@ import bio.terra.profile.service.iam.model.SamAction;
 import bio.terra.profile.service.iam.model.SamResourceType;
 import bio.terra.profile.service.job.JobMapKeys;
 import bio.terra.profile.service.job.JobService;
+import bio.terra.profile.service.policy.TpsApiDispatch;
+import bio.terra.profile.service.policy.exception.PolicyServiceAPIException;
+import bio.terra.profile.service.policy.exception.PolicyServiceNotFoundException;
 import bio.terra.profile.service.profile.exception.ProfileNotFoundException;
 import bio.terra.profile.service.profile.flight.ProfileMapKeys;
 import bio.terra.profile.service.profile.flight.create.CreateProfileFlight;
 import bio.terra.profile.service.profile.flight.delete.DeleteProfileFlight;
 import bio.terra.profile.service.profile.model.BillingProfile;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.Callable;
-import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,12 +38,18 @@ public class ProfileService {
   private final ProfileDao profileDao;
   private final SamService samService;
   private final JobService jobService;
+  private final TpsApiDispatch tpsApiDispatch;
 
   @Autowired
-  public ProfileService(ProfileDao profileDao, SamService samService, JobService jobService) {
+  public ProfileService(
+      ProfileDao profileDao,
+      SamService samService,
+      JobService jobService,
+      TpsApiDispatch tpsApiDispatch) {
     this.profileDao = profileDao;
     this.samService = samService;
     this.jobService = jobService;
+    this.tpsApiDispatch = tpsApiDispatch;
   }
 
   /**
@@ -49,8 +59,7 @@ public class ProfileService {
    * @param user authenticated user
    * @return jobId of the submitted Stairway job
    */
-  public BillingProfile createProfile(
-      BillingProfile profile, @Nullable TpsPolicyInputs policies, AuthenticatedUserRequest user) {
+  public BillingProfile createProfile(BillingProfile profile, AuthenticatedUserRequest user) {
     String description =
         String.format(
             "Create billing profile id [%s] on cloud platform [%s]",
@@ -62,7 +71,6 @@ public class ProfileService {
             .description(description)
             .flightClass(CreateProfileFlight.class)
             .request(profile)
-            .addParameter(ProfileMapKeys.POLICIES, policies)
             .userRequest(user);
     Callable<BillingProfile> executeProfileCreation =
         () -> createJob.submitAndWait(BillingProfile.class);
@@ -105,8 +113,6 @@ public class ProfileService {
    * @throws ProfileNotFoundException when the profile is not found
    */
   public BillingProfile getProfile(UUID id, AuthenticatedUserRequest user) {
-    // Throws 404 if not found
-    var profile = profileDao.getBillingProfileById(id);
     // If profile was found, check permissions
     var hasActions =
         SamRethrow.onInterrupted(
@@ -114,13 +120,39 @@ public class ProfileService {
     if (Boolean.FALSE.equals(hasActions)) {
       throw new ForbiddenException("forbidden");
     }
-    return profile;
+    // Throws 404 if not found
+    BillingProfile profile = profileDao.getBillingProfileById(id);
+
+    Optional<TpsPolicyInputs> policies = Optional.empty();
+    try {
+      policies = Optional.ofNullable(tpsApiDispatch.getPao(id).getEffectiveAttributes());
+    } catch (InterruptedException e) {
+      throw new PolicyServiceAPIException("Interrupted during TPS getPao operation.", e);
+    } catch (PolicyServiceNotFoundException ignored) {
+    }
+
+    return profile.withPolicies(policies);
   }
 
   public List<BillingProfile> listProfiles(AuthenticatedUserRequest user, int offset, int limit) {
     List<UUID> samProfileIds =
         SamRethrow.onInterrupted(() -> samService.listProfileIds(user), "listProfileIds");
-    return profileDao.listBillingProfiles(offset, limit, samProfileIds);
+    var profiles = profileDao.listBillingProfiles(offset, limit, samProfileIds);
+
+    List<BillingProfile> profilesWithPolicies = new ArrayList<>();
+    for (BillingProfile profile : profiles) {
+      try {
+        profilesWithPolicies.add(
+            profile.withPolicies(
+                Optional.ofNullable(tpsApiDispatch.getPao(profile.id()).getEffectiveAttributes())));
+      } catch (PolicyServiceNotFoundException ignored) {
+        profilesWithPolicies.add(profile);
+      } catch (InterruptedException e) {
+        throw new PolicyServiceAPIException("Interrupted during TPS getPao operation.", e);
+      }
+    }
+
+    return profilesWithPolicies;
   }
 
   public List<SamPolicyModel> getProfilePolicies(UUID profileId, AuthenticatedUserRequest user) {

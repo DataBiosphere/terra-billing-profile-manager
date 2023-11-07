@@ -83,6 +83,16 @@ public class TpsApiDispatch {
     }
   }
 
+  @Traced
+  public TpsPaoGetResult getPao(UUID objectId) throws InterruptedException {
+    TpsApi tpsApi = policyApi();
+    try {
+      return TpsRetry.retry(() -> tpsApi.getPao(objectId));
+    } catch (ApiException e) {
+      throw convertApiException(e);
+    }
+  }
+
   private RuntimeException convertApiException(ApiException ex) {
     if (ex.getCode() == HttpStatus.UNAUTHORIZED.value()) {
       return new PolicyServiceAuthorizationException(
