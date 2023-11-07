@@ -36,14 +36,14 @@ metadata:
     - dsp
     - terra
     - springboot
-    - ${{values.owner}}
+    - broadworkspaces
   annotations:
     github.com/project-slug: databiosphere/terra-billing-profile-manager
 spec:
   type: openapi
   lifecycle: experimental
   system: terra
-  owner: ${{values.owner}}
+  owner: broadworkspaces
   definition:
     $text: ./service/src/main/resources/api/service_openapi.yml
 ---
