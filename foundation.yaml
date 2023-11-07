@@ -41,7 +41,7 @@ metadata:
     github.com/project-slug: databiosphere/terra-billing-profile-manager
 spec:
   type: openapi
-  lifecycle: experimental
+  lifecycle: production
   system: terra
   owner: broadworkspaces
   definition:
