@@ -2,16 +2,28 @@ package bio.terra.profile.service.profile;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import bio.terra.cloudres.google.billing.CloudBillingClientCow;
 import bio.terra.common.exception.ForbiddenException;
 import bio.terra.common.exception.NotFoundException;
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.common.stairway.StairwayComponent;
+import bio.terra.policy.model.TpsPaoGetResult;
+import bio.terra.policy.model.TpsPolicyInput;
+import bio.terra.policy.model.TpsPolicyInputs;
 import bio.terra.profile.app.common.MdcHook;
-import bio.terra.profile.common.*;
+import bio.terra.profile.common.BaseUnitTest;
+import bio.terra.profile.common.ProfileFixtures;
 import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.model.SamPolicyModel;
@@ -21,6 +33,8 @@ import bio.terra.profile.service.iam.model.SamResourceType;
 import bio.terra.profile.service.job.JobBuilder;
 import bio.terra.profile.service.job.JobMapKeys;
 import bio.terra.profile.service.job.JobService;
+import bio.terra.profile.service.policy.TpsApiDispatch;
+import bio.terra.profile.service.policy.exception.PolicyServiceNotFoundException;
 import bio.terra.profile.service.profile.flight.ProfileMapKeys;
 import bio.terra.profile.service.profile.flight.create.CreateProfileFlight;
 import bio.terra.profile.service.profile.flight.create.CreateProfileVerifyAccountStep;
@@ -43,6 +57,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
   @Mock private ProfileDao profileDao;
   @Mock private SamService samService;
   @Mock private JobService jobService;
+  @Mock private TpsApiDispatch tpsApiDispatch;
 
   private ProfileService profileService;
   private AuthenticatedUserRequest user;
@@ -60,7 +75,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
 
   @BeforeEach
   void before() {
-    profileService = new ProfileService(profileDao, samService, jobService, null);
+    profileService = new ProfileService(profileDao, samService, jobService, tpsApiDispatch);
     user =
         AuthenticatedUserRequest.builder()
             .setSubjectId("12345")
@@ -142,7 +157,9 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     when(profileDao.getBillingProfileById(profile.id())).thenReturn(profile);
     when(samService.hasActions(eq(user), eq(SamResourceType.PROFILE), eq(profile.id())))
         .thenReturn(true);
-
+    doThrow(new PolicyServiceNotFoundException("policies not found"))
+        .when(tpsApiDispatch)
+        .getPao(any());
     var result = profileService.getProfile(profile.id(), user);
     assertEquals(profile, result);
   }
@@ -154,12 +171,62 @@ class ProfileServiceUnitTest extends BaseUnitTest {
   }
 
   @Test
+  void getProfileWithPolicies() throws InterruptedException {
+    var policies =
+        new TpsPolicyInputs()
+            .addInputsItem(new TpsPolicyInput().namespace("terra").name("protected-data"));
+    when(profileDao.getBillingProfileById(profile.id())).thenReturn(profile);
+    when(samService.hasActions(eq(user), eq(SamResourceType.PROFILE), eq(profile.id())))
+        .thenReturn(true);
+    when(tpsApiDispatch.getPao(profile.id()))
+        .thenReturn(new TpsPaoGetResult().effectiveAttributes(policies));
+    var result = profileService.getProfile(profile.id(), user);
+    assertEquals(profile.withPolicies(Optional.of(policies)), result);
+  }
+
+  @Test
   void listProfiles() throws InterruptedException {
     when(samService.listProfileIds(user)).thenReturn(List.of(profile.id()));
     when(profileDao.listBillingProfiles(anyInt(), anyInt(), eq(List.of(profile.id()))))
         .thenReturn(List.of(profile));
+    doThrow(new PolicyServiceNotFoundException("policies not found"))
+        .when(tpsApiDispatch)
+        .getPao(any());
     var result = profileService.listProfiles(user, 0, 0);
     assertEquals(List.of(profile), result);
+  }
+
+  @Test
+  void listProfilesWithPolicies() throws InterruptedException {
+    var policies =
+        new TpsPolicyInputs()
+            .addInputsItem(new TpsPolicyInput().namespace("terra").name("protected-data"));
+    var protectedProfile =
+        new BillingProfile(
+            UUID.randomUUID(),
+            "protected_name",
+            "",
+            "direct",
+            CloudPlatform.AZURE,
+            Optional.empty(),
+            Optional.of(UUID.randomUUID()),
+            Optional.of(UUID.randomUUID()),
+            Optional.of("protectedMrgName"),
+            Instant.now(),
+            Instant.now(),
+            "creator",
+            Optional.of(policies));
+    when(samService.listProfileIds(user)).thenReturn(List.of(profile.id(), protectedProfile.id()));
+    when(profileDao.listBillingProfiles(
+            anyInt(), anyInt(), eq(List.of(profile.id(), protectedProfile.id()))))
+        .thenReturn(List.of(profile, protectedProfile));
+    doThrow(new PolicyServiceNotFoundException("policies not found"))
+        .when(tpsApiDispatch)
+        .getPao(profile.id());
+    when(tpsApiDispatch.getPao(protectedProfile.id()))
+        .thenReturn(new TpsPaoGetResult().effectiveAttributes(policies));
+    var result = profileService.listProfiles(user, 0, 0);
+    assertEquals(List.of(profile, protectedProfile), result);
   }
 
   @Test
