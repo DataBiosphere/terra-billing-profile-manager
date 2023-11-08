@@ -51,7 +51,7 @@ dependencies {
 	}
 
     // TPS
-    implementation group: "bio.terra", name:"terra-policy-client", version:"0.2.50-SNAPSHOT"
+    implementation group: "bio.terra", name:"terra-policy-client", version:"1.0.5"
 
 
     // Test deps
