@@ -7,7 +7,7 @@ import bio.terra.policy.client.ApiException;
 import bio.terra.policy.model.*;
 import bio.terra.profile.app.configuration.PolicyServiceConfiguration;
 import bio.terra.profile.service.policy.exception.*;
-import io.opencensus.contrib.spring.aop.Traced;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import java.io.IOException;
 import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
@@ -50,7 +50,7 @@ public class TpsApiDispatch {
   }
 
   // -- Policy Attribute Object Interface --
-  @Traced
+  @WithSpan
   public void createPao(
       UUID objectId, TpsPolicyInputs inputs, TpsComponent component, TpsObjectType objectType)
       throws InterruptedException {
@@ -69,7 +69,7 @@ public class TpsApiDispatch {
     }
   }
 
-  @Traced
+  @WithSpan
   public void deletePao(UUID objectId) throws InterruptedException {
     TpsApi tpsApi = policyApi();
     try {
@@ -83,7 +83,7 @@ public class TpsApiDispatch {
     }
   }
 
-  @Traced
+  @WithSpan
   public TpsPaoGetResult getPao(UUID objectId) throws InterruptedException {
     TpsApi tpsApi = policyApi();
     try {

@@ -41,7 +41,7 @@ jobs:
           git secrets --scan-history
 
       - name: Gradle build service
-        run: ./gradlew :service:build -x test
+        run: ./gradlew --build-cache :service:build -x test
 
       - name: Upload spotbugs results
         uses: github/codeql-action/upload-sarif@v2
