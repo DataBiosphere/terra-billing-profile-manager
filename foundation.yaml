@@ -45,5 +45,5 @@ spec:
   system: terra
   owner: broadworkspaces
   definition:
-    $text: ./service/src/main/resources/api/service_openapi.yml
+    $text: ./service/src/main/resources/api/service_openapi.yaml
 ---
