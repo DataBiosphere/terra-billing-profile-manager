@@ -40,6 +40,9 @@ jobs:
           ./minnie-kenny.sh --force
           git secrets --scan-history
 
+      - name: clean gradle
+        run: ./gradlew clean
+
       - name: Gradle build service
         run: ./gradlew --build-cache :service:build -x test
 
