@@ -5,15 +5,17 @@ import bio.terra.policy.model.TpsComponent;
 import bio.terra.policy.model.TpsObjectType;
 import bio.terra.profile.service.policy.TpsApiDispatch;
 import bio.terra.profile.service.policy.exception.PolicyServiceDuplicateException;
-import bio.terra.profile.service.profile.model.BillingProfile;
+import bio.terra.profile.service.profile.flight.ProfileMapKeys;
+import bio.terra.profile.service.profile.model.ProfileDescription;
 import bio.terra.stairway.FlightContext;
+import bio.terra.stairway.FlightMap;
 import bio.terra.stairway.Step;
 import bio.terra.stairway.StepResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 record CreateProfilePoliciesStep(
-    TpsApiDispatch tpsApiDispatch, BillingProfile profile, AuthenticatedUserRequest user)
+    TpsApiDispatch tpsApiDispatch, ProfileDescription profile, AuthenticatedUserRequest user)
     implements Step {
 
   private static final Logger logger = LoggerFactory.getLogger(CreateProfilePoliciesStep.class);
@@ -23,10 +25,13 @@ record CreateProfilePoliciesStep(
     try {
       if (profile.policies().isPresent()) {
         tpsApiDispatch.createPao(
-            profile.id(),
+            profile.billingProfile().id(),
             profile.policies().get(),
             TpsComponent.BPM,
             TpsObjectType.BILLING_PROFILE);
+
+        FlightMap workingMap = flightContext.getWorkingMap();
+        workingMap.put(ProfileMapKeys.POLICIES, profile.policies().get());
       }
     } catch (PolicyServiceDuplicateException e) {
       // Before the flight we check that the profile does not exist, so it's safe to assume that
@@ -34,14 +39,14 @@ record CreateProfilePoliciesStep(
       // duplicates.
       logger.info(
           "Created duplicate policy for profile {}. This is expected for Stairway retries",
-          profile.id());
+          profile.billingProfile().id());
     }
     return StepResult.getStepResultSuccess();
   }
 
   @Override
   public StepResult undoStep(FlightContext flightContext) throws InterruptedException {
-    tpsApiDispatch.deletePao(profile.id());
+    tpsApiDispatch.deletePao(profile.billingProfile().id());
     return StepResult.getStepResultSuccess();
   }
 }

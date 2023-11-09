@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import bio.terra.profile.app.common.MetricUtils;
 import bio.terra.profile.model.CloudPlatform;
+import bio.terra.profile.service.profile.model.ProfileDescription;
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.util.UUID;
@@ -32,7 +33,8 @@ class MetricsUtilsUnitTest extends BaseUnitTest {
   void createGcpProfileMetrics() {
     var profile = ProfileFixtures.createGcpBillingProfile("ABCD1234");
 
-    MetricUtils.recordProfileCreation(() -> profile, profile.cloudPlatform());
+    MetricUtils.recordProfileCreation(
+        () -> new ProfileDescription(profile), profile.cloudPlatform());
 
     var timer = meterRegistry.find("bpm.profile.creation.time").timer();
     assertNotNull(timer);
@@ -45,7 +47,8 @@ class MetricsUtilsUnitTest extends BaseUnitTest {
     var profile =
         ProfileFixtures.createAzureBillingProfile(UUID.randomUUID(), UUID.randomUUID(), "fake-mrg");
 
-    MetricUtils.recordProfileCreation(() -> profile, CloudPlatform.AZURE);
+    MetricUtils.recordProfileCreation(
+        () -> new ProfileDescription(profile), profile.cloudPlatform());
 
     var timer = meterRegistry.find("bpm.profile.creation.time").timer();
     assertNotNull(timer);

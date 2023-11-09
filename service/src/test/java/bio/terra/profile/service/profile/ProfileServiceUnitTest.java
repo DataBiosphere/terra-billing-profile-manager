@@ -40,6 +40,7 @@ import bio.terra.profile.service.profile.flight.create.CreateProfileFlight;
 import bio.terra.profile.service.profile.flight.create.CreateProfileVerifyAccountStep;
 import bio.terra.profile.service.profile.flight.delete.DeleteProfileFlight;
 import bio.terra.profile.service.profile.model.BillingProfile;
+import bio.terra.profile.service.profile.model.ProfileDescription;
 import com.google.iam.v1.TestIamPermissionsResponse;
 import io.opentelemetry.api.OpenTelemetry;
 import java.time.Instant;
@@ -62,6 +63,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
   private ProfileService profileService;
   private AuthenticatedUserRequest user;
   private BillingProfile profile;
+  private ProfileDescription profileDescription;
   private List<SamPolicyModel> profilePolicies;
   private SamPolicyModel userPolicy;
   private SamPolicyModel ownerPolicy;
@@ -95,8 +97,8 @@ class ProfileServiceUnitTest extends BaseUnitTest {
             Optional.empty(),
             Instant.now(),
             Instant.now(),
-            "creator",
-            Optional.empty());
+            "creator");
+    profileDescription = new ProfileDescription(profile);
 
     userPolicy = new SamPolicyModel().name("user").members(List.of("user@unit.com"));
     ownerPolicy = new SamPolicyModel().name("owner").members(List.of("owner@unit.com"));
@@ -110,15 +112,14 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     when(jobService.newJob()).thenReturn(jobBuilder);
     when(jobBuilder.description(anyString())).thenReturn(jobBuilder);
     when(jobBuilder.flightClass(CreateProfileFlight.class)).thenReturn(jobBuilder);
-    when(jobBuilder.request(profile)).thenReturn(jobBuilder);
-    when(jobBuilder.addParameter(ProfileMapKeys.POLICIES, null)).thenReturn(jobBuilder);
+    when(jobBuilder.request(profileDescription)).thenReturn(jobBuilder);
     when(jobBuilder.userRequest(user)).thenReturn(jobBuilder);
-    when(jobBuilder.submitAndWait(BillingProfile.class)).thenReturn(profile);
+    when(jobBuilder.submitAndWait(ProfileDescription.class)).thenReturn(profileDescription);
 
-    BillingProfile result = profileService.createProfile(profile, user);
+    ProfileDescription result = profileService.createProfile(profileDescription, user);
 
     verify(jobBuilder).submitAndWait(any());
-    assertEquals(profile, result);
+    assertEquals(profileDescription, result);
   }
 
   @Test
@@ -161,7 +162,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
         .when(tpsApiDispatch)
         .getPao(any());
     var result = profileService.getProfile(profile.id(), user);
-    assertEquals(profile, result);
+    assertEquals(profileDescription, result);
   }
 
   @Test
@@ -181,7 +182,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     when(tpsApiDispatch.getPao(profile.id()))
         .thenReturn(new TpsPaoGetResult().effectiveAttributes(policies));
     var result = profileService.getProfile(profile.id(), user);
-    assertEquals(profile.withPolicies(Optional.of(policies)), result);
+    assertEquals(new ProfileDescription(profile, Optional.of(policies)), result);
   }
 
   @Test
@@ -193,7 +194,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
         .when(tpsApiDispatch)
         .getPao(any());
     var result = profileService.listProfiles(user, 0, 0);
-    assertEquals(List.of(profile), result);
+    assertEquals(List.of(profileDescription), result);
   }
 
   @Test
@@ -214,8 +215,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
             Optional.of("protectedMrgName"),
             Instant.now(),
             Instant.now(),
-            "creator",
-            Optional.of(policies));
+            "creator");
     when(samService.listProfileIds(user)).thenReturn(List.of(profile.id(), protectedProfile.id()));
     when(profileDao.listBillingProfiles(
             anyInt(), anyInt(), eq(List.of(profile.id(), protectedProfile.id()))))
@@ -226,7 +226,10 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     when(tpsApiDispatch.getPao(protectedProfile.id()))
         .thenReturn(new TpsPaoGetResult().effectiveAttributes(policies));
     var result = profileService.listProfiles(user, 0, 0);
-    assertEquals(List.of(profile, protectedProfile), result);
+    assertEquals(
+        List.of(
+            profileDescription, new ProfileDescription(protectedProfile, Optional.of(policies))),
+        result);
   }
 
   @Test
@@ -325,16 +328,18 @@ class ProfileServiceUnitTest extends BaseUnitTest {
                 jobService, stairwayComponent, mock(MdcHook.class), OpenTelemetry.noop()));
     when(jobService.newJob()).thenReturn(builder);
 
-    var profile = ProfileFixtures.createGcpBillingProfile("ABCD1234");
-    doReturn(profile).when(builder).submitAndWait(eq(BillingProfile.class));
+    var profile = ProfileFixtures.createGcpBillingProfileDescription("ABCD1234");
+    doReturn(profile).when(builder).submitAndWait(eq(ProfileDescription.class));
 
-    var createdProfile = profileService.createProfile(profile, userRequest);
+    var createdProfileDescription = profileService.createProfile(profile, userRequest);
+    var createdProfile = createdProfileDescription.billingProfile();
 
-    assertEquals(createdProfile.id(), profile.id());
-    assertEquals(createdProfile.biller(), profile.biller());
-    assertEquals(createdProfile.cloudPlatform(), profile.cloudPlatform());
-    assertEquals(createdProfile.billingAccountId().get(), profile.billingAccountId().get());
-    assertEquals(createdProfile.displayName(), profile.displayName());
+    assertEquals(createdProfile.id(), profile.billingProfile().id());
+    assertEquals(createdProfile.biller(), profile.billingProfile().biller());
+    assertEquals(createdProfile.cloudPlatform(), profile.billingProfile().cloudPlatform());
+    assertEquals(
+        createdProfile.billingAccountId().get(), profile.billingProfile().billingAccountId().get());
+    assertEquals(createdProfile.displayName(), profile.billingProfile().displayName());
     verify(jobService).newJob();
     verify(builder).description(anyString());
     verify(builder).flightClass(CreateProfileFlight.class);

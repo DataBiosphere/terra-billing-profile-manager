@@ -20,6 +20,7 @@ import bio.terra.profile.service.profile.flight.ProfileMapKeys;
 import bio.terra.profile.service.profile.flight.create.CreateProfileFlight;
 import bio.terra.profile.service.profile.flight.delete.DeleteProfileFlight;
 import bio.terra.profile.service.profile.model.BillingProfile;
+import bio.terra.profile.service.profile.model.ProfileDescription;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -53,28 +54,31 @@ public class ProfileService {
   }
 
   /**
-   * Create a new billing profile.
+   * Create a new billing profileDescription.
    *
-   * @param profile billing profile to be created
+   * @param profileDescription billing profileDescription to be created
    * @param user authenticated user
    * @return jobId of the submitted Stairway job
    */
-  public BillingProfile createProfile(BillingProfile profile, AuthenticatedUserRequest user) {
+  public ProfileDescription createProfile(
+      ProfileDescription profileDescription, AuthenticatedUserRequest user) {
     String description =
         String.format(
             "Create billing profile id [%s] on cloud platform [%s]",
-            profile.id(), profile.cloudPlatform());
+            profileDescription.billingProfile().id(),
+            profileDescription.billingProfile().cloudPlatform());
     logger.info(description);
     var createJob =
         jobService
             .newJob()
             .description(description)
             .flightClass(CreateProfileFlight.class)
-            .request(profile)
+            .request(profileDescription)
             .userRequest(user);
-    Callable<BillingProfile> executeProfileCreation =
-        () -> createJob.submitAndWait(BillingProfile.class);
-    return MetricUtils.recordProfileCreation(executeProfileCreation, profile.cloudPlatform());
+    Callable<ProfileDescription> executeProfileCreation =
+        () -> createJob.submitAndWait(ProfileDescription.class);
+    return MetricUtils.recordProfileCreation(
+        executeProfileCreation, profileDescription.billingProfile().cloudPlatform());
   }
 
   /**
@@ -112,7 +116,7 @@ public class ProfileService {
    * @return billing profile model
    * @throws ProfileNotFoundException when the profile is not found
    */
-  public BillingProfile getProfile(UUID id, AuthenticatedUserRequest user) {
+  public ProfileDescription getProfile(UUID id, AuthenticatedUserRequest user) {
     // If profile was found, check permissions
     var hasActions =
         SamRethrow.onInterrupted(
@@ -131,25 +135,26 @@ public class ProfileService {
     } catch (PolicyServiceNotFoundException ignored) {
     }
 
-    return profile.withPolicies(policies);
+    return new ProfileDescription(profile, policies);
   }
 
-  public List<BillingProfile> listProfiles(AuthenticatedUserRequest user, int offset, int limit) {
+  public List<ProfileDescription> listProfiles(
+      AuthenticatedUserRequest user, int offset, int limit) {
     List<UUID> samProfileIds =
         SamRethrow.onInterrupted(() -> samService.listProfileIds(user), "listProfileIds");
     var profiles = profileDao.listBillingProfiles(offset, limit, samProfileIds);
 
-    List<BillingProfile> profilesWithPolicies = new ArrayList<>();
+    List<ProfileDescription> profilesWithPolicies = new ArrayList<>();
     for (BillingProfile profile : profiles) {
+      Optional<TpsPolicyInputs> policies = Optional.empty();
       try {
-        profilesWithPolicies.add(
-            profile.withPolicies(
-                Optional.ofNullable(tpsApiDispatch.getPao(profile.id()).getEffectiveAttributes())));
+        policies =
+            Optional.ofNullable(tpsApiDispatch.getPao(profile.id()).getEffectiveAttributes());
       } catch (PolicyServiceNotFoundException ignored) {
-        profilesWithPolicies.add(profile);
       } catch (InterruptedException e) {
         throw new PolicyServiceAPIException("Interrupted during TPS getPao operation.", e);
       }
+      profilesWithPolicies.add(new ProfileDescription(profile, policies));
     }
 
     return profilesWithPolicies;

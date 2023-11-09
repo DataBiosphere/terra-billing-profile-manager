@@ -28,6 +28,7 @@ import bio.terra.profile.service.profile.exception.InaccessibleApplicationDeploy
 import bio.terra.profile.service.profile.exception.InaccessibleBillingAccountException;
 import bio.terra.profile.service.profile.exception.MissingRequiredFieldsException;
 import bio.terra.profile.service.profile.model.BillingProfile;
+import bio.terra.profile.service.profile.model.ProfileDescription;
 import com.google.iam.v1.TestIamPermissionsResponse;
 import java.util.Collections;
 import java.util.List;
@@ -65,7 +66,8 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
     when(billingCow.testIamPermissions(any())).thenReturn(iamPermissionsResponse);
     var profile = ProfileFixtures.createGcpBillingProfile("ABCD1234");
 
-    var createdProfile = profileService.createProfile(profile, userRequest);
+    var createdProfile =
+        profileService.createProfile(new ProfileDescription(profile), userRequest).billingProfile();
 
     assertEquals(createdProfile.id(), profile.id());
     assertEquals(createdProfile.biller(), profile.biller());
@@ -99,12 +101,11 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
             Optional.empty(),
             null,
             null,
-            null,
-            Optional.empty());
+            null);
 
     assertThrows(
         MissingRequiredFieldsException.class,
-        () -> profileService.createProfile(profile, userRequest));
+        () -> profileService.createProfile(new ProfileDescription(profile), userRequest));
   }
 
   @Test
@@ -116,7 +117,7 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
             .addAllPermissions(List.of("billing:wrong", "billing:fake"))
             .build();
     when(billingCow.testIamPermissions(any())).thenReturn(iamPermissionsResponse);
-    var profile = ProfileFixtures.createGcpBillingProfile("ABCDEF-1234");
+    var profile = ProfileFixtures.createGcpBillingProfileDescription("ABCDEF-1234");
 
     assertThrows(
         InaccessibleBillingAccountException.class,
@@ -135,12 +136,16 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
     var policies =
         new TpsPolicyInputs()
             .addInputsItem(new TpsPolicyInput().namespace("terra").name("protected-data"));
-    var profile = ProfileFixtures.createGcpBillingProfile("ABCD1234", Optional.of(policies));
+    var profile = ProfileFixtures.createGcpBillingProfileDescription("ABCD1234", policies);
 
     profileService.createProfile(profile, userRequest);
 
     verify(tpsApiDispatch)
-        .createPao(profile.id(), policies, TpsComponent.BPM, TpsObjectType.BILLING_PROFILE);
+        .createPao(
+            profile.billingProfile().id(),
+            policies,
+            TpsComponent.BPM,
+            TpsObjectType.BILLING_PROFILE);
   }
 
   @Test
@@ -158,14 +163,18 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
     var policies =
         new TpsPolicyInputs()
             .addInputsItem(new TpsPolicyInput().namespace("terra").name("protected-data"));
-    var profile = ProfileFixtures.createGcpBillingProfile("ABCD1234", Optional.of(policies));
+    var profile = ProfileFixtures.createGcpBillingProfileDescription("ABCD1234", policies);
 
     assertThrows(
         PolicyServiceAPIException.class, () -> profileService.createProfile(profile, userRequest));
 
     verify(tpsApiDispatch)
-        .createPao(profile.id(), policies, TpsComponent.BPM, TpsObjectType.BILLING_PROFILE);
-    verify(tpsApiDispatch).deletePao(profile.id());
+        .createPao(
+            profile.billingProfile().id(),
+            policies,
+            TpsComponent.BPM,
+            TpsObjectType.BILLING_PROFILE);
+    verify(tpsApiDispatch).deletePao(profile.billingProfile().id());
   }
 
   @Test
@@ -174,7 +183,8 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
         .thenReturn(Collections.emptyList());
 
     var profile =
-        ProfileFixtures.createAzureBillingProfile(UUID.randomUUID(), UUID.randomUUID(), "fake");
+        ProfileFixtures.createAzureBillingProfileDescription(
+            UUID.randomUUID(), UUID.randomUUID(), "fake");
 
     assertThrows(
         InaccessibleApplicationDeploymentException.class,
@@ -196,11 +206,11 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
                     .managedResourceGroupId(mrgId)));
     when(azureService.getRegisteredProviderNamespacesForSubscription(any(), any()))
         .thenReturn(azureConfiguration.getRequiredProviders());
-    var profile = ProfileFixtures.createAzureBillingProfile(tenantId, subId, mrgId);
+    var profile = ProfileFixtures.createAzureBillingProfileDescription(tenantId, subId, mrgId);
 
     profileService.createProfile(profile, userRequest);
 
-    verify(samService).createManagedResourceGroup(profile, userRequest);
+    verify(samService).createManagedResourceGroup(profile.billingProfile(), userRequest);
   }
 
   @Test
@@ -220,12 +230,12 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
     doThrow(SamExceptionFactory.create("foo", new InterruptedException()))
         .when(samService)
         .createManagedResourceGroup(any(), eq(userRequest));
-    var profile = ProfileFixtures.createAzureBillingProfile(tenantId, subId, mrgId);
+    var profile = ProfileFixtures.createAzureBillingProfileDescription(tenantId, subId, mrgId);
 
     assertThrows(
         SamInterruptedException.class, () -> profileService.createProfile(profile, userRequest));
 
-    verify(samService).deleteManagedResourceGroup(profile.id(), userRequest);
+    verify(samService).deleteManagedResourceGroup(profile.billingProfile().id(), userRequest);
   }
 
   @Test
@@ -246,10 +256,10 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
     var policies =
         new TpsPolicyInputs()
             .addInputsItem(new TpsPolicyInput().namespace("terra").name("protected-data"));
-    var profile =
-        ProfileFixtures.createAzureBillingProfile(tenantId, subId, mrgId, Optional.of(policies));
+    var profile = ProfileFixtures.createAzureBillingProfile(tenantId, subId, mrgId);
 
-    profileService.createProfile(profile, userRequest);
+    profileService.createProfile(
+        new ProfileDescription(profile, Optional.of(policies)), userRequest);
 
     verify(tpsApiDispatch)
         .createPao(profile.id(), policies, TpsComponent.BPM, TpsObjectType.BILLING_PROFILE);
@@ -277,20 +287,24 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
         new TpsPolicyInputs()
             .addInputsItem(new TpsPolicyInput().namespace("terra").name("protected-data"));
     var profile =
-        ProfileFixtures.createAzureBillingProfile(tenantId, subId, mrgId, Optional.of(policies));
+        ProfileFixtures.createAzureBillingProfileDescription(tenantId, subId, mrgId, policies);
 
     assertThrows(
         PolicyServiceAPIException.class, () -> profileService.createProfile(profile, userRequest));
 
     verify(tpsApiDispatch)
-        .createPao(profile.id(), policies, TpsComponent.BPM, TpsObjectType.BILLING_PROFILE);
-    verify(tpsApiDispatch).deletePao(profile.id());
+        .createPao(
+            profile.billingProfile().id(),
+            policies,
+            TpsComponent.BPM,
+            TpsObjectType.BILLING_PROFILE);
+    verify(tpsApiDispatch).deletePao(profile.billingProfile().id());
   }
 
   @Test
   void metricsAreCalledOnProfileCreation() {
     try (var metricsMock = mockStatic(MetricUtils.class)) {
-      var profile = ProfileFixtures.createGcpBillingProfile("ABCD1234");
+      var profile = ProfileFixtures.createGcpBillingProfileDescription("ABCD1234");
       metricsMock
           .when(() -> MetricUtils.recordProfileCreation(any(), eq(CloudPlatform.GCP)))
           .thenReturn(profile);

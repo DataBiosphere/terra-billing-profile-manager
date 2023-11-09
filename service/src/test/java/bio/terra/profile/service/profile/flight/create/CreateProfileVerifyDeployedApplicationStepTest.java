@@ -57,8 +57,7 @@ class CreateProfileVerifyDeployedApplicationStepTest extends BaseSpringUnitTest 
             Optional.of("managedResourceGroupId"),
             Instant.now(),
             Instant.now(),
-            "creator",
-            Optional.empty());
+            "creator");
     var azureConfiguration =
         new AzureConfiguration(
             "fake_client", "fake_secret", "fake_tenant", ImmutableSet.of(), providers);

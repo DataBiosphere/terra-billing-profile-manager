@@ -1,10 +1,8 @@
 package bio.terra.profile.service.profile.model;
 
-import bio.terra.policy.model.TpsPolicyInputs;
 import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.model.CreateProfileRequest;
 import bio.terra.profile.model.ProfileModel;
-import bio.terra.profile.service.policy.TpsConversionUtils;
 import bio.terra.profile.service.profile.exception.MissingRequiredFieldsException;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.Instant;
@@ -24,8 +22,7 @@ public record BillingProfile(
     Optional<String> managedResourceGroupId,
     Instant createdTime,
     Instant lastModified,
-    String createdBy,
-    Optional<TpsPolicyInputs> policies) {
+    String createdBy) {
 
   /**
    * Converts an {@link CreateProfileRequest} to a BillingProfile and performs validation.
@@ -77,8 +74,7 @@ public record BillingProfile(
         Optional.ofNullable(request.getManagedResourceGroupId()),
         null,
         null,
-        null,
-        Optional.ofNullable(TpsConversionUtils.tpsFromBpmApiPolicyInputs(request.getPolicies())));
+        null);
   }
 
   /**
@@ -99,25 +95,7 @@ public record BillingProfile(
         .managedResourceGroupId(managedResourceGroupId.orElse(null))
         .createdDate(createdTime.toString())
         .lastModified(lastModified.toString())
-        .createdBy(createdBy)
-        .policies(TpsConversionUtils.bpmFromTpsPolicyInputs(policies.orElse(null)));
-  }
-
-  public BillingProfile withPolicies(Optional<TpsPolicyInputs> policies) {
-    return new BillingProfile(
-        id,
-        displayName,
-        description,
-        biller,
-        cloudPlatform,
-        billingAccountId,
-        tenantId,
-        subscriptionId,
-        managedResourceGroupId,
-        createdTime,
-        lastModified,
-        createdBy,
-        policies);
+        .createdBy(createdBy);
   }
 
   @JsonIgnore

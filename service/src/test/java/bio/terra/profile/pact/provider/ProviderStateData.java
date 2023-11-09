@@ -22,8 +22,7 @@ public class ProviderStateData {
           Optional.empty(),
           Instant.now(),
           Instant.now(),
-          "",
-          Optional.empty());
+          "");
 
   static BillingProfile azureBillingProfile =
       new BillingProfile(
@@ -39,6 +38,5 @@ public class ProviderStateData {
           Optional.of(("52362072-0f91-469e-aaab-e7026ed4eb7c")),
           Instant.now(),
           Instant.now(),
-          "",
-          Optional.empty());
+          "");
 }
