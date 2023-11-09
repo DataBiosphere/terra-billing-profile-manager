@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import bio.terra.profile.app.common.MetricUtils;
 import bio.terra.profile.model.CloudPlatform;
-import bio.terra.profile.service.profile.model.ProfileDescription;
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.util.UUID;
@@ -31,10 +30,9 @@ class MetricsUtilsUnitTest extends BaseUnitTest {
 
   @Test
   void createGcpProfileMetrics() {
-    var profile = ProfileFixtures.createGcpBillingProfile("ABCD1234");
+    var profile = ProfileFixtures.createGcpBillingProfileDescription("ABCD1234");
 
-    MetricUtils.recordProfileCreation(
-        () -> new ProfileDescription(profile), profile.cloudPlatform());
+    MetricUtils.recordProfileCreation(() -> profile, profile.billingProfile().cloudPlatform());
 
     var timer = meterRegistry.find("bpm.profile.creation.time").timer();
     assertNotNull(timer);
@@ -45,10 +43,10 @@ class MetricsUtilsUnitTest extends BaseUnitTest {
   @Test
   void createAzureProfileMetrics() {
     var profile =
-        ProfileFixtures.createAzureBillingProfile(UUID.randomUUID(), UUID.randomUUID(), "fake-mrg");
+        ProfileFixtures.createAzureBillingProfileDescription(
+            UUID.randomUUID(), UUID.randomUUID(), "fake-mrg");
 
-    MetricUtils.recordProfileCreation(
-        () -> new ProfileDescription(profile), profile.cloudPlatform());
+    MetricUtils.recordProfileCreation(() -> profile, profile.billingProfile().cloudPlatform());
 
     var timer = meterRegistry.find("bpm.profile.creation.time").timer();
     assertNotNull(timer);

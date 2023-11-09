@@ -328,22 +328,22 @@ class ProfileServiceUnitTest extends BaseUnitTest {
                 jobService, stairwayComponent, mock(MdcHook.class), OpenTelemetry.noop()));
     when(jobService.newJob()).thenReturn(builder);
 
-    var profile = ProfileFixtures.createGcpBillingProfileDescription("ABCD1234");
-    doReturn(profile).when(builder).submitAndWait(eq(ProfileDescription.class));
+    var profileDescription = ProfileFixtures.createGcpBillingProfileDescription("ABCD1234");
+    var profile = profileDescription.billingProfile();
+    doReturn(profileDescription).when(builder).submitAndWait(eq(ProfileDescription.class));
 
-    var createdProfileDescription = profileService.createProfile(profile, userRequest);
+    var createdProfileDescription = profileService.createProfile(profileDescription, userRequest);
     var createdProfile = createdProfileDescription.billingProfile();
 
-    assertEquals(createdProfile.id(), profile.billingProfile().id());
-    assertEquals(createdProfile.biller(), profile.billingProfile().biller());
-    assertEquals(createdProfile.cloudPlatform(), profile.billingProfile().cloudPlatform());
-    assertEquals(
-        createdProfile.billingAccountId().get(), profile.billingProfile().billingAccountId().get());
-    assertEquals(createdProfile.displayName(), profile.billingProfile().displayName());
+    assertEquals(createdProfile.id(), profile.id());
+    assertEquals(createdProfile.biller(), profile.biller());
+    assertEquals(createdProfile.cloudPlatform(), profile.cloudPlatform());
+    assertEquals(createdProfile.billingAccountId().get(), profile.billingAccountId().get());
+    assertEquals(createdProfile.displayName(), profile.displayName());
     verify(jobService).newJob();
     verify(builder).description(anyString());
     verify(builder).flightClass(CreateProfileFlight.class);
-    verify(builder).request(profile);
+    verify(builder).request(profileDescription);
     verify(builder).userRequest(userRequest);
   }
 }

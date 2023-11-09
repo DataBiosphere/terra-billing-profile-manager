@@ -256,13 +256,17 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
     var policies =
         new TpsPolicyInputs()
             .addInputsItem(new TpsPolicyInput().namespace("terra").name("protected-data"));
-    var profile = ProfileFixtures.createAzureBillingProfile(tenantId, subId, mrgId);
+    var profile =
+        ProfileFixtures.createAzureBillingProfileDescription(tenantId, subId, mrgId, policies);
 
-    profileService.createProfile(
-        new ProfileDescription(profile, Optional.of(policies)), userRequest);
+    profileService.createProfile(profile, userRequest);
 
     verify(tpsApiDispatch)
-        .createPao(profile.id(), policies, TpsComponent.BPM, TpsObjectType.BILLING_PROFILE);
+        .createPao(
+            profile.billingProfile().id(),
+            policies,
+            TpsComponent.BPM,
+            TpsObjectType.BILLING_PROFILE);
   }
 
   @Test
