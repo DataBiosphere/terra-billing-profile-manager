@@ -32,6 +32,7 @@ import bio.terra.profile.service.profile.flight.ProfileMapKeys;
 import bio.terra.profile.service.profile.flight.create.CreateProfileFlight;
 import bio.terra.profile.service.profile.flight.delete.DeleteProfileFlight;
 import bio.terra.profile.service.profile.model.BillingProfile;
+import bio.terra.profile.service.profile.model.ProfileDescription;
 import bio.terra.profile.service.spendreporting.azure.AzureSpendReportingService;
 import bio.terra.profile.service.spendreporting.azure.model.SpendCategoryType;
 import bio.terra.profile.service.spendreporting.azure.model.SpendData;
@@ -177,19 +178,19 @@ public class BPMProviderTest {
   Map<String, Object> creationJobServiceExistsState() {
     var jobBuilder = mock(JobBuilder.class);
 
-    var profile = ProviderStateData.azureBillingProfile;
+    var profile = ProviderStateData.azureBillingProfileDescription;
 
     when(jobService.newJob()).thenReturn(jobBuilder);
     when(jobBuilder.description(anyString())).thenReturn(jobBuilder);
     when(jobBuilder.flightClass(CreateProfileFlight.class)).thenReturn(jobBuilder);
     when(jobBuilder.request(any())).thenReturn(jobBuilder);
     when(jobBuilder.userRequest(any())).thenReturn(jobBuilder);
-    when(jobBuilder.submitAndWait(BillingProfile.class)).thenReturn(profile);
+    when(jobBuilder.submitAndWait(ProfileDescription.class)).thenReturn(profile);
 
     return Map.of(
-        "subscriptionId", profile.subscriptionId().get(),
-        "tenantId", profile.tenantId().get(),
-        "managedResourceGroupId", profile.managedResourceGroupId());
+        "subscriptionId", profile.billingProfile().subscriptionId().get(),
+        "tenantId", profile.billingProfile().tenantId().get(),
+        "managedResourceGroupId", profile.billingProfile().managedResourceGroupId());
   }
 
   @State("a JobService that supports profile deletion")

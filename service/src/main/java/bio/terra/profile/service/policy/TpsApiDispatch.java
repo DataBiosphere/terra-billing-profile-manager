@@ -79,7 +79,8 @@ public class TpsApiDispatch {
         throw convertApiException(e);
       }
     } catch (PolicyServiceNotFoundException e) {
-      // Not found is not an error as far as BPM is concerned.
+      // If the PAO is not found, it has either already been deleted by a prior step OR it never
+      // existed to begin with if the profile had no policies set. Neither case is an error to BPM.
     }
   }
 
