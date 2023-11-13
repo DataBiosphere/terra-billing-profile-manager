@@ -30,9 +30,9 @@ class MetricsUtilsUnitTest extends BaseUnitTest {
 
   @Test
   void createGcpProfileMetrics() {
-    var profile = ProfileFixtures.createGcpBillingProfileDescription("ABCD1234");
+    var profile = ProfileFixtures.createGcpBillingProfile("ABCD1234");
 
-    MetricUtils.recordProfileCreation(() -> profile, profile.billingProfile().cloudPlatform());
+    MetricUtils.recordProfileCreation(() -> profile, profile.cloudPlatform());
 
     var timer = meterRegistry.find("bpm.profile.creation.time").timer();
     assertNotNull(timer);
@@ -43,10 +43,9 @@ class MetricsUtilsUnitTest extends BaseUnitTest {
   @Test
   void createAzureProfileMetrics() {
     var profile =
-        ProfileFixtures.createAzureBillingProfileDescription(
-            UUID.randomUUID(), UUID.randomUUID(), "fake-mrg");
+        ProfileFixtures.createAzureBillingProfile(UUID.randomUUID(), UUID.randomUUID(), "fake-mrg");
 
-    MetricUtils.recordProfileCreation(() -> profile, profile.billingProfile().cloudPlatform());
+    MetricUtils.recordProfileCreation(() -> profile, CloudPlatform.AZURE);
 
     var timer = meterRegistry.find("bpm.profile.creation.time").timer();
     assertNotNull(timer);

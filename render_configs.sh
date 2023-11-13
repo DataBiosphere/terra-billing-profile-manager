@@ -16,15 +16,4 @@ function azure_creds {
   > $LOCAL_CONFIG_OUTPUT
 }
 
-
-function service_creds {
-  LOCAL_TPS_SA_PATH="service/src/main/resources/generated/bpm-client-sa.json"
-  TPS_VAULT_PATH="secret/dsde/terra/kernel/dev/dev/bpm/app-sa"
-  tempfile=$(mktemp)
-  $VAULT_COMMAND -format=json "$TPS_VAULT_PATH" \
-  | jq -r .data.key | base64 -d \
-  > "$LOCAL_TPS_SA_PATH"
-}
-
 azure_creds
-service_creds

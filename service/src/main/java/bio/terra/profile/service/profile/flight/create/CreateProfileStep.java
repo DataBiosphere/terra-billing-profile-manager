@@ -2,7 +2,7 @@ package bio.terra.profile.service.profile.flight.create;
 
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.db.ProfileDao;
-import bio.terra.profile.service.profile.flight.ProfileMapKeys;
+import bio.terra.profile.service.job.JobMapKeys;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.stairway.FlightContext;
 import bio.terra.stairway.FlightMap;
@@ -10,6 +10,7 @@ import bio.terra.stairway.Step;
 import bio.terra.stairway.StepResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 
 /** Step to create a billing profile in the database. */
 record CreateProfileStep(
@@ -22,7 +23,8 @@ record CreateProfileStep(
     logger.info("Profile created with id {}", createdProfile.id());
 
     FlightMap workingMap = flightContext.getWorkingMap();
-    workingMap.put(ProfileMapKeys.PROFILE, createdProfile);
+    workingMap.put(JobMapKeys.RESPONSE.getKeyName(), createdProfile);
+    workingMap.put(JobMapKeys.STATUS_CODE.getKeyName(), HttpStatus.CREATED);
     return StepResult.getStepResultSuccess();
   }
 

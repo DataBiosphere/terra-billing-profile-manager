@@ -2,28 +2,16 @@ package bio.terra.profile.service.profile;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 import bio.terra.cloudres.google.billing.CloudBillingClientCow;
 import bio.terra.common.exception.ForbiddenException;
 import bio.terra.common.exception.NotFoundException;
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.common.stairway.StairwayComponent;
-import bio.terra.policy.model.TpsPaoGetResult;
-import bio.terra.policy.model.TpsPolicyInput;
-import bio.terra.policy.model.TpsPolicyInputs;
 import bio.terra.profile.app.common.MdcHook;
-import bio.terra.profile.common.BaseUnitTest;
-import bio.terra.profile.common.ProfileFixtures;
+import bio.terra.profile.common.*;
 import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.model.SamPolicyModel;
@@ -33,14 +21,11 @@ import bio.terra.profile.service.iam.model.SamResourceType;
 import bio.terra.profile.service.job.JobBuilder;
 import bio.terra.profile.service.job.JobMapKeys;
 import bio.terra.profile.service.job.JobService;
-import bio.terra.profile.service.policy.TpsApiDispatch;
-import bio.terra.profile.service.policy.exception.PolicyServiceNotFoundException;
 import bio.terra.profile.service.profile.flight.ProfileMapKeys;
 import bio.terra.profile.service.profile.flight.create.CreateProfileFlight;
 import bio.terra.profile.service.profile.flight.create.CreateProfileVerifyAccountStep;
 import bio.terra.profile.service.profile.flight.delete.DeleteProfileFlight;
 import bio.terra.profile.service.profile.model.BillingProfile;
-import bio.terra.profile.service.profile.model.ProfileDescription;
 import com.google.iam.v1.TestIamPermissionsResponse;
 import io.opentelemetry.api.OpenTelemetry;
 import java.time.Instant;
@@ -58,12 +43,10 @@ class ProfileServiceUnitTest extends BaseUnitTest {
   @Mock private ProfileDao profileDao;
   @Mock private SamService samService;
   @Mock private JobService jobService;
-  @Mock private TpsApiDispatch tpsApiDispatch;
 
   private ProfileService profileService;
   private AuthenticatedUserRequest user;
   private BillingProfile profile;
-  private ProfileDescription profileDescription;
   private List<SamPolicyModel> profilePolicies;
   private SamPolicyModel userPolicy;
   private SamPolicyModel ownerPolicy;
@@ -77,7 +60,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
 
   @BeforeEach
   void before() {
-    profileService = new ProfileService(profileDao, samService, jobService, tpsApiDispatch);
+    profileService = new ProfileService(profileDao, samService, jobService);
     user =
         AuthenticatedUserRequest.builder()
             .setSubjectId("12345")
@@ -98,7 +81,6 @@ class ProfileServiceUnitTest extends BaseUnitTest {
             Instant.now(),
             Instant.now(),
             "creator");
-    profileDescription = new ProfileDescription(profile);
 
     userPolicy = new SamPolicyModel().name("user").members(List.of("user@unit.com"));
     ownerPolicy = new SamPolicyModel().name("owner").members(List.of("owner@unit.com"));
@@ -112,14 +94,14 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     when(jobService.newJob()).thenReturn(jobBuilder);
     when(jobBuilder.description(anyString())).thenReturn(jobBuilder);
     when(jobBuilder.flightClass(CreateProfileFlight.class)).thenReturn(jobBuilder);
-    when(jobBuilder.request(profileDescription)).thenReturn(jobBuilder);
+    when(jobBuilder.request(profile)).thenReturn(jobBuilder);
     when(jobBuilder.userRequest(user)).thenReturn(jobBuilder);
-    when(jobBuilder.submitAndWait(ProfileDescription.class)).thenReturn(profileDescription);
+    when(jobBuilder.submitAndWait(BillingProfile.class)).thenReturn(profile);
 
-    ProfileDescription result = profileService.createProfile(profileDescription, user);
+    BillingProfile result = profileService.createProfile(profile, user);
 
     verify(jobBuilder).submitAndWait(any());
-    assertEquals(profileDescription, result);
+    assertEquals(profile, result);
   }
 
   @Test
@@ -158,11 +140,9 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     when(profileDao.getBillingProfileById(profile.id())).thenReturn(profile);
     when(samService.hasActions(eq(user), eq(SamResourceType.PROFILE), eq(profile.id())))
         .thenReturn(true);
-    doThrow(new PolicyServiceNotFoundException("policies not found"))
-        .when(tpsApiDispatch)
-        .getPao(any());
+
     var result = profileService.getProfile(profile.id(), user);
-    assertEquals(profileDescription, result);
+    assertEquals(profile, result);
   }
 
   @Test
@@ -172,64 +152,12 @@ class ProfileServiceUnitTest extends BaseUnitTest {
   }
 
   @Test
-  void getProfileWithPolicies() throws InterruptedException {
-    var policies =
-        new TpsPolicyInputs()
-            .addInputsItem(new TpsPolicyInput().namespace("terra").name("protected-data"));
-    when(profileDao.getBillingProfileById(profile.id())).thenReturn(profile);
-    when(samService.hasActions(eq(user), eq(SamResourceType.PROFILE), eq(profile.id())))
-        .thenReturn(true);
-    when(tpsApiDispatch.getPao(profile.id()))
-        .thenReturn(new TpsPaoGetResult().effectiveAttributes(policies));
-    var result = profileService.getProfile(profile.id(), user);
-    assertEquals(new ProfileDescription(profile, Optional.of(policies)), result);
-  }
-
-  @Test
   void listProfiles() throws InterruptedException {
     when(samService.listProfileIds(user)).thenReturn(List.of(profile.id()));
     when(profileDao.listBillingProfiles(anyInt(), anyInt(), eq(List.of(profile.id()))))
         .thenReturn(List.of(profile));
-    doThrow(new PolicyServiceNotFoundException("policies not found"))
-        .when(tpsApiDispatch)
-        .getPao(any());
     var result = profileService.listProfiles(user, 0, 0);
-    assertEquals(List.of(profileDescription), result);
-  }
-
-  @Test
-  void listProfilesWithPolicies() throws InterruptedException {
-    var policies =
-        new TpsPolicyInputs()
-            .addInputsItem(new TpsPolicyInput().namespace("terra").name("protected-data"));
-    var protectedProfile =
-        new BillingProfile(
-            UUID.randomUUID(),
-            "protected_name",
-            "",
-            "direct",
-            CloudPlatform.AZURE,
-            Optional.empty(),
-            Optional.of(UUID.randomUUID()),
-            Optional.of(UUID.randomUUID()),
-            Optional.of("protectedMrgName"),
-            Instant.now(),
-            Instant.now(),
-            "creator");
-    when(samService.listProfileIds(user)).thenReturn(List.of(profile.id(), protectedProfile.id()));
-    when(profileDao.listBillingProfiles(
-            anyInt(), anyInt(), eq(List.of(profile.id(), protectedProfile.id()))))
-        .thenReturn(List.of(profile, protectedProfile));
-    doThrow(new PolicyServiceNotFoundException("policies not found"))
-        .when(tpsApiDispatch)
-        .getPao(profile.id());
-    when(tpsApiDispatch.getPao(protectedProfile.id()))
-        .thenReturn(new TpsPaoGetResult().effectiveAttributes(policies));
-    var result = profileService.listProfiles(user, 0, 0);
-    assertEquals(
-        List.of(
-            profileDescription, new ProfileDescription(protectedProfile, Optional.of(policies))),
-        result);
+    assertEquals(List.of(profile), result);
   }
 
   @Test
@@ -328,12 +256,10 @@ class ProfileServiceUnitTest extends BaseUnitTest {
                 jobService, stairwayComponent, mock(MdcHook.class), OpenTelemetry.noop()));
     when(jobService.newJob()).thenReturn(builder);
 
-    var profileDescription = ProfileFixtures.createGcpBillingProfileDescription("ABCD1234");
-    var profile = profileDescription.billingProfile();
-    doReturn(profileDescription).when(builder).submitAndWait(eq(ProfileDescription.class));
+    var profile = ProfileFixtures.createGcpBillingProfile("ABCD1234");
+    doReturn(profile).when(builder).submitAndWait(eq(BillingProfile.class));
 
-    var createdProfileDescription = profileService.createProfile(profileDescription, userRequest);
-    var createdProfile = createdProfileDescription.billingProfile();
+    var createdProfile = profileService.createProfile(profile, userRequest);
 
     assertEquals(createdProfile.id(), profile.id());
     assertEquals(createdProfile.biller(), profile.biller());
@@ -343,7 +269,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     verify(jobService).newJob();
     verify(builder).description(anyString());
     verify(builder).flightClass(CreateProfileFlight.class);
-    verify(builder).request(profileDescription);
+    verify(builder).request(profile);
     verify(builder).userRequest(userRequest);
   }
 }

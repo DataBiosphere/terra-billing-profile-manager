@@ -50,11 +50,7 @@ dependencies {
 		implementation('org.json:json:20231013')
 	}
 
-    // TPS
-    implementation group: "bio.terra", name:"terra-policy-client", version:"1.0.5-SNAPSHOT"
-
-
-    // Test deps
+	// Test deps
 	testImplementation('org.springframework.boot:spring-boot-starter-test') {
 		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
 	}
