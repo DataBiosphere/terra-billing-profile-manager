@@ -112,6 +112,7 @@ jobs:
             "repo-name": "${{ github.event.repository.name }}",
             "repo-branch": "${{ needs.init-github-context.outputs.repo-branch }}" ,
             "release-tag": "${{ needs.bpm-app-version.outputs.tag }}"
+
           }'
 
 ## Deactivated until WOR-890 lands
