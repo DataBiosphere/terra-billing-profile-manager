@@ -25,6 +25,8 @@ env:
   sentry:
     dsn: ${SENTRY_DSN:}
     environment: ${DEPLOY_ENV:}
+  tps:
+    basePath: ${TPS_ADDRESS:https://tps.dsde-dev.broadinstitute.org/}
 
 # Below here is non-deployment-specific
 
@@ -76,6 +78,10 @@ profile:
   sam:
     base-path: ${env.sam.basePath}
     admins-group-email: ${env.sam.adminsGroupEmail}
+
+  policy:
+    client-credential-file-path: build/resources/main/generated/bpm-client-sa.json
+    base-path: ${env.tps.basePath}
 
   stairway-database:
     password: ${env.db.stairway.pass}

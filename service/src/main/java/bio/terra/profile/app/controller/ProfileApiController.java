@@ -7,7 +7,7 @@ import bio.terra.profile.api.ProfileApi;
 import bio.terra.profile.model.*;
 import bio.terra.profile.service.job.JobService;
 import bio.terra.profile.service.profile.ProfileService;
-import bio.terra.profile.service.profile.model.BillingProfile;
+import bio.terra.profile.service.profile.model.ProfileDescription;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,15 +37,15 @@ public class ProfileApiController implements ProfileApi {
   @Override
   public ResponseEntity<ProfileModel> createProfile(CreateProfileRequest body) {
     AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
-    BillingProfile profile = BillingProfile.fromApiCreateProfileRequest(body);
-    BillingProfile result = profileService.createProfile(profile, user);
+    ProfileDescription profile = ProfileDescription.fromApiCreateProfileRequest(body);
+    ProfileDescription result = profileService.createProfile(profile, user);
     return new ResponseEntity<>(result.toApiProfileModel(), HttpStatus.CREATED);
   }
 
   @Override
   public ResponseEntity<ProfileModel> getProfile(UUID profileId) {
     AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
-    BillingProfile profile = profileService.getProfile(profileId, user);
+    ProfileDescription profile = profileService.getProfile(profileId, user);
     return new ResponseEntity<>(profile.toApiProfileModel(), HttpStatus.OK);
   }
 
@@ -53,10 +53,10 @@ public class ProfileApiController implements ProfileApi {
   public ResponseEntity<ProfileModelList> listProfiles(Integer offset, Integer limit) {
     validatePaginationParams(offset, limit);
     AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
-    List<BillingProfile> profiles = profileService.listProfiles(user, offset, limit);
+    List<ProfileDescription> profiles = profileService.listProfiles(user, offset, limit);
     var response =
         new ProfileModelList()
-            .items(profiles.stream().map(BillingProfile::toApiProfileModel).toList());
+            .items(profiles.stream().map(ProfileDescription::toApiProfileModel).toList());
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 

@@ -2,6 +2,7 @@ package bio.terra.profile.pact.provider;
 
 import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.service.profile.model.BillingProfile;
+import bio.terra.profile.service.profile.model.ProfileDescription;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
@@ -24,6 +25,9 @@ public class ProviderStateData {
           Instant.now(),
           "");
 
+  static ProfileDescription gcpBillingProfileDescription =
+      new ProfileDescription(gcpBillingProfile, Optional.empty());
+
   static BillingProfile azureBillingProfile =
       new BillingProfile(
           // Using hard-coded id, so as to avoid changing the pact with randomly generated data
@@ -39,4 +43,7 @@ public class ProviderStateData {
           Instant.now(),
           Instant.now(),
           "");
+
+  static ProfileDescription azureBillingProfileDescription =
+      new ProfileDescription(azureBillingProfile, Optional.empty());
 }

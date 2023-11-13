@@ -5,6 +5,7 @@ import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.service.iam.SamService;
 import bio.terra.profile.service.job.JobMapKeys;
+import bio.terra.profile.service.policy.TpsApiDispatch;
 import bio.terra.profile.service.profile.flight.ProfileMapKeys;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.stairway.Flight;
@@ -19,6 +20,7 @@ public class DeleteProfileFlight extends Flight {
     ApplicationContext appContext = (ApplicationContext) applicationContext;
     ProfileDao profileDao = appContext.getBean(ProfileDao.class);
     SamService samService = appContext.getBean(SamService.class);
+    TpsApiDispatch tpsApiDispatch = appContext.getBean(TpsApiDispatch.class);
 
     var profile = inputParameters.get(ProfileMapKeys.PROFILE, BillingProfile.class);
     var profileId = profile.id();
@@ -30,6 +32,7 @@ public class DeleteProfileFlight extends Flight {
     // only delete when
     // there are no more entities dependent on this profile
     addStep(new DeleteProfileStep(profileDao, profileId));
+    addStep(new DeleteProfilePoliciesStep(tpsApiDispatch, profileId));
     if (CloudPlatform.AZURE == platform) {
       addStep(new UnlinkBillingProfileIdFromMrgStep(samService, profile, user));
     }
