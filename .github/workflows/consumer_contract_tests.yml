@@ -75,23 +75,23 @@ jobs:
           NON_BREAKING_B64=$(cat service/build/pacts/bpm-sam.json | base64 -w 0)
           echo "pact-b64=${NON_BREAKING_B64}" >> $GITHUB_OUTPUT
 
-  app-version:
+  bpm-app-version:
     needs: [ init-github-context, bpm-consumer-contract-tests ]
     uses: ./.github/workflows/tag.yml
     secrets:
       BROADBOT_TOKEN: ${{ secrets.BROADBOT_TOKEN }}
 
-  echo-app-version:
+  print-app-version:
     runs-on: ubuntu-latest
-    needs: [ init-github-context, bpm-consumer-contract-tests, app-version ]
+    needs: [ init-github-context, bpm-consumer-contract-tests, bpm-app-version ]
     steps:
-      - name: Echo app version
+      - name: Print app version
         run: |
-          echo ${{ needs.app-version.outputs.tag }}
+          echo "BPM pact will be tagged by app version '${{ needs.bpm-app-version.outputs.tag }}'"
 
   publish-contracts:
     runs-on: ubuntu-latest
-    needs: [ init-github-context, bpm-consumer-contract-tests, app-version ]
+    needs: [ init-github-context, bpm-consumer-contract-tests, bpm-app-version ]
     steps:
       - name: Dispatch to terra-github-workflows
         uses: broadinstitute/workflow-dispatch@v4.0.0
