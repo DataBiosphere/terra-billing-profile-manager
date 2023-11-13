@@ -3,7 +3,9 @@ package bio.terra.profile.service.profile.flight.delete;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.app.configuration.AzureConfiguration;
@@ -14,6 +16,7 @@ import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.service.azure.AzureService;
 import bio.terra.profile.service.crl.GcpCrlService;
 import bio.terra.profile.service.iam.SamService;
+import bio.terra.profile.service.policy.TpsApiDispatch;
 import bio.terra.profile.service.profile.ProfileService;
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
@@ -33,6 +36,7 @@ class DeleteProfileFlightTest extends BaseSpringUnitTest {
   @MockBean ProfileDao profileDao;
   @MockBean SamService samService;
   @MockBean AzureService azureService;
+  @MockBean TpsApiDispatch tpsApiDispatch;
 
   AuthenticatedUserRequest userRequest =
       AuthenticatedUserRequest.builder()
@@ -107,5 +111,18 @@ class DeleteProfileFlightTest extends BaseSpringUnitTest {
             .counter();
     assertNotNull(gcpCounter);
     assertEquals(2, gcpCounter.count());
+  }
+
+  @Test
+  void deletingProfileDeletesPolicies() throws InterruptedException {
+    var tenantId = UUID.randomUUID();
+    var subscriptionId = UUID.randomUUID();
+    var mrgId = "test-MRG-ID";
+
+    var profile = ProfileFixtures.createAzureBillingProfile(tenantId, subscriptionId, mrgId);
+    when(profileDao.getBillingProfileById(profile.id())).thenReturn(profile);
+
+    profileService.deleteProfile(profile.id(), userRequest);
+    verify(tpsApiDispatch).deletePao(profile.id());
   }
 }

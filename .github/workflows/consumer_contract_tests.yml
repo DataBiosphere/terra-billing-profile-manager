@@ -103,7 +103,7 @@ jobs:
           run-name: "${{ env.PUBLISH_CONTRACTS_RUN_NAME }}"
           workflow: .github/workflows/publish-contracts.yaml
           repo: broadinstitute/terra-github-workflows
-          ref: refs/heads/QA-2123
+          ref: refs/heads/main
           token: ${{ secrets.BROADBOT_TOKEN }} # github token for access to kick off a job in the private repo
           inputs: '{
             "run-name": "${{ env.PUBLISH_CONTRACTS_RUN_NAME }}",
@@ -112,7 +112,6 @@ jobs:
             "repo-name": "${{ github.event.repository.name }}",
             "repo-branch": "${{ needs.init-github-context.outputs.repo-branch }}" ,
             "release-tag": "${{ needs.bpm-app-version.outputs.tag }}"
-
           }'
 
 ## Deactivated until WOR-890 lands
@@ -121,10 +120,15 @@ jobs:
 #    needs: [ init-github-context, publish-contracts ]
 #    steps:
 #      - name: Dispatch to terra-github-workflows
-#        uses: broadinstitute/workflow-dispatch@v3
+#        uses: broadinstitute/workflow-dispatch@v4.0.0
 #        with:
+#          run-name: "${{ env.CAN_I_DEPLOY_RUN_NAME }}"
 #          workflow: .github/workflows/can-i-deploy.yaml
 #          repo: broadinstitute/terra-github-workflows
 #          ref: refs/heads/main
 #          token: ${{ secrets.BROADBOT_TOKEN }} # github token for access to kick off a job in the private repo
-#          inputs: '{ "pacticipant": "bpm", "version": "${{ needs.init-github-context.outputs.repo-version }}" }'
+#          inputs: '{
+#            "run-name": "${{ env.CAN_I_DEPLOY_RUN_NAME }}",
+#            "pacticipant": "bpm",
+#            "version": "${{ needs.init-github-context.outputs.repo-version }}"
+#          }'
