@@ -78,6 +78,8 @@ jobs:
   app-version:
     needs: [ init-github-context, bpm-consumer-contract-tests ]
     uses: ./.github/workflows/tag.yml
+    secrets:
+      BROADBOT_TOKEN: ${{ secrets.BROADBOT_TOKEN }}
 
   echo-app-version:
     runs-on: ubuntu-latest
