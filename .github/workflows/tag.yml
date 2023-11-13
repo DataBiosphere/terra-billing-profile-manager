@@ -6,6 +6,9 @@ on:
       tag:
         description: "Generated tag"
         value: ${{ jobs.tag-job.outputs.tag }}
+    secrets:
+      BROADBOT_TOKEN:
+        required: true
 
 jobs:
   tag-job:
