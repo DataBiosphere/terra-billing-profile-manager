@@ -5,8 +5,9 @@ on:
     inputs:
       print-tag:
         description: "Echo generated tag to console"
-        value: "true"
+        default: "true"
         required: false
+        type: string
     outputs:
       tag:
         description: "Generated tag"
