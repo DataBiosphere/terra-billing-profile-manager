@@ -2,6 +2,11 @@ name: Tag
 on:
   workflow_dispatch:
   workflow_call:
+    inputs:
+      print-tag:
+        description: "Echo generated tag to console"
+        value: "true"
+        required: false
     outputs:
       tag:
         description: "Generated tag"
@@ -32,3 +37,7 @@ jobs:
           VERSION_FILE_PATH: settings.gradle
           VERSION_LINE_MATCH: "^\\s*gradle.ext.releaseVersion\\s*=\\s*'.*'"
           VERSION_SUFFIX: SNAPSHOT
+      - name: Echo generated tag to console
+        if: ${{ inputs.print-tag == 'true' }}
+        run: |
+          echo "app version tag: '${{ steps.tag.outputs.tag }}'"
