@@ -85,14 +85,6 @@ jobs:
     secrets:
       BROADBOT_TOKEN: ${{ secrets.BROADBOT_TOKEN }}
 
-  print-app-version:
-    runs-on: ubuntu-latest
-    needs: [ init-github-context, bpm-consumer-contract-tests, bpm-app-version ]
-    steps:
-      - name: Print app version
-        run: |
-          echo "BPM pact will be tagged by app version '${{ needs.bpm-app-version.outputs.tag }}'"
-
   publish-contracts:
     runs-on: ubuntu-latest
     needs: [ init-github-context, bpm-consumer-contract-tests, bpm-app-version ]
