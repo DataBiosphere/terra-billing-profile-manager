@@ -150,6 +150,14 @@ jobs:
           echo "CONSUMER_BRANCH=${{ inputs.consumer-version-branch }}" >> $GITHUB_ENV
           echo "CONSUMER_SHA=${{ inputs.consumer-version-number }}" >> $GITHUB_ENV
 
+      - name: Set provider version envvar
+        run: |
+          if [[ -n "${{ needs.bpm-app-version.outputs.tag }}" ]]; then
+            echo "PROVIDER_VERSION=${{ needs.bpm-app-version.outputs.tag }}" >> $GITHUB_ENV
+          else
+            echo "PROVIDER_VERSION=${{ env.PROVIDER_SHA }}" >> $GITHUB_ENV
+          fi
+
       - name: Switch to appropriate branch
         run: |
           if [[ -z "${{ env.PROVIDER_BRANCH }}" ]]; then
@@ -199,7 +207,7 @@ jobs:
           PACT_PROVIDER_BRANCH: ${{ env.PROVIDER_BRANCH }}
           PACT_BROKER_USERNAME: ${{ secrets.PACT_BROKER_USERNAME }}
           PACT_BROKER_PASSWORD: ${{ secrets.PACT_BROKER_PASSWORD }}
-          PACT_PROVIDER_VERSION: ${{ needs.bpm-app-version.outputs.tag || env.PROVIDER_SHA }}                            || 'develop' }}
+          PACT_PROVIDER_VERSION: ${{ env.PROVIDER_VERSION }}
         run: |
           echo "provider-sha=${{ env.PROVIDER_SHA }}" >> $GITHUB_OUTPUT
           echo "provider-version=${{ env.PACT_PROVIDER_VERSION }}" >> $GITHUB_OUTPUT
