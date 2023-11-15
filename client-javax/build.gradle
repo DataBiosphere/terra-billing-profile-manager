@@ -31,6 +31,9 @@ dependencies {
     swaggerCodegen 'io.swagger.codegen.v3:swagger-codegen-cli:3.0.47'
 }
 
+version = gradle.releaseVersion
+group = 'bio.terra'
+
 apply from: 'artifactory.gradle'
 apply from: 'swagger.gradle'
 
