@@ -74,7 +74,7 @@ jobs:
     outputs:
       is-bump: ${{ steps.skiptest.outputs.is-bump }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Skip version bump merges
         id: skiptest
         uses: ./.github/actions/bump-skip
@@ -86,14 +86,14 @@ jobs:
   # is already included in the payload, making a new version tag unnecessary.
   bpm-app-version:
     needs: [ bump-check ]
-    if: ${{ inputs.pb-event-type == '' }}
+    if: ${{ inputs.pb-event-type == '' && needs.bump-check.outputs.is-bump == 'no' }}
     uses: ./.github/workflows/tag.yml
     secrets:
       BROADBOT_TOKEN: ${{ secrets.BROADBOT_TOKEN }}
 
   verify-consumer-pact:
     needs: [ bump-check, bpm-app-version ]
-    if: needs.bump-check.outputs.is-bump == 'no'
+    if: ${{ needs.bump-check.outputs.is-bump == 'no' }}
     runs-on: ubuntu-latest
     permissions:
       contents: 'read'
@@ -225,7 +225,7 @@ jobs:
 
   can-i-deploy: # The can-i-deploy job will run as a result of a PR. It reports the pact verification statuses on all deployed environments.
     runs-on: ubuntu-latest
-    if: ${{ inputs.pb-event-type == '' }} && needs.bump-check.outputs.is-bump == 'no'
+    if: ${{ inputs.pb-event-type == '' && needs.bump-check.outputs.is-bump == 'no' }}
     needs: [ verify-consumer-pact, bump-check ]
     steps:
       - name: Dispatch to terra-github-workflows
