@@ -47,6 +47,7 @@ jobs:
 
   init-github-context:
     runs-on: ubuntu-latest
+    needs: [ bump-check ]
     if: ${{ needs.bump-check.outputs.is-bump == 'no' }}
     outputs:
       repo-branch: ${{ steps.extract-branch.outputs.repo-branch }}
@@ -102,7 +103,7 @@ jobs:
 
   publish-contracts:
     runs-on: ubuntu-latest
-    needs: [ init-github-context, bpm-consumer-contract-tests, bpm-app-version ]
+    needs: [ bump-check, init-github-context, bpm-consumer-contract-tests, bpm-app-version ]
     if: ${{ needs.bump-check.outputs.is-bump == 'no' }}
     steps:
       - name: Dispatch to terra-github-workflows
@@ -125,7 +126,7 @@ jobs:
 ## Deactivated until WOR-890 lands
 #  can-i-deploy:
 #    runs-on: ubuntu-latest
-#    needs: [ init-github-context, publish-contracts ]
+#    needs: [ bump-check, init-github-context, publish-contracts ]
 #    if: ${{ needs.bump-check.outputs.is-bump == 'no' }}
 #    steps:
 #      - name: Dispatch to terra-github-workflows
