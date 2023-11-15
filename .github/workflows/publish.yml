@@ -40,6 +40,13 @@ jobs:
           ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
           ARTIFACTORY_REPO_KEY: libs-snapshot-local
 
+      - name: Publish API client javax
+        run: ./gradlew :client-javax:artifactoryPublish
+        env:
+          ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+          ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+          ARTIFACTORY_REPO_KEY: libs-snapshot-local
+
       - name: Auth to GCR
         uses: google-github-actions/auth@v0
         with:
