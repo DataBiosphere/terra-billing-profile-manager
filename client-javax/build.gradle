@@ -1,0 +1,36 @@
+import org.springframework.boot.gradle.plugin.SpringBootPlugin
+
+plugins {
+    id 'maven-publish'
+    id 'com.jfrog.artifactory' version '5.1.10'
+    id 'org.hidetake.swagger.generator'
+    id 'java-library'
+    id 'idea'
+}
+repositories {
+    maven {
+        // Terra proxy for maven central
+        url 'https://broadinstitute.jfrog.io/broadinstitute/maven-central/'
+    }
+    mavenCentral()
+    maven {
+        url 'https://broadinstitute.jfrog.io/broadinstitute/libs-release/'
+    }
+    maven {
+        url 'https://broadinstitute.jfrog.io/broadinstitute/libs-snapshot-local/'
+    }
+}
+dependencies {
+    // Version controlled by dependency management plugin
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.2'
+    implementation 'org.glassfish.jersey.core:jersey-client:2.36'
+    implementation 'org.glassfish.jersey.media:jersey-media-json-jackson:2.36'
+    implementation 'org.glassfish.jersey.media:jersey-media-multipart:2.36'
+
+    implementation 'io.swagger.core.v3:swagger-annotations:2.2.12'
+    swaggerCodegen 'io.swagger.codegen.v3:swagger-codegen-cli:3.0.47'
+}
+
+apply from: 'artifactory.gradle'
+apply from: 'swagger.gradle'
+
