@@ -37,6 +37,11 @@ jobs:
         uses: ./.github/actions/bump-skip
         with:
           event-name: ${{ github.event_name }}
+      - name: Base branch
+        run: |
+          echo "Base branch"
+          echo "${{ github.event.before }}"
+          git describe --tags ${{ github.event.before }}
 
   bpm-app-version:
     needs: [ bump-check ]
