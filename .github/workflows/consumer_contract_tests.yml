@@ -43,7 +43,7 @@ jobs:
     if: ${{ needs.bump-check.outputs.is-bump == 'no' }}
     uses: ./.github/workflows/tag.yml
     with:
-      dry-run: true
+      dry-run: ${{ github.event_name == 'push' }}
     secrets:
       BROADBOT_TOKEN: ${{ secrets.BROADBOT_TOKEN }}
 
