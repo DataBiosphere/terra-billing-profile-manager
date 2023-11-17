@@ -44,8 +44,7 @@ jobs:
     uses: ./.github/workflows/tag.yml
     with:
       dry-run: ${{ github.event_name == 'push' }}
-    secrets:
-      BROADBOT_TOKEN: ${{ secrets.BROADBOT_TOKEN }}
+    secrets: inherit
 
   init-github-context:
     runs-on: ubuntu-latest
