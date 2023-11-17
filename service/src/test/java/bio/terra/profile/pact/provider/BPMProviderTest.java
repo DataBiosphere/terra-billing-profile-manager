@@ -83,7 +83,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 @EnableAutoConfiguration(
     exclude = {DataSourceAutoConfiguration.class, JdbcRepositoriesAutoConfiguration.class})
 public class BPMProviderTest {
-  private static final String CONSUMER_BRANCH = System.getenv("CONSUMER_BRANCH");;
+  private static final String CONSUMER_BRANCH = System.getenv("CONSUMER_BRANCH");
 
   @LocalServerPort int port;
 
