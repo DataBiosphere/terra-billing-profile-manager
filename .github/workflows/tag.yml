@@ -3,9 +3,14 @@ on:
   workflow_dispatch:
   workflow_call:
     inputs:
+      dry-run:
+        description: "Determine the next version without tagging the branch. The workflow can use the outputs new_tag and tag in subsequent steps. Possible values are true and false (default)"
+        default: false
+        required: false
+        type: string
       print-tag:
         description: "Echo generated tag to console"
-        default: "true"
+        default: true
         required: false
         type: string
     outputs:
@@ -34,6 +39,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.BROADBOT_TOKEN }}
           HOTFIX_BRANCHES: hotfix.*
           DEFAULT_BUMP: patch
+          DRY_RUN: ${{ inputs.dry-run }}
           RELEASE_BRANCHES: main
           VERSION_FILE_PATH: settings.gradle
           VERSION_LINE_MATCH: "^\\s*gradle.ext.releaseVersion\\s*=\\s*'.*'"

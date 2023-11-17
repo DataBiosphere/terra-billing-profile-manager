@@ -80,11 +80,6 @@ jobs:
         uses: ./.github/actions/bump-skip
         with:
           event-name: ${{ github.event_name }}
-      - name: Base branch
-        run: |
-          echo "Base branch"
-          echo "${{ github.event.before }}"
-          git describe --tags ${{ github.event.before }}
   # Create a new version tag only when this workflow is triggered by a PR or merge commit.
   # If triggered by a Pact Broker webhook, the provider version (GIT hash or release tag)
   # is already included in the payload, making a new version tag unnecessary.
@@ -92,6 +87,8 @@ jobs:
     needs: [ bump-check ]
     if: ${{ inputs.pb-event-type == '' && needs.bump-check.outputs.is-bump == 'no' }}
     uses: ./.github/workflows/tag.yml
+    with:
+      dry-run: true
     secrets:
       BROADBOT_TOKEN: ${{ secrets.BROADBOT_TOKEN }}
 
