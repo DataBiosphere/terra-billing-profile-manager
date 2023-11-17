@@ -9,6 +9,8 @@ import au.com.dius.pact.provider.junit5.PactVerificationContext;
 import au.com.dius.pact.provider.junitsupport.Provider;
 import au.com.dius.pact.provider.junitsupport.State;
 import au.com.dius.pact.provider.junitsupport.loader.PactBroker;
+import au.com.dius.pact.provider.junitsupport.loader.PactBrokerConsumerVersionSelectors;
+import au.com.dius.pact.provider.junitsupport.loader.SelectorBuilder;
 import au.com.dius.pact.provider.spring.junit5.PactVerificationSpringProvider;
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.common.iam.AuthenticatedUserRequestFactory;
@@ -44,11 +46,14 @@ import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.TestTemplate;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.data.jdbc.JdbcRepositoriesAutoConfiguration;
@@ -81,6 +86,8 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
     exclude = {DataSourceAutoConfiguration.class, JdbcRepositoriesAutoConfiguration.class})
 public class BPMProviderTest {
 
+  private static final Logger logger = LoggerFactory.getLogger(BPMProviderTest.class);
+
   @LocalServerPort int port;
 
   @MockBean ProfileDao profileDao;
@@ -102,6 +109,22 @@ public class BPMProviderTest {
   @Autowired ProfileStatusService profileStatusService;
   @MockBean AzureSpendReportingService azureSpendReportingService;
   @MockBean AzureService azureService;
+
+  @PactBrokerConsumerVersionSelectors
+  public static SelectorBuilder consumerVersionSelectors() {
+    // The following match condition basically says
+    // If verification is triggered by Pact Broker webhook due to consumer pact change, verify only
+    // the changed pact.
+    // Otherwise, this is a PR, verify all consumer pacts in Pact Broker marked with a deployment
+    // tag (e.g. dev, alpha).
+    String consumerBranch = System.getenv("CONSUMER_BRANCH");
+    logger.debug("consumerBranch: " + consumerBranch);
+    if (StringUtils.isBlank(consumerBranch)) {
+      return new SelectorBuilder().mainBranch().deployedOrReleased();
+    } else {
+      return new SelectorBuilder().branch(consumerBranch);
+    }
+  }
 
   @BeforeEach
   void setUp(PactVerificationContext context) {
