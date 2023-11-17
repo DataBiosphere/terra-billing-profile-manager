@@ -83,7 +83,7 @@ jobs:
   # Create a new version tag only when this workflow is triggered by a PR or merge commit.
   # If triggered by a Pact Broker webhook, the provider version (GIT hash or release tag)
   # is already included in the payload, making a new version tag unnecessary.
-  bpm-app-version:
+  regulated-tag-job:
     needs: [ bump-check ]
     if: ${{ inputs.pb-event-type == '' && needs.bump-check.outputs.is-bump == 'no' }}
     uses: ./.github/workflows/tag.yml
@@ -93,7 +93,7 @@ jobs:
       BROADBOT_TOKEN: ${{ secrets.BROADBOT_TOKEN }}
 
   verify-consumer-pact:
-    needs: [ bump-check, bpm-app-version ]
+    needs: [ bump-check, regulated-tag-job ]
     if: ${{ needs.bump-check.outputs.is-bump == 'no' }}
     runs-on: ubuntu-latest
     permissions:
@@ -153,8 +153,8 @@ jobs:
 
       - name: Set provider version envvar
         run: |
-          if [[ -n "${{ needs.bpm-app-version.outputs.new-tag }}" ]]; then
-            echo "PROVIDER_VERSION=${{ needs.bpm-app-version.outputs.new-tag }}" >> $GITHUB_ENV
+          if [[ -n "${{ needs.regulated-tag-job.outputs.new-tag }}" ]]; then
+            echo "PROVIDER_VERSION=${{ needs.regulated-tag-job.outputs.new-tag }}" >> $GITHUB_ENV
           else
             echo "PROVIDER_VERSION=${{ env.PROVIDER_SHA }}" >> $GITHUB_ENV
           fi

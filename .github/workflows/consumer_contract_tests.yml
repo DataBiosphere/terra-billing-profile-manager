@@ -38,7 +38,7 @@ jobs:
         with:
           event-name: ${{ github.event_name }}
 
-  bpm-app-version:
+  regulated-tag-job:
     needs: [ bump-check ]
     if: ${{ needs.bump-check.outputs.is-bump == 'no' }}
     uses: ./.github/workflows/tag.yml
@@ -105,7 +105,7 @@ jobs:
 
   publish-contracts:
     runs-on: ubuntu-latest
-    needs: [ bump-check, init-github-context, bpm-consumer-contract-tests, bpm-app-version ]
+    needs: [ bump-check, init-github-context, bpm-consumer-contract-tests, regulated-tag-job ]
     if: ${{ needs.bump-check.outputs.is-bump == 'no' }}
     steps:
       - name: Dispatch to terra-github-workflows
@@ -122,7 +122,7 @@ jobs:
             "repo-owner": "${{ github.repository_owner }}",
             "repo-name": "${{ github.event.repository.name }}",
             "repo-branch": "${{ needs.init-github-context.outputs.repo-branch }}" ,
-            "release-tag": "${{ needs.bpm-app-version.outputs.new-tag }}"
+            "release-tag": "${{ needs.regulated-tag-job.outputs.new-tag }}"
           }'
 
 ## Deactivated until WOR-890 lands
@@ -142,5 +142,5 @@ jobs:
 #          inputs: '{
 #            "run-name": "${{ env.CAN_I_DEPLOY_RUN_NAME }}",
 #            "pacticipant": "bpm",
-#            "version": "${{ needs.bpm-app-version.outputs.new-tag }}"
+#            "version": "${{ needs.regulated-tag-job.outputs.new-tag }}"
 #          }'
