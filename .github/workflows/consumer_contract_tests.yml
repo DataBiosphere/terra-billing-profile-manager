@@ -122,7 +122,7 @@ jobs:
             "repo-owner": "${{ github.repository_owner }}",
             "repo-name": "${{ github.event.repository.name }}",
             "repo-branch": "${{ needs.init-github-context.outputs.repo-branch }}" ,
-            "release-tag": "${{ needs.bpm-app-version.outputs.tag }}"
+            "release-tag": "${{ needs.bpm-app-version.outputs.new-tag }}"
           }'
 
 ## Deactivated until WOR-890 lands
@@ -142,5 +142,5 @@ jobs:
 #          inputs: '{
 #            "run-name": "${{ env.CAN_I_DEPLOY_RUN_NAME }}",
 #            "pacticipant": "bpm",
-#            "version": "${{ needs.bpm-app-version.outputs.tag }}"
+#            "version": "${{ needs.bpm-app-version.outputs.new-tag }}"
 #          }'

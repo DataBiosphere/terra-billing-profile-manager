@@ -153,8 +153,8 @@ jobs:
 
       - name: Set provider version envvar
         run: |
-          if [[ -n "${{ needs.bpm-app-version.outputs.tag }}" ]]; then
-            echo "PROVIDER_VERSION=${{ needs.bpm-app-version.outputs.tag }}" >> $GITHUB_ENV
+          if [[ -n "${{ needs.bpm-app-version.outputs.new-tag }}" ]]; then
+            echo "PROVIDER_VERSION=${{ needs.bpm-app-version.outputs.new-tag }}" >> $GITHUB_ENV
           else
             echo "PROVIDER_VERSION=${{ env.PROVIDER_SHA }}" >> $GITHUB_ENV
           fi

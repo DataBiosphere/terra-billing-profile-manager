@@ -15,8 +15,11 @@ on:
         type: string
     outputs:
       tag:
-        description: "Generated tag"
+        description: "The value of the latest tag after running this action"
         value: ${{ jobs.tag-job.outputs.tag }}
+      new-tag:
+        description: "The value of the newly created tag"
+        value: ${{ jobs.tag-job.outputs.new-tag }}
     secrets:
       BROADBOT_TOKEN:
         required: true
@@ -26,6 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       tag: ${{ steps.tag.outputs.tag }}
+      new-tag: ${{ steps.tag.outputs.new_tag }}
     steps:
       - name: Checkout current code
         uses: actions/checkout@v3
@@ -47,4 +51,4 @@ jobs:
       - name: Echo generated tag to console
         if: ${{ inputs.print-tag == 'true' }}
         run: |
-          echo "app version tag: '${{ steps.tag.outputs.tag }}'"
+          echo "app version tag: '${{ steps.tag.outputs.new_tag }}'"
