@@ -74,26 +74,26 @@ jobs:
     outputs:
       is-bump: ${{ steps.skiptest.outputs.is-bump }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Skip version bump merges
         id: skiptest
         uses: ./.github/actions/bump-skip
         with:
           event-name: ${{ github.event_name }}
-
-  # Create a new version tag only when this workflow is triggered by a PR or merge commit.
-  # If triggered by a Pact Broker webhook, the provider version (GIT hash or release tag)
-  # is already included in the payload, making a new version tag unnecessary.
-  bpm-app-version:
+  # We only need a new version tag when this workflow is triggered by opening, updating a PR or PR merge.
+  # When triggered by a Pact Broker webhook, the provider version (GIT hash or release tag)
+  # is already included in the payload, then a new version tag wouldn't be needed.
+  regulated-tag-job:
     needs: [ bump-check ]
-    if: ${{ inputs.pb-event-type == '' }}
+    if: ${{ needs.bump-check.outputs.is-bump == 'no' }}
     uses: ./.github/workflows/tag.yml
-    secrets:
-      BROADBOT_TOKEN: ${{ secrets.BROADBOT_TOKEN }}
+    with:
+      dry-run: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    secrets: inherit
 
   verify-consumer-pact:
-    needs: [ bump-check, bpm-app-version ]
-    if: needs.bump-check.outputs.is-bump == 'no'
+    needs: [ bump-check, regulated-tag-job ]
+    if: ${{ needs.bump-check.outputs.is-bump == 'no' }}
     runs-on: ubuntu-latest
     permissions:
       contents: 'read'
@@ -152,8 +152,8 @@ jobs:
 
       - name: Set provider version envvar
         run: |
-          if [[ -n "${{ needs.bpm-app-version.outputs.tag }}" ]]; then
-            echo "PROVIDER_VERSION=${{ needs.bpm-app-version.outputs.tag }}" >> $GITHUB_ENV
+          if [[ -z "${{ inputs.pb-event-type }}" ]]; then
+            echo "PROVIDER_VERSION=${{ needs.regulated-tag-job.outputs.new-tag }}" >> $GITHUB_ENV
           else
             echo "PROVIDER_VERSION=${{ env.PROVIDER_SHA }}" >> $GITHUB_ENV
           fi
@@ -225,7 +225,7 @@ jobs:
 
   can-i-deploy: # The can-i-deploy job will run as a result of a PR. It reports the pact verification statuses on all deployed environments.
     runs-on: ubuntu-latest
-    if: ${{ inputs.pb-event-type == '' }} && needs.bump-check.outputs.is-bump == 'no'
+    if: ${{ inputs.pb-event-type == '' && needs.bump-check.outputs.is-bump == 'no' }}
     needs: [ verify-consumer-pact, bump-check ]
     steps:
       - name: Dispatch to terra-github-workflows
