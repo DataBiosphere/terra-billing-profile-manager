@@ -38,6 +38,14 @@ jobs:
         with:
           event-name: ${{ github.event_name }}
 
+# The primary objective of this section is to carefully control the dispatching of tags,
+# ensuring it only occurs during the 'Tag, publish, deploy' workflow.
+# However, a challenge arises with contract tests, as they require knowledge of the upcoming tag
+# before the actual deployment. To address this, we leverage the dry run feature provided by bumper.
+# This allows us to obtain the next tag for publishing contracts and verifying consumer pacts without
+# triggering the tag dispatch. This approach sidesteps the need for orchestrating multiple workflows,
+# simplifying our implementation.
+#
 # We regulate the tag job to meet the following requirements according to the trigger event type:
 # 1. pull_request event (due to opening or updating of PR branch):
 #      dry-run flag is set to false
