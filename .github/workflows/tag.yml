@@ -8,8 +8,8 @@ on:
         default: false
         required: false
         type: string
-      print-tags:
-        description: "Echo tags to console"
+      print-tag:
+        description: "Echo tag to console"
         default: true
         required: false
         type: string
@@ -48,9 +48,10 @@ jobs:
           VERSION_FILE_PATH: settings.gradle
           VERSION_LINE_MATCH: "^\\s*gradle.ext.releaseVersion\\s*=\\s*'.*'"
           VERSION_SUFFIX: SNAPSHOT
-      - name: Echo tags to console
-        if: ${{ inputs.print-tags == 'true' }}
+      - name: Echo tag to console
+        if: ${{ inputs.print-tag == 'true' }}
         run: |
           echo "Newly created version tag: '${{ steps.tag.outputs.new_tag }}'"
-          echo "Value of latest tag in settings.gradle after running the action: '${{ steps.tag.outputs.tag }}'"
+          echo "settings.gradle"
+          echo "==============="
           cat settings.gradle
