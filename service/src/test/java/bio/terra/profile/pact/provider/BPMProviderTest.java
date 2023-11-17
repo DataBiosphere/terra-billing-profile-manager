@@ -52,8 +52,6 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.TestTemplate;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.data.jdbc.JdbcRepositoriesAutoConfiguration;
@@ -86,8 +84,6 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
     exclude = {DataSourceAutoConfiguration.class, JdbcRepositoriesAutoConfiguration.class})
 public class BPMProviderTest {
 
-  private static final Logger logger = LoggerFactory.getLogger(BPMProviderTest.class);
-
   @LocalServerPort int port;
 
   @MockBean ProfileDao profileDao;
@@ -118,7 +114,7 @@ public class BPMProviderTest {
     // Otherwise, this is a PR, verify all consumer pacts in Pact Broker marked with a deployment
     // tag (e.g. dev, alpha).
     String consumerBranch = System.getenv("CONSUMER_BRANCH");
-    logger.debug("consumerBranch: " + consumerBranch);
+    System.out.println("consumerBranch: " + consumerBranch);
     if (StringUtils.isBlank(consumerBranch)) {
       return new SelectorBuilder().mainBranch().deployedOrReleased();
     } else {
