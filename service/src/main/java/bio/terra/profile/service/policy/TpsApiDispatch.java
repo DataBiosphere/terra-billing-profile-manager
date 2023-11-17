@@ -4,9 +4,17 @@ import bio.terra.common.logging.RequestIdFilter;
 import bio.terra.policy.api.TpsApi;
 import bio.terra.policy.client.ApiClient;
 import bio.terra.policy.client.ApiException;
-import bio.terra.policy.model.*;
+import bio.terra.policy.model.TpsComponent;
+import bio.terra.policy.model.TpsObjectType;
+import bio.terra.policy.model.TpsPaoCreateRequest;
+import bio.terra.policy.model.TpsPaoGetResult;
+import bio.terra.policy.model.TpsPolicyInputs;
 import bio.terra.profile.app.configuration.PolicyServiceConfiguration;
-import bio.terra.profile.service.policy.exception.*;
+import bio.terra.profile.service.policy.exception.PolicyConflictException;
+import bio.terra.profile.service.policy.exception.PolicyServiceAPIException;
+import bio.terra.profile.service.policy.exception.PolicyServiceAuthorizationException;
+import bio.terra.profile.service.policy.exception.PolicyServiceDuplicateException;
+import bio.terra.profile.service.policy.exception.PolicyServiceNotFoundException;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import java.io.IOException;
 import java.util.UUID;
@@ -91,6 +99,17 @@ public class TpsApiDispatch {
       return TpsRetry.retry(() -> tpsApi.getPao(objectId));
     } catch (ApiException e) {
       throw convertApiException(e);
+    }
+  }
+
+  @WithSpan
+  public TpsPaoGetResult getOrCreatePao(
+      UUID objectId, TpsComponent component, TpsObjectType objectType) throws InterruptedException {
+    try {
+      return getPao(objectId);
+    } catch (PolicyServiceNotFoundException ignored) {
+      createPao(objectId, null, component, objectType);
+      return getPao(objectId);
     }
   }
 

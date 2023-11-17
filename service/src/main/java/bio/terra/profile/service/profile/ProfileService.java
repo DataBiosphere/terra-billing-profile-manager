@@ -2,6 +2,8 @@ package bio.terra.profile.service.profile;
 
 import bio.terra.common.exception.ForbiddenException;
 import bio.terra.common.iam.AuthenticatedUserRequest;
+import bio.terra.policy.model.TpsComponent;
+import bio.terra.policy.model.TpsObjectType;
 import bio.terra.policy.model.TpsPolicyInputs;
 import bio.terra.profile.app.common.MetricUtils;
 import bio.terra.profile.db.ProfileDao;
@@ -14,7 +16,6 @@ import bio.terra.profile.service.job.JobMapKeys;
 import bio.terra.profile.service.job.JobService;
 import bio.terra.profile.service.policy.TpsApiDispatch;
 import bio.terra.profile.service.policy.exception.PolicyServiceAPIException;
-import bio.terra.profile.service.policy.exception.PolicyServiceNotFoundException;
 import bio.terra.profile.service.profile.exception.ProfileNotFoundException;
 import bio.terra.profile.service.profile.flight.ProfileMapKeys;
 import bio.terra.profile.service.profile.flight.create.CreateProfileFlight;
@@ -127,12 +128,15 @@ public class ProfileService {
     // Throws 404 if not found
     BillingProfile profile = profileDao.getBillingProfileById(id);
 
-    Optional<TpsPolicyInputs> policies = Optional.empty();
+    Optional<TpsPolicyInputs> policies;
     try {
-      policies = Optional.ofNullable(tpsApiDispatch.getPao(id).getEffectiveAttributes());
+      policies =
+          Optional.ofNullable(
+              tpsApiDispatch
+                  .getOrCreatePao(id, TpsComponent.BPM, TpsObjectType.BILLING_PROFILE)
+                  .getEffectiveAttributes());
     } catch (InterruptedException e) {
       throw new PolicyServiceAPIException("Interrupted during TPS getPao operation.", e);
-    } catch (PolicyServiceNotFoundException ignored) {
     }
 
     return new ProfileDescription(profile, policies);
@@ -146,11 +150,13 @@ public class ProfileService {
 
     List<ProfileDescription> profilesWithPolicies = new ArrayList<>();
     for (BillingProfile profile : profiles) {
-      Optional<TpsPolicyInputs> policies = Optional.empty();
+      Optional<TpsPolicyInputs> policies;
       try {
         policies =
-            Optional.ofNullable(tpsApiDispatch.getPao(profile.id()).getEffectiveAttributes());
-      } catch (PolicyServiceNotFoundException ignored) {
+            Optional.ofNullable(
+                tpsApiDispatch
+                    .getOrCreatePao(profile.id(), TpsComponent.BPM, TpsObjectType.BILLING_PROFILE)
+                    .getEffectiveAttributes());
       } catch (InterruptedException e) {
         throw new PolicyServiceAPIException("Interrupted during TPS getPao operation.", e);
       }

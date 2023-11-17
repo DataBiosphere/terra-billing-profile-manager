@@ -18,6 +18,8 @@ import bio.terra.common.exception.ForbiddenException;
 import bio.terra.common.exception.NotFoundException;
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.common.stairway.StairwayComponent;
+import bio.terra.policy.model.TpsComponent;
+import bio.terra.policy.model.TpsObjectType;
 import bio.terra.policy.model.TpsPaoGetResult;
 import bio.terra.policy.model.TpsPolicyInput;
 import bio.terra.policy.model.TpsPolicyInputs;
@@ -34,7 +36,6 @@ import bio.terra.profile.service.job.JobBuilder;
 import bio.terra.profile.service.job.JobMapKeys;
 import bio.terra.profile.service.job.JobService;
 import bio.terra.profile.service.policy.TpsApiDispatch;
-import bio.terra.profile.service.policy.exception.PolicyServiceNotFoundException;
 import bio.terra.profile.service.profile.flight.ProfileMapKeys;
 import bio.terra.profile.service.profile.flight.create.CreateProfileFlight;
 import bio.terra.profile.service.profile.flight.create.CreateProfileVerifyAccountStep;
@@ -158,9 +159,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     when(profileDao.getBillingProfileById(profile.id())).thenReturn(profile);
     when(samService.hasActions(eq(user), eq(SamResourceType.PROFILE), eq(profile.id())))
         .thenReturn(true);
-    doThrow(new PolicyServiceNotFoundException("policies not found"))
-        .when(tpsApiDispatch)
-        .getPao(any());
+    when(tpsApiDispatch.getOrCreatePao(any(), any(), any())).thenReturn(new TpsPaoGetResult());
     var result = profileService.getProfile(profile.id(), user);
     assertEquals(profileDescription, result);
   }
@@ -179,7 +178,8 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     when(profileDao.getBillingProfileById(profile.id())).thenReturn(profile);
     when(samService.hasActions(eq(user), eq(SamResourceType.PROFILE), eq(profile.id())))
         .thenReturn(true);
-    when(tpsApiDispatch.getPao(profile.id()))
+    when(tpsApiDispatch.getOrCreatePao(
+            profile.id(), TpsComponent.BPM, TpsObjectType.BILLING_PROFILE))
         .thenReturn(new TpsPaoGetResult().effectiveAttributes(policies));
     var result = profileService.getProfile(profile.id(), user);
     assertEquals(new ProfileDescription(profile, Optional.of(policies)), result);
@@ -190,9 +190,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     when(samService.listProfileIds(user)).thenReturn(List.of(profile.id()));
     when(profileDao.listBillingProfiles(anyInt(), anyInt(), eq(List.of(profile.id()))))
         .thenReturn(List.of(profile));
-    doThrow(new PolicyServiceNotFoundException("policies not found"))
-        .when(tpsApiDispatch)
-        .getPao(any());
+    when(tpsApiDispatch.getOrCreatePao(any(), any(), any())).thenReturn(new TpsPaoGetResult());
     var result = profileService.listProfiles(user, 0, 0);
     assertEquals(List.of(profileDescription), result);
   }
@@ -220,11 +218,12 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     when(profileDao.listBillingProfiles(
             anyInt(), anyInt(), eq(List.of(profile.id(), protectedProfile.id()))))
         .thenReturn(List.of(profile, protectedProfile));
-    doThrow(new PolicyServiceNotFoundException("policies not found"))
-        .when(tpsApiDispatch)
-        .getPao(profile.id());
-    when(tpsApiDispatch.getPao(protectedProfile.id()))
+    when(tpsApiDispatch.getOrCreatePao(
+            protectedProfile.id(), TpsComponent.BPM, TpsObjectType.BILLING_PROFILE))
         .thenReturn(new TpsPaoGetResult().effectiveAttributes(policies));
+    when(tpsApiDispatch.getOrCreatePao(
+            profile.id(), TpsComponent.BPM, TpsObjectType.BILLING_PROFILE))
+        .thenReturn(new TpsPaoGetResult());
     var result = profileService.listProfiles(user, 0, 0);
     assertEquals(
         List.of(
