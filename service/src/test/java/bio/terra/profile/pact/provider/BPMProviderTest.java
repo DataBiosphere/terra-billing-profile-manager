@@ -117,7 +117,7 @@ public class BPMProviderTest {
     if (StringUtils.isBlank(CONSUMER_BRANCH)) {
       return new SelectorBuilder().mainBranch().deployedOrReleased();
     } else {
-      return new SelectorBuilder().branch(consumerBranch);
+      return new SelectorBuilder().branch(CONSUMER_BRANCH);
     }
   }
 
