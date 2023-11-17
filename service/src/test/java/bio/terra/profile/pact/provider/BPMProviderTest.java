@@ -83,6 +83,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 @EnableAutoConfiguration(
     exclude = {DataSourceAutoConfiguration.class, JdbcRepositoriesAutoConfiguration.class})
 public class BPMProviderTest {
+  private static final String CONSUMER_BRANCH = System.getenv("CONSUMER_BRANCH");;
 
   @LocalServerPort int port;
 
@@ -113,9 +114,7 @@ public class BPMProviderTest {
     // the changed pact.
     // Otherwise, this is a PR, verify all consumer pacts in Pact Broker marked with a deployment
     // tag (e.g. dev, alpha).
-    String consumerBranch = System.getenv("CONSUMER_BRANCH");
-    System.out.println("consumerBranch: " + consumerBranch);
-    if (StringUtils.isBlank(consumerBranch)) {
+    if (StringUtils.isBlank(CONSUMER_BRANCH)) {
       return new SelectorBuilder().mainBranch().deployedOrReleased();
     } else {
       return new SelectorBuilder().branch(consumerBranch);
