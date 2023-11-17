@@ -80,12 +80,12 @@ jobs:
         uses: ./.github/actions/bump-skip
         with:
           event-name: ${{ github.event_name }}
-  # Create a new version tag only when this workflow is triggered by a PR or merge commit.
-  # If triggered by a Pact Broker webhook, the provider version (GIT hash or release tag)
-  # is already included in the payload, making a new version tag unnecessary.
+  # We only need a new version tag when this workflow is triggered by opening, updating a PR or PR merge.
+  # When triggered by a Pact Broker webhook, the provider version (GIT hash or release tag)
+  # is already included in the payload, then a new version tag wouldn't be needed.
   regulated-tag-job:
     needs: [ bump-check ]
-    if: ${{ inputs.pb-event-type == '' && needs.bump-check.outputs.is-bump == 'no' }}
+    if: ${{ needs.bump-check.outputs.is-bump == 'no' }}
     uses: ./.github/workflows/tag.yml
     with:
       dry-run: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
@@ -152,7 +152,7 @@ jobs:
 
       - name: Set provider version envvar
         run: |
-          if [[ -n "${{ needs.regulated-tag-job.outputs.new-tag }}" ]]; then
+          if [[ -z "${{ inputs.pb-event-type }}" ]]; then
             echo "PROVIDER_VERSION=${{ needs.regulated-tag-job.outputs.new-tag }}" >> $GITHUB_ENV
           else
             echo "PROVIDER_VERSION=${{ env.PROVIDER_SHA }}" >> $GITHUB_ENV
