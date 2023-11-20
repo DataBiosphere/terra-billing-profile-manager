@@ -9,6 +9,8 @@ import au.com.dius.pact.provider.junit5.PactVerificationContext;
 import au.com.dius.pact.provider.junitsupport.Provider;
 import au.com.dius.pact.provider.junitsupport.State;
 import au.com.dius.pact.provider.junitsupport.loader.PactBroker;
+import au.com.dius.pact.provider.junitsupport.loader.PactBrokerConsumerVersionSelectors;
+import au.com.dius.pact.provider.junitsupport.loader.SelectorBuilder;
 import au.com.dius.pact.provider.spring.junit5.PactVerificationSpringProvider;
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.common.iam.AuthenticatedUserRequestFactory;
@@ -44,6 +46,7 @@ import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.TestTemplate;
@@ -80,6 +83,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 @EnableAutoConfiguration(
     exclude = {DataSourceAutoConfiguration.class, JdbcRepositoriesAutoConfiguration.class})
 public class BPMProviderTest {
+  private static final String CONSUMER_BRANCH = System.getenv("CONSUMER_BRANCH");
 
   @LocalServerPort int port;
 
@@ -102,6 +106,20 @@ public class BPMProviderTest {
   @Autowired ProfileStatusService profileStatusService;
   @MockBean AzureSpendReportingService azureSpendReportingService;
   @MockBean AzureService azureService;
+
+  @PactBrokerConsumerVersionSelectors
+  public static SelectorBuilder consumerVersionSelectors() {
+    // The following match condition basically says
+    // If verification is triggered by Pact Broker webhook due to consumer pact change, verify only
+    // the changed pact.
+    // Otherwise, this is a PR, verify all consumer pacts in Pact Broker marked with a deployment
+    // tag (e.g. dev, alpha).
+    if (StringUtils.isBlank(CONSUMER_BRANCH)) {
+      return new SelectorBuilder().mainBranch().deployedOrReleased();
+    } else {
+      return new SelectorBuilder().branch(CONSUMER_BRANCH);
+    }
+  }
 
   @BeforeEach
   void setUp(PactVerificationContext context) {
