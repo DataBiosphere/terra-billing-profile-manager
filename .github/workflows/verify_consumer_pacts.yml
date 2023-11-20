@@ -181,9 +181,6 @@ jobs:
               git checkout -b ${{ env.CURRENT_BRANCH }} ${{ env.CURRENT_SHA }}
             fi
           fi
-          # temporarily added this line of code for testing only
-          # remove when testing is complete and before merging
-          git checkout iv-consumer-version-selectors
           echo "git rev-parse HEAD"
           git rev-parse HEAD
 
