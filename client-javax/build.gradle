@@ -28,7 +28,7 @@ dependencies {
     implementation 'org.glassfish.jersey.media:jersey-media-multipart:2.36'
 
     implementation 'io.swagger.core.v3:swagger-annotations:2.2.19'
-    swaggerCodegen 'io.swagger.codegen.v3:swagger-codegen-cli:3.0.47'
+    swaggerCodegen 'io.swagger.codegen.v3:swagger-codegen-cli:3.0.50'
 }
 
 version = gradle.releaseVersion
