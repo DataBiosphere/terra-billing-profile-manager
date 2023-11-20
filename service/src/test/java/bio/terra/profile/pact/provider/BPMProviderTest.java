@@ -12,6 +12,7 @@ import au.com.dius.pact.provider.junitsupport.loader.PactBroker;
 import au.com.dius.pact.provider.spring.junit5.PactVerificationSpringProvider;
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.common.iam.AuthenticatedUserRequestFactory;
+import bio.terra.policy.model.TpsPaoGetResult;
 import bio.terra.profile.app.Main;
 import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.model.AzureManagedAppModel;
@@ -28,7 +29,6 @@ import bio.terra.profile.service.job.JobBuilder;
 import bio.terra.profile.service.job.JobMapKeys;
 import bio.terra.profile.service.job.JobService;
 import bio.terra.profile.service.policy.TpsApiDispatch;
-import bio.terra.profile.service.policy.exception.PolicyServiceNotFoundException;
 import bio.terra.profile.service.profile.exception.ProfileNotFoundException;
 import bio.terra.profile.service.profile.flight.ProfileMapKeys;
 import bio.terra.profile.service.profile.flight.create.CreateProfileFlight;
@@ -131,7 +131,7 @@ public class BPMProviderTest {
     setUpProfileDaoGets(List.of(profile));
     when(samService.hasActions(any(), eq(SamResourceType.PROFILE), eq(profile.id())))
         .thenReturn(true);
-    doThrow(new PolicyServiceNotFoundException("no policies")).when(tpsApiDispatch).getPao(any());
+    when(tpsApiDispatch.getOrCreatePao(any(), any(), any())).thenReturn(new TpsPaoGetResult());
     return Map.of(
         "gcpProfileId", profile.id().toString(),
         "billingAccountId", profile.billingAccountId().get());
@@ -143,7 +143,7 @@ public class BPMProviderTest {
     setUpProfileDaoGets(List.of(profile));
     when(samService.hasActions(any(), eq(SamResourceType.PROFILE), eq(profile.id())))
         .thenReturn(true);
-    doThrow(new PolicyServiceNotFoundException("no policies")).when(tpsApiDispatch).getPao(any());
+    when(tpsApiDispatch.getOrCreatePao(any(), any(), any())).thenReturn(new TpsPaoGetResult());
     return Map.of(
         "azureProfileId", profile.id().toString(),
         "tenantId", profile.tenantId().get().toString(),
@@ -160,7 +160,7 @@ public class BPMProviderTest {
     when(profileDao.listBillingProfiles(anyInt(), anyInt(), eq(profilesIds)))
         .thenReturn(
             List.of(ProviderStateData.azureBillingProfile, ProviderStateData.gcpBillingProfile));
-    doThrow(new PolicyServiceNotFoundException("no policies")).when(tpsApiDispatch).getPao(any());
+    when(tpsApiDispatch.getOrCreatePao(any(), any(), any())).thenReturn(new TpsPaoGetResult());
   }
 
   @State("a managed app exists")
