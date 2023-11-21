@@ -19,6 +19,8 @@ import io.opentelemetry.instrumentation.annotations.WithSpan;
 import java.io.IOException;
 import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -28,6 +30,7 @@ import org.springframework.stereotype.Component;
 public class TpsApiDispatch {
 
   PolicyServiceConfiguration policyServiceConfiguration;
+  private static final Logger logger = LoggerFactory.getLogger(TpsApiDispatch.class);
 
   @Autowired
   TpsApiDispatch(PolicyServiceConfiguration policyServiceConfiguration) {
@@ -108,7 +111,14 @@ public class TpsApiDispatch {
     try {
       return getPao(objectId);
     } catch (PolicyServiceNotFoundException ignored) {
-      createPao(objectId, null, component, objectType);
+      try {
+        createPao(objectId, null, component, objectType);
+      } catch (PolicyServiceDuplicateException e) {
+        // Thrown if the PAO has been created since we failed to get it previously. We don't care if
+        // this createPao call is the one to actually create the PAO, we just want the PAO to exist.
+        // Drop the DuplicatePAO exception and return the newly created PAO
+        logger.info("PAO already created for {}.", objectId);
+      }
       return getPao(objectId);
     }
   }
