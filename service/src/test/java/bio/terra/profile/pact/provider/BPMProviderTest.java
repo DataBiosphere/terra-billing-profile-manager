@@ -15,6 +15,7 @@ import au.com.dius.pact.provider.spring.junit5.PactVerificationSpringProvider;
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.common.iam.AuthenticatedUserRequestFactory;
 import bio.terra.policy.model.TpsPaoGetResult;
+import bio.terra.policy.model.TpsPolicyInputs;
 import bio.terra.profile.app.Main;
 import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.model.AzureManagedAppModel;
@@ -149,7 +150,8 @@ public class BPMProviderTest {
     setUpProfileDaoGets(List.of(profile));
     when(samService.hasActions(any(), eq(SamResourceType.PROFILE), eq(profile.id())))
         .thenReturn(true);
-    when(tpsApiDispatch.getOrCreatePao(any(), any(), any())).thenReturn(new TpsPaoGetResult());
+    when(tpsApiDispatch.getOrCreatePao(any(), any(), any()))
+        .thenReturn(new TpsPaoGetResult().effectiveAttributes(new TpsPolicyInputs()));
     return Map.of(
         "gcpProfileId", profile.id().toString(),
         "billingAccountId", profile.billingAccountId().get());
@@ -161,7 +163,8 @@ public class BPMProviderTest {
     setUpProfileDaoGets(List.of(profile));
     when(samService.hasActions(any(), eq(SamResourceType.PROFILE), eq(profile.id())))
         .thenReturn(true);
-    when(tpsApiDispatch.getOrCreatePao(any(), any(), any())).thenReturn(new TpsPaoGetResult());
+    when(tpsApiDispatch.getOrCreatePao(any(), any(), any()))
+        .thenReturn(new TpsPaoGetResult().effectiveAttributes(new TpsPolicyInputs()));
     return Map.of(
         "azureProfileId", profile.id().toString(),
         "tenantId", profile.tenantId().get().toString(),
