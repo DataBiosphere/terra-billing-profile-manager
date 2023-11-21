@@ -1,5 +1,6 @@
 package bio.terra.profile.pact.provider;
 
+import bio.terra.policy.model.TpsPolicyInputs;
 import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.profile.service.profile.model.ProfileDescription;
@@ -26,7 +27,7 @@ public class ProviderStateData {
           "");
 
   static ProfileDescription gcpBillingProfileDescription =
-      new ProfileDescription(gcpBillingProfile, Optional.empty());
+      new ProfileDescription(gcpBillingProfile, Optional.of(new TpsPolicyInputs()));
 
   static BillingProfile azureBillingProfile =
       new BillingProfile(
@@ -45,5 +46,5 @@ public class ProviderStateData {
           "");
 
   static ProfileDescription azureBillingProfileDescription =
-      new ProfileDescription(azureBillingProfile, Optional.empty());
+      new ProfileDescription(azureBillingProfile, Optional.of(new TpsPolicyInputs()));
 }
