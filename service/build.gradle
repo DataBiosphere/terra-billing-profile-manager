@@ -64,7 +64,7 @@ dependencies {
 	testImplementation 'au.com.dius.pact.consumer:junit5:4.6.3'
 	testImplementation("au.com.dius.pact.provider:junit5:4.6.3")
 	testImplementation("au.com.dius.pact.provider:junit5spring:4.6.3")
-	testImplementation 'com.google.code.findbugs:annotations:3.0.1'
+	testImplementation 'com.google.code.findbugs:annotations:3.0.1u2'
 }
 test {
 	systemProperties['pact.rootDir'] = "$buildDir/pacts"
