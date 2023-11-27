@@ -36,7 +36,7 @@ on:
         type: string
       provider-version-number:
         description: 'the provider version number for the verification result'
-        required: false
+        required: true
         type: string
       consumer-version-tags:
         description: 'the list of tag names for the most recent consumer version associated with the pact content, separated by ", "'
@@ -134,17 +134,23 @@ jobs:
           echo "pb-event-type=${{ inputs.pb-event-type }}"
           echo "consumer-name=${{ inputs.consumer-name }}"
           echo "consumer-version-branch/consumer-version-number=${{ inputs.consumer-version-branch }}/${{ inputs.consumer-version-number }}"
+          # The provider-version-number represents the provider version number in the webhook event payload.
+          # This corresponds to the GitHub release tag recorded by Sherlock for the corresponding
+          # deployment environment (dev, staging, and prod).
           echo "provider-version-branch/provider-version-number=${{ inputs.provider-version-branch }}/${{ inputs.provider-version-number }}"
           # The consumer-version-branch/consumer-version-number is practically sufficient.
           # The pact-url is included here in case future pact4s client supports it.
           echo "pact-url=${{ inputs.pact-url }}"
-          if [[ ! -z "${{ inputs.provider-version-branch }}" ]]; then
+          if [[ -n "${{ inputs.provider-version-branch }}" ]]; then
             echo "PROVIDER_BRANCH=${{ inputs.provider-version-branch }}" >> $GITHUB_ENV
             echo "CHECKOUT_BRANCH=${{ inputs.provider-version-branch }}" >> $GITHUB_ENV
           fi
-          if [[ ! -z "${{ inputs.provider-version-number }}" ]]; then
-            echo "PROVIDER_SHA=${{ inputs.provider-version-number }}" >> $GITHUB_ENV
-            echo "CHECKOUT_SHA=${{ inputs.provider-version-number }}" >> $GITHUB_ENV
+          release_tag="${{ inputs.provider-version-number }}"
+          if [[ -n "${release_tag}" ]]; then
+            echo "PROVIDER_TAG=${release_tag}" >> $GITHUB_ENV
+            commit_hash=$(git rev-list -n 1 "${release_tag}")
+            echo "PROVIDER_SHA=${commit_hash}" >> $GITHUB_ENV
+            echo "CHECKOUT_SHA=${commit_hash}" >> $GITHUB_ENV
           fi
           echo "CONSUMER_NAME=${{ inputs.consumer-name }}" >> $GITHUB_ENV
           echo "CONSUMER_BRANCH=${{ inputs.consumer-version-branch }}" >> $GITHUB_ENV
@@ -155,18 +161,28 @@ jobs:
           if [[ -z "${{ inputs.pb-event-type }}" ]]; then
             echo "PROVIDER_VERSION=${{ needs.regulated-tag-job.outputs.new-tag }}" >> $GITHUB_ENV
           else
-            echo "PROVIDER_VERSION=${{ env.PROVIDER_SHA }}" >> $GITHUB_ENV
+            echo "PROVIDER_VERSION=${{ env.PROVIDER_TAG }}" >> $GITHUB_ENV
           fi
 
       - name: Switch to appropriate branch
         run: |
+          # Switch to a specific tag if PROVIDER_TAG exists.
+          # This is true when this workflow is triggered by Pact Broker webhook event.
+          if [[ -n "${{ env.PROVIDER_TAG }}" ]]; then
+            echo "git checkout ${{ env.PROVIDER_TAG }}"
+            git checkout tags/${{ env.PROVIDER_TAG }}
+          # Otherwise, switch to CURRENT_BRANCH if this is a merge into the main branch.
+          elif [[ "${{ github.event_name }}" == "push" ]] || [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "git checkout ${{ env.CURRENT_BRANCH }}"
+            git checkout ${{ env.CURRENT_BRANCH }}
+          fi
           if [[ -z "${{ env.PROVIDER_BRANCH }}" ]]; then
             echo "PROVIDER_BRANCH=${{ env.CURRENT_BRANCH }}" >> $GITHUB_ENV
           fi
           if [[ -z "${{ env.PROVIDER_SHA }}" ]]; then
             echo "PROVIDER_SHA=${{ env.CURRENT_SHA }}" >> $GITHUB_ENV
           fi
-          git fetch
+          # git fetch
           if [[ ! -z "${{ env.CHECKOUT_BRANCH }}" ]] && [[ ! -z "${{ env.CHECKOUT_SHA }}" ]]; then
             echo "git checkout -b ${{ env.CHECKOUT_BRANCH }} ${{ env.CHECKOUT_SHA }}"
             git checkout -b ${{ env.CHECKOUT_BRANCH }} ${{ env.CHECKOUT_SHA }} || echo "already in ${{ env.CHECKOUT_BRANCH }}"
