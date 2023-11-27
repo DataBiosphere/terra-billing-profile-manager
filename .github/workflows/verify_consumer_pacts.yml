@@ -168,6 +168,7 @@ jobs:
         run: |
           # Switch to a specific tag if PROVIDER_TAG exists.
           # This is true when this workflow is triggered by Pact Broker webhook event.
+          echo "This workflow is triggered by ${{ github.event_name }} event"
           if [[ -n "${{ env.PROVIDER_TAG }}" ]]; then
             echo "git checkout ${{ env.PROVIDER_TAG }}"
             git checkout tags/${{ env.PROVIDER_TAG }}
