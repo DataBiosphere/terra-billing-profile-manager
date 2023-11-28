@@ -128,30 +128,37 @@ jobs:
           echo "CURRENT_BRANCH=${GITHUB_REF/refs\/heads\//""}" >> $GITHUB_ENV
           echo "CURRENT_SHA=$GITHUB_SHA" >> $GITHUB_ENV
 
-      - name: Set environment variables when triggered by a Pact Broker webhook event
+      - name: Capture webhook event payload as envvars
         if: ${{ inputs.pb-event-type != '' }}
         run: |
           echo "pb-event-type=${{ inputs.pb-event-type }}"
           echo "consumer-name=${{ inputs.consumer-name }}"
+
+          # The consumer-version-branch and consumer-version-number identify the most recent
+          # consumer branch and version associated with the pact content.
           echo "consumer-version-branch/consumer-version-number=${{ inputs.consumer-version-branch }}/${{ inputs.consumer-version-number }}"
+
+          echo "consumer-labels=${{ inputs.consumer-labels }}"
+
           # The provider-version-number represents the provider version number in the webhook event payload.
           # This corresponds to the GitHub release tag recorded by Sherlock for the corresponding
           # deployment environment (dev, staging, and prod).
           echo "provider-version-branch/provider-version-number=${{ inputs.provider-version-branch }}/${{ inputs.provider-version-number }}"
-          # The consumer-version-branch/consumer-version-number is practically sufficient.
+
+          echo "provider-labels=${{ inputs.provider-labels }}"
+
           # The pact-url is included here in case future pact4s client supports it.
           echo "pact-url=${{ inputs.pact-url }}"
+
           if [[ -n "${{ inputs.provider-version-branch }}" ]]; then
             echo "PROVIDER_BRANCH=${{ inputs.provider-version-branch }}" >> $GITHUB_ENV
             echo "CHECKOUT_BRANCH=${{ inputs.provider-version-branch }}" >> $GITHUB_ENV
           fi
           release_tag="${{ inputs.provider-version-number }}"
-          if [[ -n "${release_tag}" ]]; then
-            echo "PROVIDER_TAG=${release_tag}" >> $GITHUB_ENV
-            commit_hash=$(git rev-list -n 1 "${release_tag}")
-            echo "PROVIDER_SHA=${commit_hash}" >> $GITHUB_ENV
-            echo "CHECKOUT_SHA=${commit_hash}" >> $GITHUB_ENV
-          fi
+          echo "PROVIDER_TAG=${release_tag}" >> $GITHUB_ENV
+          commit_hash=$(git rev-list -n 1 "${release_tag}")
+          echo "PROVIDER_SHA=${commit_hash}" >> $GITHUB_ENV
+          echo "CHECKOUT_SHA=${commit_hash}" >> $GITHUB_ENV
           echo "CONSUMER_NAME=${{ inputs.consumer-name }}" >> $GITHUB_ENV
           echo "CONSUMER_BRANCH=${{ inputs.consumer-version-branch }}" >> $GITHUB_ENV
           echo "CONSUMER_SHA=${{ inputs.consumer-version-number }}" >> $GITHUB_ENV
@@ -164,25 +171,31 @@ jobs:
             echo "PROVIDER_VERSION=${{ env.PROVIDER_TAG }}" >> $GITHUB_ENV
           fi
 
-      - name: Switch to appropriate branch
+      - name: Switch to appropriate provider branch
         run: |
-          # Switch to a specific tag if PROVIDER_TAG exists, which is true
-          # when this workflow has been triggered by Pact Broker webhook event.
-          echo "This workflow has been triggered by ${{ github.event_name }} event"
+          echo "This workflow has been triggered by ${{ github.event_name }} event."
+
+          # If the PROVIDER_TAG envvar exists, switch to the corresponding tag.
+          # This condition is true when the workflow is triggered by a Pact Broker webhook event.
           if [[ -n "${{ env.PROVIDER_TAG }}" ]]; then
-            echo "git checkout ${{ env.PROVIDER_TAG }}"
+            echo "git checkout tags/${{ env.PROVIDER_TAG }}"
             git checkout tags/${{ env.PROVIDER_TAG }}
-          # Otherwise, switch to CURRENT_BRANCH if this is a merge into the main branch.
-          elif [[ "${{ github.event_name }}" == "push" ]] || [[ "${{ github.event_name }}" == "pull_request" ]]; then
+
+          # Otherwise, switch to CURRENT_BRANCH if the workflow has been triggered by a
+          # PR commit or merge into the main branch.
+          elif [[ "${{ github.event_name }}" == "pull_request" ]] || [[ "${{ github.event_name }}" == "push" ]]; then
             echo "git checkout ${{ env.CURRENT_BRANCH }}"
             git checkout ${{ env.CURRENT_BRANCH }}
           fi
+
           if [[ -z "${{ env.PROVIDER_BRANCH }}" ]]; then
             echo "PROVIDER_BRANCH=${{ env.CURRENT_BRANCH }}" >> $GITHUB_ENV
           fi
           if [[ -z "${{ env.PROVIDER_SHA }}" ]]; then
             echo "PROVIDER_SHA=${{ env.CURRENT_SHA }}" >> $GITHUB_ENV
           fi
+
+          # Output the HEAD commit of the provider branch that has been switched to.
           echo "git rev-parse HEAD"
           git rev-parse HEAD
 
