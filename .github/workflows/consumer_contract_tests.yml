@@ -63,6 +63,7 @@ jobs:
     if: ${{ needs.bump-check.outputs.is-bump == 'no' }}
     uses: ./.github/workflows/tag.yml
     with:
+      ref: ${{ github.head_ref || '' }}
       dry-run: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     secrets: inherit
 
