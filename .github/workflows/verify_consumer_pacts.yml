@@ -73,7 +73,7 @@ jobs:
     steps:
       - name: Download artifacts
         run: |
-          artifact_api="https://api.github.com/repos/DataBiosphere/terra-billing-profile-manager/actions/artifacts?name=0.1.235-ae863e0"
+          artifact_api="https://api.github.com/repos/DataBiosphere/terra-billing-profile-manager/actions/artifacts?name=0.1.235-206eb48"
           artifact_cmd="curl -s -w \"%{http_code}\" -L                      \
              -H 'Accept: application/vnd.github+json'                       \
              -H 'Authorization: Bearer ${{ secrets.BROADBOT_TOKEN }}'       \
