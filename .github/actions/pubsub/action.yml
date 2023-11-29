@@ -64,7 +64,7 @@ runs:
         # Subscribes globally to all queues with the same name and owner across all nodes.
         # This ensures queues with the same name and owner, and the messages within them,
         # are considered as a single entity for subscription purposes.
-        messages=$(echo "${{ inputs.sub }}" | jq -r '.[]')
+        messages=$(echo '${{ inputs.sub }}' | jq -r '.[]')
         messages_array=($messages)
         num_messages_subscribed=${#messages_array[@]}
         num_messages_downloaded=0
