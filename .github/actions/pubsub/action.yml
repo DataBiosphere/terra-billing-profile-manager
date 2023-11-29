@@ -41,7 +41,7 @@ runs:
     - if: ${{ inputs.action-type == 'publish' }}
       name: 'Create a local file named after the message'
       run: |
-        touch "${{ inputs.pub }}"
+        touch ${{ inputs.pub }}
       shell: bash
     - if: ${{ inputs.action-type == 'publish' }}
       id: publish
@@ -50,7 +50,7 @@ runs:
       with:
         name: ${{ inputs.queue }}
         path: |
-          "${{ inputs.pub }}"
+          ${{ inputs.pub }}
         retention-days: 1
     - if: ${{ inputs.action-type == 'publish' }}
       name: 'Remove local file named after the message'
