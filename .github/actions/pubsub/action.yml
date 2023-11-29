@@ -88,7 +88,7 @@ runs:
             total_count=$(($(echo "$response_data" | jq -r '.total_count')))
             if [[ $total_count -gt 0 ]]; then
               archive_download_urls=$(echo "$response_data" | jq -r '.artifacts[].archive_download_url')
-              for url in archive_download_urls; do
+              for url in $archive_download_urls; do
                 download_cmd="curl -s -w \"%{http_code}\" -L           \
                   -H 'Accept: application/vnd.github+json'             \
                   -H 'Authorization: Bearer ${{ inputs.token }}'       \
