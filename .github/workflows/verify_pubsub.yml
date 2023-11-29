@@ -1,0 +1,63 @@
+name: Verify consumer pacts
+# The purpose of this workflow is to verify ANY consumer contract(s) dependent on BPM provider using Pact framework.
+#
+# This workflow is triggered when
+#
+# 1. Consumer makes a change that results in a new pact published to Pact Broker (will verify ONLY the changed pact and publish the verification results back to the broker)
+# 2. Provider makes a change (runs verification tests against ALL DEPLOYED consumer pact versions and publishes corresponding verification results)
+#
+#
+# The workflow requires Pact broker credentials
+# - PACT_BROKER_USERNAME - the Pact Broker username
+# - PACT_BROKER_PASSWORD - the Pact Broker password
+on:
+  pull_request:
+    branches: [ main ]
+    paths-ignore: [ '**.md' ]
+  push:
+    branches: [ main ]
+    paths-ignore: [ '**.md' ]
+
+jobs:
+  bump-check:
+    runs-on: ubuntu-latest
+    outputs:
+      is-bump: ${{ steps.skiptest.outputs.is-bump }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Skip version bump merges
+        id: skiptest
+        uses: ./.github/actions/bump-skip
+        with:
+          event-name: ${{ github.event_name }}
+  # We only need a new version tag when this workflow is triggered by opening, updating a PR or PR merge.
+  # When triggered by a Pact Broker webhook, the provider version (GIT hash or release tag)
+  # is already included in the payload, then a new version tag wouldn't be needed.
+  regulated-tag-job:
+    needs: [ bump-check ]
+    if: ${{ needs.bump-check.outputs.is-bump == 'no' }}
+    uses: ./.github/workflows/tag.yml
+    with:
+      # The 'ref' parameter ensures that the provider version is postfixed with the HEAD commit of the PR branch,
+      # facilitating cross-referencing of a pact between Pact Broker and GitHub.
+      ref: ${{ github.head_ref || '' }}
+      # The 'dry-run' parameter prevents the new tag from being dispatched.
+      # We only need to dispatch a tag once if this is a PR merge.
+      dry-run: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    secrets: inherit
+
+  verify-pubsub:
+    runs-on: ubuntu-latest
+    needs: [ bump-check, regulated-tag-job ]
+    if: ${{ needs.bump-check.outputs.is-bump == 'no' }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/pubsub
+        with:
+          token: ${{ secrets.BROADBOT_TOKEN }}
+          action-type: 'subscribe'
+          queue: ${{ needs.regulated-tag-job.outputs.new-tag }}
+          owner: ${{ github.repository }}
+          sub: '["verify.pact.done","publish.contracts.done"]'
+          block: 'true'
+          timeout: '600'

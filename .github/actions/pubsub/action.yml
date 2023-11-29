@@ -128,8 +128,8 @@ runs:
             break
           fi
 
-          # Sleep for 1 second
-          sleep 1
+          # Sleep for 3 seconds
+          sleep 3
         done
         if [[ $num_messages_downloaded -eq $num_messages_subscribed ]]; then
           echo "all-messages-checked-out=1" >> $GITHUB_OUTPUT
