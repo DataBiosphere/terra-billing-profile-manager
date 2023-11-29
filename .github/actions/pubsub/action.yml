@@ -1,4 +1,9 @@
-# This action emulates a pubsub system
+# This action emulates a pubsub system, enabling the publishing and subscribing of messages.
+# Its primary use is to orchestrate interactions between pact-related workflows and those
+# associated with tag dispatch and Sherlock reporting.
+# The action plays a crucial role in scenarios where the availability of release tags in
+# Pact Broker is essential for Sherlock reporting to function properly.
+
 name: 'pubsub'
 description: 'Emulates a pubsub queue for publishing and subscription.'
 inputs:
