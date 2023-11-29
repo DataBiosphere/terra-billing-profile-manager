@@ -152,6 +152,7 @@ jobs:
     needs: [ bump-check, regulated-tag-job, publish-contracts ]
     if: ${{ needs.bump-check.outputs.is-bump == 'no' }}
     steps:
+      - uses: actions/checkout@v3
       - uses: ./.github/actions/pubsub
         with:
           token: ${{ secrets.BROADBOT_TOKEN }}
