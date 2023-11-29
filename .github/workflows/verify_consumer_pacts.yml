@@ -67,6 +67,7 @@ env:
   CAN_I_DEPLOY_RUN_NAME: 'can-i-deploy-${{ github.event.repository.name }}-${{ github.run_id }}-${{ github.run_attempt }}'
 
 jobs:
+
   bump-check:
     runs-on: ubuntu-latest
     outputs:
