@@ -78,16 +78,20 @@ runs:
         start_time=$(date +%s)
         while [[ $num_messages_downloaded -lt $num_messages_subscribed ]]; do
           num_messages_downloaded=0
+          echo "$$artifact_cmd"
           api_response=$(eval "$artifact_cmd")
           http_status_code=$(echo "$api_response" | tail -c 4)
           response_data=$(echo "$api_response")
-          response_data=${response_data%$http_status_code}
-          echo $http_status_code
+          response_data=${response_data%$http_status_code}=
+          echo "HTTP $http_status_code"
           echo $response_data
           if [[ $http_status_code == "200" ]]; then
             total_count=$(($(echo "$response_data" | jq -r '.total_count')))
-            echo 'Waiting for total_count to reach the number of messages specified in ${{ inputs.sub }} ...'
+            if [[ $total_count -lt $num_messages_subscribed ]]; then
+              echo 'Waiting for total_count to reach the number of messages specified in ${{ inputs.sub }} ...'
+            fi
             if [[ $total_count -eq $num_messages_subscribed ]]; then
+              echo 'The total_count has reached the number of messages specified in ${{ inputs.sub }}. Start downloading messages.'
               archive_download_urls=$(echo "$response_data" | jq -r '.artifacts[].archive_download_url')
               for url in $archive_download_urls; do
                 download_cmd="curl -s -w \"%{http_code}\" -L           \
@@ -97,6 +101,7 @@ runs:
                     \"${url}\"                                         \
                     -o \"download.zip\""
 
+                echo "$download_cmd"
                 api_response=$(eval "$download_cmd")
                 http_status_code=$(echo "$api_response" | tail -c 4)
                 response_data=$(echo "$api_response")
