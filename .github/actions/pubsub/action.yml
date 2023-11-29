@@ -55,7 +55,7 @@ runs:
     - if: ${{ inputs.action-type == 'publish' }}
       name: 'Remove local file named after the message'
       run: |
-        rm "${{ inputs.pub }}"
+        rm ${{ inputs.pub }}
       shell: bash
     - if: ${{ inputs.action-type == 'subscribe' }}
       id: subscribe

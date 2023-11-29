@@ -147,7 +147,7 @@ jobs:
             "release-tag": "${{ needs.regulated-tag-job.outputs.new-tag }}"
           }'
 
-  send-notification:
+  send-publish-contracts-done-to-pubsub:
     runs-on: ubuntu-latest
     needs: [ bump-check, regulated-tag-job, publish-contracts ]
     if: ${{ needs.bump-check.outputs.is-bump == 'no' }}
