@@ -49,8 +49,9 @@ runs:
       uses: actions/upload-artifact@v3
       with:
         name: ${{ inputs.queue }}
-          path: |
-            "${{ inputs.pub }}"
+        path: |
+          "${{ inputs.pub }}"
+        retention-days: 1
     - if: ${{ inputs.action-type == 'publish' }}
       name: 'Remove local file named after the message'
       run: |
