@@ -1,15 +1,4 @@
-name: Verify consumer pacts
-# The purpose of this workflow is to verify ANY consumer contract(s) dependent on BPM provider using Pact framework.
-#
-# This workflow is triggered when
-#
-# 1. Consumer makes a change that results in a new pact published to Pact Broker (will verify ONLY the changed pact and publish the verification results back to the broker)
-# 2. Provider makes a change (runs verification tests against ALL DEPLOYED consumer pact versions and publishes corresponding verification results)
-#
-#
-# The workflow requires Pact broker credentials
-# - PACT_BROKER_USERNAME - the Pact Broker username
-# - PACT_BROKER_PASSWORD - the Pact Broker password
+name: Verify pubsub
 on:
   pull_request:
     branches: [ main ]
@@ -53,6 +42,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/pubsub
+        id: subscribe
         with:
           token: ${{ secrets.BROADBOT_TOKEN }}
           action-type: 'subscribe'
@@ -61,3 +51,6 @@ jobs:
           sub: '["verify.pact.done","publish.contracts.done"]'
           block: 'true'
           timeout: '600'
+      - name: Output message status
+        run: |
+          echo "all-messages-checked-out=${{ steps.subscribe.outputs.all-messages-checked-out }}"

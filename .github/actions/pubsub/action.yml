@@ -86,7 +86,8 @@ runs:
           echo $response_data
           if [[ $http_status_code == "200" ]]; then
             total_count=$(($(echo "$response_data" | jq -r '.total_count')))
-            if [[ $total_count -gt 0 ]]; then
+            echo "Waiting for total_count to reach $num_messages_subscribed ..."
+            if [[ $total_count -eq $num_messages_subscribed ]]; then
               archive_download_urls=$(echo "$response_data" | jq -r '.artifacts[].archive_download_url')
               for url in $archive_download_urls; do
                 download_cmd="curl -s -w \"%{http_code}\" -L           \
@@ -137,4 +138,6 @@ runs:
           echo "all-messages-checked-out=0" >> $GITHUB_OUTPUT
         fi
 
+        elapsed_time=$((current_time - start_time))
+        echo "Elapsed time: ${elapsed_time} s"
       shell: bash
