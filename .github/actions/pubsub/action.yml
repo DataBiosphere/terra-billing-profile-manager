@@ -82,7 +82,7 @@ runs:
           api_response=$(eval "$artifact_cmd")
           http_status_code=$(echo "$api_response" | tail -c 4)
           response_data=$(echo "$api_response")
-          response_data=${response_data%$http_status_code}=
+          response_data=${response_data%$http_status_code}
           echo "HTTP $http_status_code"
           echo "$response_data"
           if [[ $http_status_code == "200" ]]; then
