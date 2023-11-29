@@ -243,21 +243,13 @@ jobs:
     needs: [ verify-consumer-pact, bump-check ]
     if: ${{ needs.bump-check.outputs.is-bump == 'no' }}
     steps:
-      - name: 'Create an empty verify.pact.done file if it does not exist or update its timestamp if the file already exists'
-        run: |
-          touch verify.pact.done
-
-      - name: 'Send verify.pact to artifact'
-        uses: actions/upload-artifact@v3
+      - uses: ./.github/actions/pubsub
         with:
-          name: ${{ needs.verify-consumer-pact.outputs.provider-version }}
-          path: |
-            verify.pact*
-          retention-days: 1
-
-      - name: 'Remove local verify.pact'
-        run: |
-          rm verify.pact*
+          token: ${{ secrets.BROADBOT_TOKEN }}
+          action-type: 'publish'
+          queue: ${{ needs.verify-consumer-pact.outputs.provider-version }}
+          owner: ${{ github.repository }}
+          pub: 'verify.pact.done'
 
   can-i-deploy: # The can-i-deploy job will run as a result of a PR. It reports the pact verification statuses on all deployed environments.
     runs-on: ubuntu-latest

@@ -152,21 +152,13 @@ jobs:
     needs: [ bump-check, regulated-tag-job, publish-contracts ]
     if: ${{ needs.bump-check.outputs.is-bump == 'no' }}
     steps:
-      - name: 'Create an empty publish.contracts.done file if it does not exist or update its timestamp if the file already exists'
-        run: |
-          touch publish.contracts.done
-
-      - name: 'Send publish.contracts to artifact'
-        uses: actions/upload-artifact@v3
+      - uses: ./.github/actions/pubsub
         with:
-          name: ${{ needs.regulated-tag-job.outputs.new-tag }}
-          path: |
-            publish.contracts*
-          retention-days: 1
-
-      - name: 'Remove local publish.contracts'
-        run: |
-          rm publish.contracts*
+          token: ${{ secrets.BROADBOT_TOKEN }}
+          action-type: 'publish'
+          queue: ${{ needs.regulated-tag-job.outputs.new-tag }}
+          owner: ${{ github.repository }}
+          pub: 'publish.contracts.done'
 
 ## Deactivated until WOR-890 lands
 #  can-i-deploy:

@@ -1,0 +1,132 @@
+# This action emulates a pubsub system
+name: 'pubsub'
+description: 'Emulates a pubsub queue for publishing and subscription.'
+inputs:
+  token:
+    description: 'Broadbot Token'
+    required: true
+  action-type:
+    description: "The operation that specifies whether the action should 'subscribe' or 'publish'."
+    required: true
+    default: 'publish'
+  queue:
+    description: "The name of the queue for publishing or subscribing messages."
+    required: true
+  owner:
+    description: "The GitHub repository (in the format 'owner/repo') that owns the pubsub queue."
+    required: true
+  pub:
+    description: "The message to be published when the action-type is set to 'publish'."
+    required: false
+    default: ''
+  sub:
+    description: "A JSON array string representing a list of messages to subscribe to when the action-type is set to 'subscribe'."
+    required: false
+    default: '[]' # Example: '["message1", "message2", "message3"]'
+  block:
+    description: "A boolean flag indicating whether the action should block and wait for a message to appear in the queue. Set to true to enable blocking. Relevant only when action-type is set to 'subscribe."
+    required: false
+    default: 'true'
+  timeout:
+      description: "The maximum time, in seconds, that the action should block and wait for a message to appear in the queue when action-type is set to 'subscribe.' If no message is received within this time frame, the action will exit. Adjust the value to set the desired timeout in seconds."
+      required: false
+      default: '600'
+outputs:
+  all-messages-checked-out:
+    description: 'Indicates that all subscribed messages have been successfully checked out'
+    value: ${{ steps.subscribe.outputs.all-messages-checked-out }}
+runs:
+  using: "composite"
+  steps:
+    - if: ${{ inputs.action-type == 'publish' }}
+      name: 'Create a local file named after the message'
+      run: |
+        touch "${{ inputs.pub }}"
+      shell: bash
+    - if: ${{ inputs.action-type == 'publish' }}
+      id: publish
+      name: Publish
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ inputs.queue }}
+          path: |
+            "${{ inputs.pub }}"
+    - if: ${{ inputs.action-type == 'publish' }}
+      name: 'Remove local file named after the message'
+      run: |
+        rm "${{ inputs.pub }}"
+      shell: bash
+    - if: ${{ inputs.action-type == 'subscribe' }}
+      id: subscribe
+      name: Subscribe
+      run: |
+        # Subscribes globally to all queues with the same name and owner across all nodes.
+        # This ensures queues with the same name and owner, and the messages within them,
+        # are considered as a single entity for subscription purposes.
+        messages=$(echo "${{ inputs.sub }}" | jq -r '.[]')
+        messages_array=($messages)
+        num_messages_subscribed=${#messages_array[@]}
+        num_messages_downloaded=0
+        artifact_api="https://api.github.com/repos/${{ inputs.owner }}/actions/artifacts?name=${{ inputs.queue }}"
+        artifact_cmd="curl -s -w \"%{http_code}\" -L            \
+           -H 'Accept: application/vnd.github+json'             \
+           -H 'Authorization: Bearer ${{ inputs.token }}'       \
+           -H 'X-GitHub-Api-Version: 2022-11-28'                \
+           \"${artifact_api}\""
+        max_time=$((${{ inputs.timeout }}))
+        start_time=$(date +%s)
+        while [[ $num_messages_downloaded -lt $num_messages_subscribed ]]; do
+          num_messages_downloaded=0
+          api_response=$(eval "$artifact_cmd")
+          http_status_code=$(echo "$api_response" | tail -c 4)
+          response_data=$(echo "$api_response")
+          response_data=${response_data%$http_status_code}
+          echo $http_status_code
+          echo $response_data
+          if [[ $http_status_code == "200" ]]; then
+            total_count=$(($(echo "$response_data" | jq -r '.total_count')))
+            if [[ "$total_count " -gt 0 ]]; then
+              archive_download_urls=$(echo "$response_data" | jq -r '.artifacts[].archive_download_url')
+              for url in archive_download_urls; do
+                download_cmd="curl -s -w \"%{http_code}\" -L           \
+                  -H 'Accept: application/vnd.github+json'             \
+                  -H 'Authorization: Bearer ${{ inputs.token }}'       \
+                  -H 'X-GitHub-Api-Version: 2022-11-28'                \
+                    \"${url}\"                                         \
+                    -o \"download.zip\""
+                if [[ -e "download.zip" ]]; then
+                  unzip download.zip || echo "Something wrong in unzipping."
+                fi
+              done
+              ls -l
+              # Check if message exist
+              for message in $messages; do
+                echo "Checking for message: $message"
+                if [[ -e "$message" ]]; then
+                  echo "Found message $message"
+                  num_messages_downloaded=$((num_messages_downloaded + 1))
+                else
+                  echo "Message $message not found"
+                fi
+              done
+            fi
+          fi
+          current_time=$(date +%s)
+          elapsed_time=$((current_time - start_time))
+
+          # Check if elapsed time exceeds max_time
+          if [[ "$elapsed_time" -ge "$max_time" ]]; then
+            echo "Elapsed time exceeds max_time. Exiting loop."
+            break
+          fi
+
+          # Sleep for 1 second
+          sleep 1
+        done
+        if [[ $num_messages_downloaded -eq $num_messages_subscribed ]]; then
+          echo "all-messages-checked-out=1" >> $GITHUB_OUTPUT
+        else
+          echo "all-messages-checked-out=0" >> $GITHUB_OUTPUT
+        fi
+
+      shell: bash
