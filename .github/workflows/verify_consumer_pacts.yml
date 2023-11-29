@@ -253,6 +253,7 @@ jobs:
           pub: 'verify.pact.done'
 
   subscribe-to-pubsub:
+    runs-on: ubuntu-latest
     needs: [ verify-consumer-pact, bump-check ]
     if: ${{ needs.bump-check.outputs.is-bump == 'no' }}
     steps:
