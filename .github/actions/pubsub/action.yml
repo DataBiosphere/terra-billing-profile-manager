@@ -117,7 +117,7 @@ runs:
                   fi
                 fi
               done
-              ls -l
+
               # Check if message exist
               for message in $messages; do
                 echo "Checking for message: $message"
