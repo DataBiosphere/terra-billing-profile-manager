@@ -147,7 +147,11 @@ terra.common:
     completed-flight-retention: 90d
 
   tracing:
-    stackdriverExportEnabled: ${env.tracing.exportEnabled}
+    sampling-ratio: ${env.tracing.samplingRate}
+    excluded-urls: ["/status", "/version"]
+    google:
+      tracing:
+        enabled: ${env.tracing.exportEnabled}
 
 spendreporting:
   azure:
@@ -158,9 +162,6 @@ spendreporting:
 otel:
   sdk:
     disabled: false # set to true to disable all open telemetry features
-  traces:
-    sampler:
-      probability: ${env.tracing.samplingRate}
 
   springboot:
     resource:

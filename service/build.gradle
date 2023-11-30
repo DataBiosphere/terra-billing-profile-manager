@@ -15,7 +15,7 @@ apply from: 'publishing.gradle'
 dependencies {
 	implementation 'io.sentry:sentry:6.34.0'
 
-	implementation 'bio.terra:terra-common-lib:0.1.0-SNAPSHOT'
+	implementation 'bio.terra:terra-common-lib:0.1.3-SNAPSHOT'
 
 	implementation 'org.apache.commons:commons-dbcp2'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
@@ -25,6 +25,7 @@ dependencies {
 	implementation 'org.springframework:spring-aop'
 	implementation 'org.springframework:spring-aspects'
 	implementation group: "org.apache.commons", name: "commons-lang3"
+	implementation group: 'jakarta.ws.rs', name: 'jakarta.ws.rs-api', version: '3.0.0'
 
 	implementation 'org.springframework.boot:spring-boot-starter-actuator:2.7.18'
 	implementation 'io.micrometer:micrometer-registry-prometheus'

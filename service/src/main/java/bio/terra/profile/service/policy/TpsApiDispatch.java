@@ -1,6 +1,7 @@
 package bio.terra.profile.service.policy;
 
 import bio.terra.common.logging.RequestIdFilter;
+import bio.terra.common.tracing.JakartaTracingFilter;
 import bio.terra.policy.api.TpsApi;
 import bio.terra.policy.client.ApiClient;
 import bio.terra.policy.client.ApiException;
@@ -15,7 +16,9 @@ import bio.terra.profile.service.policy.exception.PolicyServiceAPIException;
 import bio.terra.profile.service.policy.exception.PolicyServiceAuthorizationException;
 import bio.terra.profile.service.policy.exception.PolicyServiceDuplicateException;
 import bio.terra.profile.service.policy.exception.PolicyServiceNotFoundException;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
+import jakarta.ws.rs.client.Client;
 import java.io.IOException;
 import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
@@ -29,17 +32,20 @@ import org.springframework.stereotype.Component;
 @Component
 public class TpsApiDispatch {
 
-  PolicyServiceConfiguration policyServiceConfiguration;
+  private final PolicyServiceConfiguration policyServiceConfiguration;
+  private final Client commonHttpClient;
   private static final Logger logger = LoggerFactory.getLogger(TpsApiDispatch.class);
 
   @Autowired
-  TpsApiDispatch(PolicyServiceConfiguration policyServiceConfiguration) {
+  TpsApiDispatch(PolicyServiceConfiguration policyServiceConfiguration, OpenTelemetry openTelemetry) {
     this.policyServiceConfiguration = policyServiceConfiguration;
+    this.commonHttpClient = new ApiClient().getHttpClient().register(new JakartaTracingFilter(openTelemetry));
   }
 
   private ApiClient getApiClient(String accessToken) {
     ApiClient client =
         new ApiClient()
+            .setHttpClient(commonHttpClient)
             .setBasePath(policyServiceConfiguration.getBasePath())
             .addDefaultHeader(
                 RequestIdFilter.REQUEST_ID_HEADER, MDC.get(RequestIdFilter.REQUEST_ID_MDC_KEY));
@@ -50,8 +56,7 @@ public class TpsApiDispatch {
   private TpsApi policyApi() {
     try {
       return new TpsApi(
-          getApiClient(policyServiceConfiguration.getAccessToken())
-              .setBasePath(policyServiceConfiguration.getBasePath()));
+          getApiClient(policyServiceConfiguration.getAccessToken()));
     } catch (IOException e) {
       throw new PolicyServiceAuthorizationException(
           "Error reading or parsing credentials file at %s"
