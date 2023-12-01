@@ -37,9 +37,11 @@ public class TpsApiDispatch {
   private static final Logger logger = LoggerFactory.getLogger(TpsApiDispatch.class);
 
   @Autowired
-  TpsApiDispatch(PolicyServiceConfiguration policyServiceConfiguration, OpenTelemetry openTelemetry) {
+  TpsApiDispatch(
+      PolicyServiceConfiguration policyServiceConfiguration, OpenTelemetry openTelemetry) {
     this.policyServiceConfiguration = policyServiceConfiguration;
-    this.commonHttpClient = new ApiClient().getHttpClient().register(new JakartaTracingFilter(openTelemetry));
+    this.commonHttpClient =
+        new ApiClient().getHttpClient().register(new JakartaTracingFilter(openTelemetry));
   }
 
   private ApiClient getApiClient(String accessToken) {
@@ -55,8 +57,7 @@ public class TpsApiDispatch {
 
   private TpsApi policyApi() {
     try {
-      return new TpsApi(
-          getApiClient(policyServiceConfiguration.getAccessToken()));
+      return new TpsApi(getApiClient(policyServiceConfiguration.getAccessToken()));
     } catch (IOException e) {
       throw new PolicyServiceAuthorizationException(
           "Error reading or parsing credentials file at %s"
