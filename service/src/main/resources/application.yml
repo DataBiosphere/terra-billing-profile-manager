@@ -148,10 +148,9 @@ terra.common:
 
   tracing:
     sampling-ratio: ${env.tracing.samplingRate}
-    excluded-urls: ["/status", "/version"]
-    google:
-      tracing:
-        enabled: ${env.tracing.exportEnabled}
+  google:
+    tracing:
+      enabled: ${env.tracing.exportEnabled}
 
 spendreporting:
   azure:
