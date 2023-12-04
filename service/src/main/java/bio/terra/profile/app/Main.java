@@ -30,7 +30,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
       "bio.terra.common.stairway",
       // Scan for tracing-related components & configs
       "bio.terra.common.tracing",
-      "bio.terra.common.opentelemetry",
       // Scan all service-specific packages beneath the current package
       "bio.terra.profile"
     })
