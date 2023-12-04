@@ -32,6 +32,7 @@ public class ProfileApiController implements ProfileApi {
     this.request = request;
     this.profileService = profileService;
     this.authenticatedUserRequestFactory = authenticatedUserRequestFactory;
+    // IGNORE
   }
 
   @Override
