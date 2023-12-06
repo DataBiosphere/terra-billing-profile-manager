@@ -102,9 +102,11 @@ build {
 }
 
 // Spotbugs configuration
+import com.github.spotbugs.snom.Confidence
+import com.github.spotbugs.snom.Effort
 spotbugs {
-    reportLevel = 'high'
-    effort = 'max'
+    reportLevel = Confidence.valueOf('HIGH')
+    effort = Effort.valueOf('MAX')
 }
 spotbugsMain {
     reports {
