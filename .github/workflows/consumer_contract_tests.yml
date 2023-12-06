@@ -67,7 +67,7 @@ jobs:
       # facilitating cross-referencing of a pact between Pact Broker and GitHub.
       ref: ${{ github.head_ref || '' }}
       # The 'dry-run' parameter prevents the new tag from being dispatched.
-      dry-run: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+      dry-run: true
       release-branches: main
     secrets: inherit
 
