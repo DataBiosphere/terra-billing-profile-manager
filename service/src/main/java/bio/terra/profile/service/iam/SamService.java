@@ -4,6 +4,7 @@ import bio.terra.common.exception.ForbiddenException;
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.common.sam.SamRetry;
 import bio.terra.common.sam.exception.SamExceptionFactory;
+import bio.terra.common.tracing.OkHttpClientTracingInterceptor;
 import bio.terra.profile.app.configuration.SamConfiguration;
 import bio.terra.profile.model.SamPolicyModel;
 import bio.terra.profile.model.SystemStatusSystems;
@@ -12,6 +13,7 @@ import bio.terra.profile.service.iam.model.SamResourceType;
 import bio.terra.profile.service.iam.model.SamRole;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import com.google.common.annotations.VisibleForTesting;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import java.util.Collections;
 import java.util.HashMap;
@@ -40,9 +42,14 @@ public class SamService {
   private final OkHttpClient commonHttpClient;
 
   @Autowired
-  public SamService(SamConfiguration samConfig) {
+  public SamService(SamConfiguration samConfig, OpenTelemetry openTelemetry) {
     this.samConfig = samConfig;
-    this.commonHttpClient = new ApiClient().getHttpClient();
+    this.commonHttpClient =
+        new ApiClient()
+            .getHttpClient()
+            .newBuilder()
+            .addInterceptor(new OkHttpClientTracingInterceptor(openTelemetry))
+            .build();
   }
 
   /**

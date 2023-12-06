@@ -12,6 +12,7 @@ import au.com.dius.pact.core.model.RequestResponsePact;
 import au.com.dius.pact.core.model.annotations.Pact;
 import bio.terra.profile.app.configuration.SamConfiguration;
 import bio.terra.profile.service.iam.SamService;
+import io.opentelemetry.api.OpenTelemetry;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
@@ -55,7 +56,7 @@ public class SamServiceTest {
   @PactTestFor(pactMethod = "statusApiPact", pactVersion = PactSpecVersion.V3)
   public void testSamServiceStatusCheck(MockServer mockServer) {
     SamConfiguration config = new SamConfiguration(mockServer.getUrl(), "test@test.com");
-    var samService = new SamService(config);
+    var samService = new SamService(config, OpenTelemetry.noop());
     var system = samService.status();
     assertTrue(system.isOk());
 
@@ -68,7 +69,7 @@ public class SamServiceTest {
   @PactTestFor(pactMethod = "userStatusPact", pactVersion = PactSpecVersion.V3)
   public void testSamServiceUserStatusInfo(MockServer mockServer) throws Exception {
     SamConfiguration config = new SamConfiguration(mockServer.getUrl(), "test@test.com");
-    var samService = new SamService(config);
+    var samService = new SamService(config, OpenTelemetry.noop());
     samService.getUserStatusInfo("accessToken");
   }
 }
