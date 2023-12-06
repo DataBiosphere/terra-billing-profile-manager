@@ -85,7 +85,7 @@ jobs:
   # is already included in the payload, then a new version tag wouldn't be needed.
   #
   regulated-tag-job:
-    needs: [ needs-context, bump-check ]
+    needs: [ bump-check ]
     if: ${{ needs.bump-check.outputs.is-bump == 'no' }}
     uses: ./.github/workflows/tag.yml
     with:
