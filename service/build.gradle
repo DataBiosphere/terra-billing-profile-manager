@@ -63,8 +63,8 @@ dependencies {
 	testImplementation 'org.mockito:mockito-inline:5.2.0'
 
 	testImplementation 'au.com.dius.pact.consumer:junit5:4.6.3'
-	testImplementation("au.com.dius.pact.provider:junit5:4.6.3")
-	testImplementation("au.com.dius.pact.provider:junit5spring:4.6.3")
+	testImplementation("au.com.dius.pact.provider:junit5:4.6.4")
+	testImplementation("au.com.dius.pact.provider:junit5spring:4.6.4")
 	testImplementation 'com.google.code.findbugs:annotations:3.0.1u2'
 }
 test {
