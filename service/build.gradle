@@ -15,7 +15,7 @@ apply from: 'publishing.gradle'
 dependencies {
 	implementation 'io.sentry:sentry:6.34.0'
 
-	implementation 'bio.terra:terra-common-lib:0.1.6-SNAPSHOT'
+	implementation 'bio.terra:terra-common-lib:0.1.9-SNAPSHOT'
 
 	implementation 'org.apache.commons:commons-dbcp2'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
