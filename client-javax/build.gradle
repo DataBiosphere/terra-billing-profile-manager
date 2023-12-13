@@ -23,7 +23,7 @@ repositories {
 dependencies {
     // Version controlled by dependency management plugin
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.16.0'
-    implementation 'org.glassfish.jersey.core:jersey-client:2.36'
+    implementation 'org.glassfish.jersey.core:jersey-client:3.1.5'
     implementation 'org.glassfish.jersey.media:jersey-media-json-jackson:2.36'
     implementation 'org.glassfish.jersey.media:jersey-media-multipart:2.36'
 
