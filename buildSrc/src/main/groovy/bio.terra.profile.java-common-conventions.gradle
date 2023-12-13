@@ -4,7 +4,6 @@ plugins {
     id 'java'
 
     id 'com.diffplug.spotless'
-    id 'com.github.spotbugs'
     id 'org.hidetake.swagger.generator'
 }
 
@@ -99,19 +98,6 @@ build {
         dependsOn(spotlessApply)
     }
     dependsOn(minniekenny)
-}
-
-// Spotbugs configuration
-spotbugs {
-    reportLevel = 'high'
-    effort = 'max'
-}
-spotbugsMain {
-    reports {
-        sarif {
-            enabled = true
-        }
-    }
 }
 
 jacocoTestReport {
