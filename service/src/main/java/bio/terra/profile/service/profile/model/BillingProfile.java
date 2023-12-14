@@ -3,6 +3,7 @@ package bio.terra.profile.service.profile.model;
 import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.model.CreateProfileRequest;
 import bio.terra.profile.model.ProfileModel;
+import bio.terra.profile.service.profile.exception.InvalidFieldException;
 import bio.terra.profile.service.profile.exception.MissingRequiredFieldsException;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.Instant;
@@ -24,6 +25,8 @@ public record BillingProfile(
     Instant lastModified,
     String createdBy) {
 
+  private static final int MAX_BILLING_ACCT_LENGTH = 32;
+
   /**
    * Converts an {@link CreateProfileRequest} to a BillingProfile and performs validation.
    *
@@ -42,24 +45,9 @@ public record BillingProfile(
 
     // check cloud-specific fields
     if (request.getCloudPlatform().equals(CloudPlatform.GCP)) {
-      if (request.getBillingAccountId() == null) {
-        throw new MissingRequiredFieldsException("GCP billing profile requires billingAccount");
-      }
-      if (request.getTenantId() != null
-          || request.getSubscriptionId() != null
-          || request.getManagedResourceGroupId() != null) {
-        throw new MissingRequiredFieldsException("GCP billing profile must not contain Azure data");
-      }
+      validateGcpParams(request);
     } else if (request.getCloudPlatform().equals(CloudPlatform.AZURE)) {
-      if (request.getTenantId() == null
-          || request.getSubscriptionId() == null
-          || request.getManagedResourceGroupId() == null) {
-        throw new MissingRequiredFieldsException(
-            "Azure billing profile requires tenantId, subscriptionId, managedResourceGroupId");
-      }
-      if (request.getBillingAccountId() != null) {
-        throw new MissingRequiredFieldsException("Azure billing profile must not contain GCP data");
-      }
+      validateAzureParams(request);
     }
 
     return new BillingProfile(
@@ -75,6 +63,33 @@ public record BillingProfile(
         null,
         null,
         null);
+  }
+
+  private static void validateAzureParams(CreateProfileRequest request) {
+    if (request.getTenantId() == null
+        || request.getSubscriptionId() == null
+        || request.getManagedResourceGroupId() == null) {
+      throw new MissingRequiredFieldsException(
+          "Azure billing profile requires tenantId, subscriptionId, managedResourceGroupId");
+    }
+    if (request.getBillingAccountId() != null) {
+      throw new MissingRequiredFieldsException("Azure billing profile must not contain GCP data");
+    }
+  }
+
+  private static void validateGcpParams(CreateProfileRequest request) {
+    if (request.getBillingAccountId() == null) {
+      throw new MissingRequiredFieldsException("GCP billing profile requires billingAccount");
+    }
+    if (request.getTenantId() != null
+        || request.getSubscriptionId() != null
+        || request.getManagedResourceGroupId() != null) {
+      throw new MissingRequiredFieldsException("GCP billing profile must not contain Azure data");
+    }
+    if (request.getBillingAccountId().length() > MAX_BILLING_ACCT_LENGTH) {
+      throw new InvalidFieldException(
+          "GCP billing account ID must be less than " + MAX_BILLING_ACCT_LENGTH + " characters");
+    }
   }
 
   /**

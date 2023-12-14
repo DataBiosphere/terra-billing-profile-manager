@@ -72,9 +72,7 @@ class SpendReportingApiControllerTest extends BaseSpringUnitTest {
                     "spendReportEndDate", now.plusDays(30).format(DateTimeFormatter.ISO_DATE))
                 .header("Authorization", "Bearer " + userRequest.getToken()))
         .andExpect(status().is(HttpStatus.BAD_REQUEST.value()))
-        .andExpect(
-            content()
-                .string(containsString("Invalid request MethodArgumentTypeMismatchException")));
+        .andExpect(content().string(containsString("spendReportStartDate must be a date")));
   }
 
   @Test
@@ -91,9 +89,7 @@ class SpendReportingApiControllerTest extends BaseSpringUnitTest {
                 .queryParam("spendReportEndDate", endDateWithWrongFormat)
                 .header("Authorization", "Bearer " + userRequest.getToken()))
         .andExpect(status().is(HttpStatus.BAD_REQUEST.value()))
-        .andExpect(
-            content()
-                .string(containsString("Invalid request MethodArgumentTypeMismatchException")));
+        .andExpect(content().string(containsString("spendReportEndDate must be a date")));
   }
 
   @Test
