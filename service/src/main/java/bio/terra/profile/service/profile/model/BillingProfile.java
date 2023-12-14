@@ -3,6 +3,7 @@ package bio.terra.profile.service.profile.model;
 import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.model.CreateProfileRequest;
 import bio.terra.profile.model.ProfileModel;
+import bio.terra.profile.service.profile.exception.InvalidFieldException;
 import bio.terra.profile.service.profile.exception.MissingRequiredFieldsException;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.Instant;
@@ -23,6 +24,8 @@ public record BillingProfile(
     Instant createdTime,
     Instant lastModified,
     String createdBy) {
+
+  private static final int MAX_BILLING_ACCT_LENGTH = 32;
 
   /**
    * Converts an {@link CreateProfileRequest} to a BillingProfile and performs validation.
@@ -49,6 +52,10 @@ public record BillingProfile(
           || request.getSubscriptionId() != null
           || request.getManagedResourceGroupId() != null) {
         throw new MissingRequiredFieldsException("GCP billing profile must not contain Azure data");
+      }
+      if (request.getBillingAccountId().length() > MAX_BILLING_ACCT_LENGTH) {
+        throw new InvalidFieldException(
+            "GCP billing account ID must be less than " + MAX_BILLING_ACCT_LENGTH + " characters");
       }
     } else if (request.getCloudPlatform().equals(CloudPlatform.AZURE)) {
       if (request.getTenantId() == null
