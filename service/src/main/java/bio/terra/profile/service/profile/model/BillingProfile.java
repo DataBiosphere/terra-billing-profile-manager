@@ -45,28 +45,9 @@ public record BillingProfile(
 
     // check cloud-specific fields
     if (request.getCloudPlatform().equals(CloudPlatform.GCP)) {
-      if (request.getBillingAccountId() == null) {
-        throw new MissingRequiredFieldsException("GCP billing profile requires billingAccount");
-      }
-      if (request.getTenantId() != null
-          || request.getSubscriptionId() != null
-          || request.getManagedResourceGroupId() != null) {
-        throw new MissingRequiredFieldsException("GCP billing profile must not contain Azure data");
-      }
-      if (request.getBillingAccountId().length() > MAX_BILLING_ACCT_LENGTH) {
-        throw new InvalidFieldException(
-            "GCP billing account ID must be less than " + MAX_BILLING_ACCT_LENGTH + " characters");
-      }
+      validateGcpParams(request);
     } else if (request.getCloudPlatform().equals(CloudPlatform.AZURE)) {
-      if (request.getTenantId() == null
-          || request.getSubscriptionId() == null
-          || request.getManagedResourceGroupId() == null) {
-        throw new MissingRequiredFieldsException(
-            "Azure billing profile requires tenantId, subscriptionId, managedResourceGroupId");
-      }
-      if (request.getBillingAccountId() != null) {
-        throw new MissingRequiredFieldsException("Azure billing profile must not contain GCP data");
-      }
+      validateAzureParams(request);
     }
 
     return new BillingProfile(
@@ -82,6 +63,33 @@ public record BillingProfile(
         null,
         null,
         null);
+  }
+
+  private static void validateAzureParams(CreateProfileRequest request) {
+    if (request.getTenantId() == null
+        || request.getSubscriptionId() == null
+        || request.getManagedResourceGroupId() == null) {
+      throw new MissingRequiredFieldsException(
+          "Azure billing profile requires tenantId, subscriptionId, managedResourceGroupId");
+    }
+    if (request.getBillingAccountId() != null) {
+      throw new MissingRequiredFieldsException("Azure billing profile must not contain GCP data");
+    }
+  }
+
+  private static void validateGcpParams(CreateProfileRequest request) {
+    if (request.getBillingAccountId() == null) {
+      throw new MissingRequiredFieldsException("GCP billing profile requires billingAccount");
+    }
+    if (request.getTenantId() != null
+        || request.getSubscriptionId() != null
+        || request.getManagedResourceGroupId() != null) {
+      throw new MissingRequiredFieldsException("GCP billing profile must not contain Azure data");
+    }
+    if (request.getBillingAccountId().length() > MAX_BILLING_ACCT_LENGTH) {
+      throw new InvalidFieldException(
+          "GCP billing account ID must be less than " + MAX_BILLING_ACCT_LENGTH + " characters");
+    }
   }
 
   /**
