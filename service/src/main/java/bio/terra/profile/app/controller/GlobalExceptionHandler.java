@@ -7,6 +7,7 @@ import bio.terra.profile.model.ErrorReport;
 import io.sentry.Sentry;
 import jakarta.validation.ConstraintViolationException;
 import java.util.List;
+import java.util.Objects;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,16 +32,28 @@ public class GlobalExceptionHandler extends AbstractGlobalExceptionHandler<Error
   }
 
   @Override
-  @ExceptionHandler({
-    MethodArgumentTypeMismatchException.class,
-    MissingServletRequestParameterException.class,
-    BadRequestException.class
-  })
+  @ExceptionHandler({MissingServletRequestParameterException.class, BadRequestException.class})
   public ResponseEntity<ErrorReport> validationExceptionHandler(Exception ex) {
     var errorReport =
         new ErrorReport()
             .statusCode(HttpStatus.BAD_REQUEST.value())
             .message("Invalid request: " + ex.getMessage());
+
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorReport);
+  }
+
+  @ExceptionHandler({
+    MethodArgumentTypeMismatchException.class,
+  })
+  public ResponseEntity<ErrorReport> mismatchedArgsHandler(MethodArgumentTypeMismatchException ex) {
+    var errorReport =
+        new ErrorReport()
+            .statusCode(HttpStatus.BAD_REQUEST.value())
+            .message(
+                "Invalid request: "
+                    + ex.getParameter().getParameterName()
+                    + " must be a "
+                    + Objects.requireNonNull(ex.getRequiredType()).getSimpleName().toLowerCase());
 
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorReport);
   }
