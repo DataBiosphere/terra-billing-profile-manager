@@ -20,6 +20,7 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import jakarta.ws.rs.client.Client;
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -106,6 +107,16 @@ public class TpsApiDispatch {
     TpsApi tpsApi = policyApi();
     try {
       return TpsRetry.retry(() -> tpsApi.getPao(objectId));
+    } catch (ApiException e) {
+      throw convertApiException(e);
+    }
+  }
+
+  @WithSpan
+  public List<TpsPaoGetResult> listPaos(List<UUID> objectIds) throws InterruptedException {
+    TpsApi tpsApi = policyApi();
+    try {
+      return TpsRetry.retry(() -> tpsApi.listPaos(objectIds));
     } catch (ApiException e) {
       throw convertApiException(e);
     }

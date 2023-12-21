@@ -1,10 +1,12 @@
 package bio.terra.profile.service.profile;
 
+import static org.hamcrest.MatcherAssert.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -48,6 +50,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -218,17 +221,17 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     when(profileDao.listBillingProfiles(
             anyInt(), anyInt(), eq(List.of(profile.id(), protectedProfile.id()))))
         .thenReturn(List.of(profile, protectedProfile));
-    when(tpsApiDispatch.getOrCreatePao(
-            protectedProfile.id(), TpsComponent.BPM, TpsObjectType.BILLING_PROFILE))
-        .thenReturn(new TpsPaoGetResult().effectiveAttributes(policies));
-    when(tpsApiDispatch.getOrCreatePao(
-            profile.id(), TpsComponent.BPM, TpsObjectType.BILLING_PROFILE))
-        .thenReturn(new TpsPaoGetResult());
+    when(tpsApiDispatch.listPaos(argThat(l -> l.contains(profile.id()))))
+        .thenReturn(
+            List.of(
+                new TpsPaoGetResult()
+                    .effectiveAttributes(policies)
+                    .objectId(protectedProfile.id())));
     var result = profileService.listProfiles(user, 0, 0);
-    assertEquals(
-        List.of(
-            profileDescription, new ProfileDescription(protectedProfile, Optional.of(policies))),
-        result);
+    assertThat(
+        result,
+        Matchers.containsInAnyOrder(
+            profileDescription, new ProfileDescription(protectedProfile, Optional.of(policies))));
   }
 
   @Test
