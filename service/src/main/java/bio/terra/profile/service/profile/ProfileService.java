@@ -4,6 +4,7 @@ import bio.terra.common.exception.ForbiddenException;
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.policy.model.TpsComponent;
 import bio.terra.policy.model.TpsObjectType;
+import bio.terra.policy.model.TpsPaoGetResult;
 import bio.terra.policy.model.TpsPolicyInputs;
 import bio.terra.profile.app.common.MetricUtils;
 import bio.terra.profile.db.ProfileDao;
@@ -22,11 +23,11 @@ import bio.terra.profile.service.profile.flight.create.CreateProfileFlight;
 import bio.terra.profile.service.profile.flight.delete.DeleteProfileFlight;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.profile.service.profile.model.ProfileDescription;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -148,22 +149,22 @@ public class ProfileService {
         SamRethrow.onInterrupted(() -> samService.listProfileIds(user), "listProfileIds");
     var profiles = profileDao.listBillingProfiles(offset, limit, samProfileIds);
 
-    List<ProfileDescription> profilesWithPolicies = new ArrayList<>();
-    for (BillingProfile profile : profiles) {
-      Optional<TpsPolicyInputs> policies;
-      try {
-        policies =
-            Optional.ofNullable(
-                tpsApiDispatch
-                    .getOrCreatePao(profile.id(), TpsComponent.BPM, TpsObjectType.BILLING_PROFILE)
-                    .getEffectiveAttributes());
-      } catch (InterruptedException e) {
-        throw new PolicyServiceAPIException("Interrupted during TPS getPao operation.", e);
-      }
-      profilesWithPolicies.add(new ProfileDescription(profile, policies));
-    }
+    try {
+      var policyById =
+          tpsApiDispatch.listPaos(profiles.stream().map(BillingProfile::id).toList()).stream()
+              .collect(
+                  Collectors.toMap(
+                      TpsPaoGetResult::getObjectId, TpsPaoGetResult::getEffectiveAttributes));
 
-    return profilesWithPolicies;
+      return profiles.stream()
+          .map(
+              profile ->
+                  new ProfileDescription(
+                      profile, Optional.ofNullable(policyById.get(profile.id()))))
+          .toList();
+    } catch (InterruptedException e) {
+      throw new PolicyServiceAPIException("Interrupted during TPS listPaos operation.", e);
+    }
   }
 
   public List<SamPolicyModel> getProfilePolicies(UUID profileId, AuthenticatedUserRequest user) {
