@@ -2,7 +2,7 @@ import org.springframework.boot.gradle.plugin.SpringBootPlugin
 
 plugins {
     id 'maven-publish'
-    id 'com.jfrog.artifactory' version '5.1.12'
+    id 'com.jfrog.artifactory' version '5.1.13'
     id 'org.hidetake.swagger.generator'
     id 'java-library'
     id 'idea'
