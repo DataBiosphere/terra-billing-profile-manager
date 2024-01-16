@@ -4,6 +4,13 @@ updates:
   - package-ecosystem: "gradle"
     directory: "/"
     open-pull-requests-limit: 10
+    groups:
+      minor-patch-dependencies:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
     schedule:
       interval: "weekly"
       time: "06:00"
