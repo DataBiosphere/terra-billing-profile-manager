@@ -742,6 +742,7 @@ components:
         category:
           type: string
           enum:
+            - WorkspaceInfrastructure
             - Storage
             - Compute
             - Other

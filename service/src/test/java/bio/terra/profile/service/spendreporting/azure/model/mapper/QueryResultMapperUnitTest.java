@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import bio.terra.profile.common.BaseUnitTest;
 import bio.terra.profile.service.spendreporting.azure.exception.UnexpectedCostManagementQueryResponse;
+import bio.terra.profile.service.spendreporting.azure.model.AzureResourceProviderType;
 import bio.terra.profile.service.spendreporting.azure.model.SpendCategoryType;
 import bio.terra.profile.service.spendreporting.azure.model.SpendData;
 import com.azure.resourcemanager.costmanagement.models.QueryColumn;
@@ -85,8 +86,7 @@ class QueryResultMapperUnitTest extends BaseUnitTest {
   @Test
   void testMapValidQueryResultSuccess() {
     List<List<Object>> rows = new ArrayList<>();
-    List<Object> row =
-        List.of(15.23, SpendDataItemCategoryMapper.AZURE_COMPUTE_RESOURCE_TYPE, "USD");
+    List<Object> row = List.of(15.23, AzureResourceProviderType.COMPUTE.getValue(), "USD");
     rows.add(row);
 
     var queryResult = mockValidQueryResult(rows);
