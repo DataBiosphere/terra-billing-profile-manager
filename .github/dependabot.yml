@@ -8,6 +8,8 @@ updates:
       minor-patch-dependencies:
         patterns:
           - "*"
+        exclude-patterns:
+          - "spotless-plugin-gradle" # likely to require reformatting of code
         update-types:
           - "minor"
           - "patch"
@@ -22,13 +24,22 @@ updates:
       - "dependency"
       - "gradle"
     commit-message:
-      prefix: "[No Ticket]"
+      prefix: "[WOR-1448]"
     ignore:
       - dependency-name: "au.com.dius.pact*"
         update-types: [ "version-update:semver-major", "version-update:semver-minor" ]
   - package-ecosystem: "gradle"
     directory: "/client-javax"
     open-pull-requests-limit: 10
+    groups:
+      minor-patch-dependencies:
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "spotless-plugin-gradle" # likely to require reformatting of code
+        update-types:
+          - "minor"
+          - "patch"
     schedule:
       interval: "weekly"
       time: "06:00"
@@ -40,7 +51,7 @@ updates:
       - "dependency"
       - "gradle"
     commit-message:
-      prefix: "[No Ticket]"
+      prefix: "[WOR-1448]"
     ignore:
       - dependency-name: "org.glassfish.jersey*"
         update-types: [ "version-update:semver-major", "version-update:semver-minor" ]
