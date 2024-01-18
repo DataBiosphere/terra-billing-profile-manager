@@ -1,5 +1,6 @@
 package bio.terra.profile.service.spendreporting.azure.model;
 
+import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 
 public enum AzureResourceProviderType {
@@ -17,12 +18,12 @@ public enum AzureResourceProviderType {
     return value;
   }
 
-  public static AzureResourceProviderType fromString(String value) {
+  public static Optional<AzureResourceProviderType> fromString(String value) {
     for (AzureResourceProviderType type : AzureResourceProviderType.values()) {
       if (StringUtils.equalsIgnoreCase(type.getValue(), value)) {
-        return type;
+        return Optional.of(type);
       }
     }
-    return null;
+    return Optional.empty();
   }
 }

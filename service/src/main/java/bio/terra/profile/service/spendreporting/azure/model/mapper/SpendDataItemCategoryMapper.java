@@ -13,11 +13,12 @@ public class SpendDataItemCategoryMapper {
       Set.of(AzureResourceProviderType.STORAGE);
 
   public SpendCategoryType mapResourceCategory(String resourceCategory) {
-    if (AZURE_COMPUTE_RESOURCE_TYPES.contains(
-        AzureResourceProviderType.fromString(resourceCategory))) {
+    var type = AzureResourceProviderType.fromString(resourceCategory);
+    if (type.isEmpty()) return SpendCategoryType.OTHER;
+
+    if (AZURE_COMPUTE_RESOURCE_TYPES.contains(type.get())) {
       return SpendCategoryType.COMPUTE;
-    } else if (AZURE_STORAGE_RESOURCE_TYPES.contains(
-        AzureResourceProviderType.fromString(resourceCategory))) {
+    } else if (AZURE_STORAGE_RESOURCE_TYPES.contains(type.get())) {
       return SpendCategoryType.STORAGE;
     } else {
       return SpendCategoryType.OTHER;
