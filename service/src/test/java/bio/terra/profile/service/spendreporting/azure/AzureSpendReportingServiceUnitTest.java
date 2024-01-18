@@ -140,7 +140,8 @@ class AzureSpendReportingServiceUnitTest extends BaseUnitTest {
             SpendCategoryType.STORAGE,
             from,
             to);
-    when(mockQueryResultMapper.mapQueryResult(queryResult2, SpendCategoryType.COMPUTE, from, to))
+    when(mockQueryResultMapper.mapQueryResult(
+            queryResult2, SpendCategoryType.WORKSPACE_INFRASTRUCTURE, from, to))
         .thenReturn(spendData2);
 
     var spendData = azureSpendReportingService.getBillingProfileSpendData(billingProfile, from, to);
