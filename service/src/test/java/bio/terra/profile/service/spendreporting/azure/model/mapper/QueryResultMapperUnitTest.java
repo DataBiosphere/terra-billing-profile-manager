@@ -86,7 +86,8 @@ class QueryResultMapperUnitTest extends BaseUnitTest {
   @Test
   void testMapValidQueryResultSuccess() {
     List<List<Object>> rows = new ArrayList<>();
-    List<Object> row = List.of(15.23, AzureResourceProviderType.COMPUTE.getValue(), "USD");
+    List<Object> row =
+        List.of(15.23, AzureResourceProviderType.COMPUTE.getValue() + "/virtualMachines", "USD");
     rows.add(row);
 
     var queryResult = mockValidQueryResult(rows);
