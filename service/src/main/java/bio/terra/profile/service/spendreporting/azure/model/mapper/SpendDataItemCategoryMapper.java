@@ -12,8 +12,8 @@ public class SpendDataItemCategoryMapper {
   public static final Set<AzureResourceProviderType> AZURE_STORAGE_RESOURCE_TYPES =
       Set.of(AzureResourceProviderType.STORAGE);
 
-  public SpendCategoryType mapResourceCategory(String resourceCategory) {
-    var type = AzureResourceProviderType.fromString(resourceCategory);
+  public SpendCategoryType mapResourceCategory(String resourceProviderType) {
+    var type = AzureResourceProviderType.fromString(resourceProviderType);
     if (type.isEmpty()) return SpendCategoryType.OTHER;
 
     if (AZURE_COMPUTE_RESOURCE_TYPES.contains(type.get())) {
