@@ -135,7 +135,7 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.BPM_SLACK_WEBHOOK }}
         with:
-          channel: '#dsp-workspace-test-alerts'
+          channel: '#dsp-workspaces-test-alerts'
           status: failure
           author_name: Build on dev
           fields: workflow,message
