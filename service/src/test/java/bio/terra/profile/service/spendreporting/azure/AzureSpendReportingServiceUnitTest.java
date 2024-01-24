@@ -58,17 +58,21 @@ class AzureSpendReportingServiceUnitTest extends BaseUnitTest {
   private static final String K8S_RESOURCE_NAME = "k8sResource";
   private static final String K8S_RESOURCE_NAME2 = "k8sResource2";
 
-  private static final String COMPUTE_RESOURCE_TYPE = "microsoft.compute";
-  private static final String STORAGE_RESOURCE_TYPE = "microsoft.storage";
+  private static final String COMPUTE_RESOURCE_PROVIDER_TYPE = "microsoft.compute";
+  private static final String STORAGE_RESOURCE_PROVIDER_TYPE = "microsoft.storage";
+  // one of the possible resource under K8s node resource group
+  private static final String NETWORK_RESOURCE_PROVIDER_TYPE = "microsoft.network";
 
   private static final String K8S_NODE_RESOURCE_GROUP_NAME = "mrgName_aks";
 
   private static final Map<String, List<Object>> QUERY_RESULT_DATA =
       Map.of(
-          COMPUTE_RESOURCE_TYPE,
-          List.of("10.55", COMPUTE_RESOURCE_TYPE, "USD"),
-          STORAGE_RESOURCE_TYPE,
-          List.of("20.99", STORAGE_RESOURCE_TYPE, "USD"));
+          COMPUTE_RESOURCE_PROVIDER_TYPE,
+          List.of("10.55", COMPUTE_RESOURCE_PROVIDER_TYPE, "USD"),
+          STORAGE_RESOURCE_PROVIDER_TYPE,
+          List.of("20.99", STORAGE_RESOURCE_PROVIDER_TYPE, "USD"),
+          NETWORK_RESOURCE_PROVIDER_TYPE,
+          List.of("21.99", STORAGE_RESOURCE_PROVIDER_TYPE, "USD"));
 
   private AzureSpendReportingService azureSpendReportingService;
 
@@ -108,7 +112,8 @@ class AzureSpendReportingServiceUnitTest extends BaseUnitTest {
         true);
     Response<QueryResult> response1 = mock(Response.class);
     QueryResult queryResult1 = mock(QueryResult.class);
-    when(queryResult1.rows()).thenReturn(List.of(QUERY_RESULT_DATA.get(COMPUTE_RESOURCE_TYPE)));
+    when(queryResult1.rows())
+        .thenReturn(List.of(QUERY_RESULT_DATA.get(COMPUTE_RESOURCE_PROVIDER_TYPE)));
     when(response1.getValue()).thenReturn(queryResult1);
     when(mockAzureCostManagementQuery.resourceGroupCostQueryWithResourceTypeGrouping(
             SUBSCRIPTION_ID, RESOURCE_GROUP_NAME, from, to))
@@ -116,7 +121,8 @@ class AzureSpendReportingServiceUnitTest extends BaseUnitTest {
 
     Response<QueryResult> response2 = mock(Response.class);
     QueryResult queryResult2 = mock(QueryResult.class);
-    when(queryResult2.rows()).thenReturn(List.of(QUERY_RESULT_DATA.get(STORAGE_RESOURCE_TYPE)));
+    when(queryResult2.rows())
+        .thenReturn(List.of(QUERY_RESULT_DATA.get(NETWORK_RESOURCE_PROVIDER_TYPE)));
     when(response2.getValue()).thenReturn(queryResult2);
     when(mockAzureCostManagementQuery.resourceGroupCostQueryWithResourceTypeGrouping(
             SUBSCRIPTION_ID, K8S_NODE_RESOURCE_GROUP_NAME, from, to))
@@ -124,7 +130,7 @@ class AzureSpendReportingServiceUnitTest extends BaseUnitTest {
 
     var spendData1 =
         SpendDataFixtures.buildSingleItemSpendData(
-            COMPUTE_RESOURCE_TYPE,
+            COMPUTE_RESOURCE_PROVIDER_TYPE,
             new BigDecimal("10.55"),
             "USD",
             SpendCategoryType.COMPUTE,
@@ -134,10 +140,10 @@ class AzureSpendReportingServiceUnitTest extends BaseUnitTest {
 
     var spendData2 =
         SpendDataFixtures.buildSingleItemSpendData(
-            STORAGE_RESOURCE_TYPE,
-            new BigDecimal("20.99"),
+            NETWORK_RESOURCE_PROVIDER_TYPE,
+            new BigDecimal("21.99"),
             "USD",
-            SpendCategoryType.STORAGE,
+            SpendCategoryType.WORKSPACE_INFRASTRUCTURE,
             from,
             to);
     when(mockQueryResultMapper.mapQueryResult(
@@ -180,7 +186,7 @@ class AzureSpendReportingServiceUnitTest extends BaseUnitTest {
     assertTrue(computeItem.isPresent());
     var storageItem =
         spendData.getSpendDataItems().stream()
-            .filter(i -> i.spendCategoryType().equals(SpendCategoryType.STORAGE))
+            .filter(i -> i.spendCategoryType().equals(SpendCategoryType.WORKSPACE_INFRASTRUCTURE))
             .findFirst();
     assertTrue(storageItem.isPresent());
     assertThat(spendData.getFrom(), equalTo(from));
