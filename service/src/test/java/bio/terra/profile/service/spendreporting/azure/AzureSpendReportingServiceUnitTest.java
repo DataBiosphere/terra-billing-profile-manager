@@ -184,11 +184,11 @@ class AzureSpendReportingServiceUnitTest extends BaseUnitTest {
             .filter(i -> i.spendCategoryType().equals(SpendCategoryType.COMPUTE))
             .findFirst();
     assertTrue(computeItem.isPresent());
-    var storageItem =
+    var networkItem =
         spendData.getSpendDataItems().stream()
             .filter(i -> i.spendCategoryType().equals(SpendCategoryType.WORKSPACE_INFRASTRUCTURE))
             .findFirst();
-    assertTrue(storageItem.isPresent());
+    assertTrue(networkItem.isPresent());
     assertThat(spendData.getFrom(), equalTo(from));
     assertThat(spendData.getTo(), equalTo(to));
   }
