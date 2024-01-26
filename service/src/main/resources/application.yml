@@ -128,8 +128,6 @@ profile:
       - "microsoft.insights"
       - "Microsoft.Network"
       - "Microsoft.DBforPostgreSQL"
-      - "Microsoft.ContainerRegistry"
-      - "Microsoft.KeyVault"
       - "Microsoft.ContainerService"
       - "Microsoft.Relay"
       - "Microsoft.ManagedIdentity"
