@@ -83,6 +83,9 @@ public class SpendDataMapper {
   private static SpendReportingForDateRange.CategoryEnum mapCategory(
       SpendCategoryType spendCategoryType) {
     switch (spendCategoryType) {
+      case WORKSPACE_INFRASTRUCTURE -> {
+        return SpendReportingForDateRange.CategoryEnum.WORKSPACEINFRASTRUCTURE;
+      }
       case STORAGE -> {
         return SpendReportingForDateRange.CategoryEnum.STORAGE;
       }

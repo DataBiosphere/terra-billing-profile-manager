@@ -1,5 +1,6 @@
 package bio.terra.profile.service.spendreporting.azure.model.mapper;
 
+import bio.terra.profile.service.spendreporting.azure.exception.UnexpectedCostManagementDataFormat;
 import bio.terra.profile.service.spendreporting.azure.exception.UnexpectedCostManagementQueryResponse;
 import bio.terra.profile.service.spendreporting.azure.model.SpendCategoryType;
 import bio.terra.profile.service.spendreporting.azure.model.SpendData;
@@ -24,7 +25,7 @@ public class QueryResultMapper {
 
   private static final int EXPECTED_NUMBER_OF_COLUMNS = 3;
 
-  private SpendDataItemCategoryMapper spendDataItemCategoryMapper;
+  private final SpendDataItemCategoryMapper spendDataItemCategoryMapper;
 
   public QueryResultMapper(SpendDataItemCategoryMapper spendDataItemCategoryMapper) {
     this.spendDataItemCategoryMapper = spendDataItemCategoryMapper;
@@ -60,7 +61,7 @@ public class QueryResultMapper {
   private SpendCategoryType getCategory(
       String resourceType, SpendCategoryType categorizeEverythingWith) {
     if (categorizeEverythingWith == null) {
-      return spendDataItemCategoryMapper.mapResourceCategory(resourceType);
+      return spendDataItemCategoryMapper.mapResourceCategory(extractResourceProvider(resourceType));
     }
     return categorizeEverythingWith;
   }
@@ -85,5 +86,22 @@ public class QueryResultMapper {
                   .map(QueryColumn::name)
                   .collect(Collectors.joining(","))));
     }
+  }
+
+  /**
+   * Extracts resourceProvider part from the full resource's type.
+   *
+   * @param fullResourceType has the following format - 'resourceProvider/resourceType'. For
+   *     instance - "microsoft.compute/virtualMachines".
+   * @return Value of the resourceProvider part.
+   */
+  private static String extractResourceProvider(String fullResourceType) {
+    String[] parts = fullResourceType.split("/");
+    if (parts.length != 2) {
+      throw new UnexpectedCostManagementDataFormat(
+          String.format(
+              "Unexpected format of the full resource type. Value received=%s", fullResourceType));
+    }
+    return parts[0];
   }
 }

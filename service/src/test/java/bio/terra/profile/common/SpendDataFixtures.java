@@ -1,9 +1,9 @@
 package bio.terra.profile.common;
 
+import bio.terra.profile.service.spendreporting.azure.model.AzureResourceProviderType;
 import bio.terra.profile.service.spendreporting.azure.model.SpendCategoryType;
 import bio.terra.profile.service.spendreporting.azure.model.SpendData;
 import bio.terra.profile.service.spendreporting.azure.model.SpendDataItem;
-import bio.terra.profile.service.spendreporting.azure.model.mapper.SpendDataItemCategoryMapper;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -22,19 +22,19 @@ public class SpendDataFixtures {
   public static SpendData buildDefaultSpendData() {
     var computeSpendDataItem =
         buildSpendDataItem(
-            SpendDataItemCategoryMapper.AZURE_COMPUTE_RESOURCE_TYPE,
+            AzureResourceProviderType.COMPUTE.getValue(),
             DEFAULT_COMPUTE1_COST,
             DEFAULT_CURRENCY,
             SpendCategoryType.COMPUTE);
     var computeSpendDataItem2 =
         buildSpendDataItem(
-            SpendDataItemCategoryMapper.AZURE_COMPUTE_RESOURCE_TYPE,
+            AzureResourceProviderType.COMPUTE.getValue(),
             DEFAULT_COMPUTE2_COST,
             DEFAULT_CURRENCY,
             SpendCategoryType.COMPUTE);
     var storageSpendDataItem =
         buildSpendDataItem(
-            SpendDataItemCategoryMapper.AZURE_COMPUTE_RESOURCE_TYPE,
+            AzureResourceProviderType.STORAGE.getValue(),
             DEFAULT_STORAGE_COST,
             DEFAULT_CURRENCY,
             SpendCategoryType.STORAGE);

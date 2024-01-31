@@ -109,7 +109,7 @@ public class AzureSpendReportingService {
             subscriptionId, resourceGroupName, from, to);
     if (isAksResourceGroup) {
       return queryResultMapper.mapQueryResult(
-          costQueryResponse.getValue(), SpendCategoryType.COMPUTE, from, to);
+          costQueryResponse.getValue(), SpendCategoryType.WORKSPACE_INFRASTRUCTURE, from, to);
     } else {
       return queryResultMapper.mapQueryResult(costQueryResponse.getValue(), from, to);
     }

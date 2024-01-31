@@ -1,11 +1,10 @@
 package bio.terra.profile.service.spendreporting.azure.model.mapper;
 
-import static bio.terra.profile.service.spendreporting.azure.model.mapper.SpendDataItemCategoryMapper.AZURE_COMPUTE_RESOURCE_TYPE;
-import static bio.terra.profile.service.spendreporting.azure.model.mapper.SpendDataItemCategoryMapper.AZURE_STORAGE_RESOURCE_TYPE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import bio.terra.profile.common.BaseUnitTest;
+import bio.terra.profile.service.spendreporting.azure.model.AzureResourceProviderType;
 import bio.terra.profile.service.spendreporting.azure.model.SpendCategoryType;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,14 +24,23 @@ class SpendDataItemCategoryMapperUnitTest extends BaseUnitTest {
   @Test
   void testCompute() {
     assertThat(
-        spendDataItemCategoryMapper.mapResourceCategory(AZURE_COMPUTE_RESOURCE_TYPE),
+        spendDataItemCategoryMapper.mapResourceCategory(
+            AzureResourceProviderType.COMPUTE.getValue()),
+        equalTo(SpendCategoryType.COMPUTE));
+  }
+
+  @Test
+  void testBatch() {
+    assertThat(
+        spendDataItemCategoryMapper.mapResourceCategory(AzureResourceProviderType.BATCH.getValue()),
         equalTo(SpendCategoryType.COMPUTE));
   }
 
   @Test
   void testStorage() {
     assertThat(
-        spendDataItemCategoryMapper.mapResourceCategory(AZURE_STORAGE_RESOURCE_TYPE),
+        spendDataItemCategoryMapper.mapResourceCategory(
+            AzureResourceProviderType.STORAGE.getValue()),
         equalTo(SpendCategoryType.STORAGE));
   }
 
