@@ -13,7 +13,7 @@ apply from: 'generators.gradle'
 apply from: 'publishing.gradle'
 
 dependencies {
-	implementation 'io.sentry:sentry:7.2.0'
+	implementation 'io.sentry:sentry:7.3.0'
 
 	implementation 'bio.terra:terra-common-lib:0.1.9-SNAPSHOT'
 
@@ -31,7 +31,7 @@ dependencies {
 	implementation 'io.micrometer:micrometer-registry-prometheus'
 
 	// Google dependencies
-	implementation platform('com.google.cloud:libraries-bom:26.30.0')
+	implementation platform('com.google.cloud:libraries-bom:26.31.0')
 
 	// Cloud Resource Library
 	implementation group: "com.azure.resourcemanager", name: "azure-resourcemanager-managedapplications", version: "1.0.0-beta.3"
@@ -62,9 +62,9 @@ dependencies {
 	// Allows us to mock final classes
 	testImplementation 'org.mockito:mockito-inline:5.2.0'
 
-	testImplementation 'au.com.dius.pact.consumer:junit5:4.6.5'
-	testImplementation("au.com.dius.pact.provider:junit5:4.6.5")
-	testImplementation("au.com.dius.pact.provider:junit5spring:4.6.5")
+	testImplementation 'au.com.dius.pact.consumer:junit5:4.6.6'
+	testImplementation("au.com.dius.pact.provider:junit5:4.6.6")
+	testImplementation("au.com.dius.pact.provider:junit5spring:4.6.6")
 	testImplementation 'com.google.code.findbugs:annotations:3.0.1u2'
 }
 test {
