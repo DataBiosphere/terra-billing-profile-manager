@@ -5,16 +5,19 @@ import bio.terra.common.db.WriteTransaction;
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.service.profile.exception.DuplicateManagedApplicationException;
+import bio.terra.profile.service.profile.exception.MissingRequiredFieldsException;
 import bio.terra.profile.service.profile.exception.ProfileInUseException;
 import bio.terra.profile.service.profile.exception.ProfileNotFoundException;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import javax.annotation.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
@@ -154,6 +157,35 @@ public class ProfileDao {
       // handle a case of some active references.
       throw new ProfileInUseException("Profile is in use and cannot be deleted", ex);
     }
+  }
+
+  @WriteTransaction
+  public boolean updateProfile(
+      UUID id, @Nullable String description, @Nullable String billingAccountId) {
+    if (description == null && billingAccountId == null) {
+      throw new MissingRequiredFieldsException("Must specify field to update.");
+    }
+
+    MapSqlParameterSource params = new MapSqlParameterSource();
+    params.addValue("id", id);
+    ArrayList<String> setClause = new ArrayList<>();
+
+    if (description != null) {
+      params.addValue("description", description);
+      setClause.add("description = :description");
+    }
+
+    if (billingAccountId != null) {
+      params.addValue("billing_account_id", billingAccountId);
+      setClause.add("billing_account_id = :billing_account_id");
+    }
+
+    String sql =
+        String.format("UPDATE billing_profile SET %s WHERE id = :id", String.join(",", setClause));
+
+    int rowsAffected = jdbcTemplate.update(sql, params);
+
+    return rowsAffected > 0;
   }
 
   private static class BillingProfileMapper implements RowMapper<BillingProfile> {

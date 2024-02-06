@@ -8,7 +8,9 @@ import bio.terra.policy.model.TpsPaoGetResult;
 import bio.terra.policy.model.TpsPolicyInputs;
 import bio.terra.profile.app.common.MetricUtils;
 import bio.terra.profile.db.ProfileDao;
+import bio.terra.profile.model.ProfileModel;
 import bio.terra.profile.model.SamPolicyModel;
+import bio.terra.profile.model.UpdateProfileRequest;
 import bio.terra.profile.service.iam.SamRethrow;
 import bio.terra.profile.service.iam.SamService;
 import bio.terra.profile.service.iam.model.SamAction;
@@ -164,6 +166,31 @@ public class ProfileService {
           .toList();
     } catch (InterruptedException e) {
       throw new PolicyServiceAPIException("Interrupted during TPS listPaos operation.", e);
+    }
+  }
+
+  public ProfileModel updateProfile(
+      UUID id, UpdateProfileRequest requestBody, AuthenticatedUserRequest user) {
+    if (requestBody.getBillingAccountId() != null) {
+      SamRethrow.onInterrupted(
+          () ->
+              samService.verifyAuthorization(
+                  user, SamResourceType.PROFILE, id, SamAction.UPDATE_BILLING_ACCOUNT),
+          "verifyProfileBillingAccountUpdateAuthz");
+    }
+    if (requestBody.getDescription() != null) {
+      SamRethrow.onInterrupted(
+          () ->
+              samService.verifyAuthorization(
+                  user, SamResourceType.PROFILE, id, SamAction.UPDATE_METADATA),
+          "verifyProfileMetadataUpdateAuthz");
+    }
+
+    if (profileDao.updateProfile(
+        id, requestBody.getDescription(), requestBody.getBillingAccountId())) {
+      return profileDao.getBillingProfileById(id).toApiProfileModel();
+    } else {
+      throw new ProfileNotFoundException(String.format("Profile %s not found", id.toString()));
     }
   }
 

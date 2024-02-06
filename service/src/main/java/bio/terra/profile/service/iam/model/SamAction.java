@@ -8,6 +8,7 @@ public enum SamAction {
   CREATE("create"),
   DELETE("delete"),
   UPDATE_BILLING_ACCOUNT("update_billing_account"),
+  UPDATE_METADATA("update_metadata"),
   LINK("link"),
   READ_SPEND_REPORT("read_spend_report");
 
