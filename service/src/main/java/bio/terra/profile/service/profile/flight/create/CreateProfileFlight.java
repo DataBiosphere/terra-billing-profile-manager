@@ -9,6 +9,7 @@ import bio.terra.profile.service.crl.GcpCrlService;
 import bio.terra.profile.service.iam.SamService;
 import bio.terra.profile.service.job.JobMapKeys;
 import bio.terra.profile.service.policy.TpsApiDispatch;
+import bio.terra.profile.service.profile.flight.common.VerifyAccountUserAccessStep;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.profile.service.profile.model.ProfileDescription;
 import bio.terra.stairway.Flight;
@@ -39,7 +40,7 @@ public class CreateProfileFlight extends Flight {
     addStep(new CreateProfileStep(profileDao, billingProfile, user));
     switch (billingProfile.cloudPlatform()) {
       case GCP:
-        addStep(new CreateProfileVerifyAccountStep(crlService, billingProfile, user));
+        addStep(new VerifyAccountUserAccessStep(crlService, billingProfile, user));
         break;
       case AZURE:
         addStep(

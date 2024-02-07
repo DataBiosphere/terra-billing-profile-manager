@@ -23,6 +23,7 @@ import bio.terra.profile.service.profile.exception.ProfileNotFoundException;
 import bio.terra.profile.service.profile.flight.ProfileMapKeys;
 import bio.terra.profile.service.profile.flight.create.CreateProfileFlight;
 import bio.terra.profile.service.profile.flight.delete.DeleteProfileFlight;
+import bio.terra.profile.service.profile.flight.update.UpdateProfileFlight;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.profile.service.profile.model.ProfileDescription;
 import java.util.List;
@@ -121,15 +122,7 @@ public class ProfileService {
    * @throws ProfileNotFoundException when the profile is not found
    */
   public ProfileDescription getProfile(UUID id, AuthenticatedUserRequest user) {
-    // If profile was found, check permissions
-    var hasActions =
-        SamRethrow.onInterrupted(
-            () -> samService.hasActions(user, SamResourceType.PROFILE, id), "hasActions");
-    if (Boolean.FALSE.equals(hasActions)) {
-      throw new ForbiddenException("forbidden");
-    }
-    // Throws 404 if not found
-    BillingProfile profile = profileDao.getBillingProfileById(id);
+    BillingProfile profile = getProfileWithAccessCheck(id, user);
 
     Optional<TpsPolicyInputs> policies;
     try {
@@ -171,27 +164,18 @@ public class ProfileService {
 
   public ProfileModel updateProfile(
       UUID id, UpdateProfileRequest requestBody, AuthenticatedUserRequest user) {
-    if (requestBody.getBillingAccountId() != null) {
-      SamRethrow.onInterrupted(
-          () ->
-              samService.verifyAuthorization(
-                  user, SamResourceType.PROFILE, id, SamAction.UPDATE_BILLING_ACCOUNT),
-          "verifyProfileBillingAccountUpdateAuthz");
-    }
-    if (requestBody.getDescription() != null) {
-      SamRethrow.onInterrupted(
-          () ->
-              samService.verifyAuthorization(
-                  user, SamResourceType.PROFILE, id, SamAction.UPDATE_METADATA),
-          "verifyProfileMetadataUpdateAuthz");
-    }
-
-    if (profileDao.updateProfile(
-        id, requestBody.getDescription(), requestBody.getBillingAccountId())) {
-      return profileDao.getBillingProfileById(id).toApiProfileModel();
-    } else {
-      throw new ProfileNotFoundException(String.format("Profile %s not found", id.toString()));
-    }
+    BillingProfile profile = getProfileWithAccessCheck(id, user);
+    String description = String.format("Update billing profile id [%s]", id);
+    logger.info(description);
+    var updateJob =
+        jobService
+            .newJob()
+            .description(description)
+            .flightClass(UpdateProfileFlight.class)
+            .request(requestBody)
+            .addParameter(ProfileMapKeys.PROFILE, profile)
+            .userRequest(user);
+    return updateJob.submitAndWait(BillingProfile.class).toApiProfileModel();
   }
 
   public List<SamPolicyModel> getProfilePolicies(UUID profileId, AuthenticatedUserRequest user) {
@@ -211,5 +195,17 @@ public class ProfileService {
     return SamRethrow.onInterrupted(
         () -> samService.deleteProfilePolicyMember(user, profileId, policyName, memberEmail),
         "deletePolicyMember");
+  }
+
+  private BillingProfile getProfileWithAccessCheck(UUID id, AuthenticatedUserRequest user) {
+    // Check Sam permissions before checking in database
+    var hasActions =
+        SamRethrow.onInterrupted(
+            () -> samService.hasActions(user, SamResourceType.PROFILE, id), "hasActions");
+    if (Boolean.FALSE.equals(hasActions)) {
+      throw new ForbiddenException("forbidden");
+    }
+    // Throws 404 if not found
+    return profileDao.getBillingProfileById(id);
   }
 }

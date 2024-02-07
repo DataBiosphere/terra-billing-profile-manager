@@ -11,6 +11,7 @@ import bio.terra.profile.common.BaseSpringUnitTest;
 import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.service.crl.GcpCrlService;
 import bio.terra.profile.service.profile.exception.InaccessibleBillingAccountException;
+import bio.terra.profile.service.profile.flight.common.VerifyAccountUserAccessStep;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.stairway.FlightContext;
 import bio.terra.stairway.StepResult;
@@ -25,7 +26,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 
-class CreateProfileVerifyAccountStepTest extends BaseSpringUnitTest {
+class VerifyAccountUserAccessStepTest extends BaseSpringUnitTest {
 
   @Mock private FlightContext flightContext;
   @Mock private GcpCrlService crlService;
@@ -33,14 +34,14 @@ class CreateProfileVerifyAccountStepTest extends BaseSpringUnitTest {
 
   private AuthenticatedUserRequest user;
   private BillingProfile profile;
-  private CreateProfileVerifyAccountStep step;
+  private VerifyAccountUserAccessStep step;
 
   @BeforeEach
   public void before() {
     user =
         AuthenticatedUserRequest.builder()
             .setSubjectId("12345")
-            .setEmail("profile@unit.com")
+            .setEmail("profileId@unit.com")
             .setToken("token")
             .build();
     profile =
@@ -58,7 +59,7 @@ class CreateProfileVerifyAccountStepTest extends BaseSpringUnitTest {
             Instant.now(),
             "creator");
 
-    step = new CreateProfileVerifyAccountStep(crlService, profile, user);
+    step = new VerifyAccountUserAccessStep(crlService, profile, user);
 
     when(crlService.getBillingClientCow(eq(user))).thenReturn(billingClientCow);
   }
@@ -69,7 +70,7 @@ class CreateProfileVerifyAccountStepTest extends BaseSpringUnitTest {
     when(billingClientCow.testIamPermissions(captor.capture()))
         .thenReturn(
             TestIamPermissionsResponse.newBuilder()
-                .addAllPermissions(CreateProfileVerifyAccountStep.PERMISSIONS_TO_TEST)
+                .addAllPermissions(VerifyAccountUserAccessStep.PERMISSIONS_TO_TEST)
                 .build());
 
     var result = step.doStep(flightContext);
@@ -77,7 +78,7 @@ class CreateProfileVerifyAccountStepTest extends BaseSpringUnitTest {
     assertEquals(
         "billingAccounts/" + profile.billingAccountId().get(), captor.getValue().getResource());
     assertEquals(
-        CreateProfileVerifyAccountStep.PERMISSIONS_TO_TEST, captor.getValue().getPermissionsList());
+        VerifyAccountUserAccessStep.PERMISSIONS_TO_TEST, captor.getValue().getPermissionsList());
     assertEquals(StepResult.getStepResultSuccess(), result);
   }
 
@@ -95,6 +96,6 @@ class CreateProfileVerifyAccountStepTest extends BaseSpringUnitTest {
     assertEquals(
         "billingAccounts/" + profile.billingAccountId().get(), captor.getValue().getResource());
     assertEquals(
-        CreateProfileVerifyAccountStep.PERMISSIONS_TO_TEST, captor.getValue().getPermissionsList());
+        VerifyAccountUserAccessStep.PERMISSIONS_TO_TEST, captor.getValue().getPermissionsList());
   }
 }

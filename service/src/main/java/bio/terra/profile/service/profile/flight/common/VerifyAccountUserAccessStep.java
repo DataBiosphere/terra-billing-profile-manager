@@ -1,4 +1,4 @@
-package bio.terra.profile.service.profile.flight.create;
+package bio.terra.profile.service.profile.flight.common;
 
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.service.crl.GcpCrlService;
@@ -14,7 +14,7 @@ import com.google.iam.v1.TestIamPermissionsResponse;
 import java.util.List;
 
 /** Step to verify the user has access to a GCP profile's billing account. */
-public record CreateProfileVerifyAccountStep(
+public record VerifyAccountUserAccessStep(
     GcpCrlService crlService, BillingProfile profile, AuthenticatedUserRequest user)
     implements Step {
 
