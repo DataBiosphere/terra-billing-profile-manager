@@ -7,7 +7,7 @@ import bio.terra.profile.service.crl.GcpCrlService;
 import bio.terra.profile.service.iam.SamService;
 import bio.terra.profile.service.job.JobMapKeys;
 import bio.terra.profile.service.profile.flight.ProfileMapKeys;
-import bio.terra.profile.service.profile.flight.common.VerifyAccountUserAccessStep;
+import bio.terra.profile.service.profile.flight.common.VerifyUserBillingAccountAccessStep;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.stairway.Flight;
 import bio.terra.stairway.FlightMap;
@@ -36,7 +36,7 @@ public class UpdateProfileFlight extends Flight {
 
     if (updateProfileRequest.getBillingAccountId() != null) {
       addStep(new VerifyAccountUpdateAuthorizationStep(samService, profile, user));
-      addStep(new VerifyAccountUserAccessStep(gcpCrlService, profile, user));
+      addStep(new VerifyUserBillingAccountAccessStep(gcpCrlService, profile, user));
     }
 
     addStep(

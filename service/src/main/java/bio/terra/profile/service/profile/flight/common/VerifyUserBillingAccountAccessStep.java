@@ -14,7 +14,7 @@ import com.google.iam.v1.TestIamPermissionsResponse;
 import java.util.List;
 
 /** Step to verify the user has access to a GCP profile's billing account. */
-public record VerifyAccountUserAccessStep(
+public record VerifyUserBillingAccountAccessStep(
     GcpCrlService crlService, BillingProfile profile, AuthenticatedUserRequest user)
     implements Step {
 

@@ -12,6 +12,7 @@ import bio.terra.profile.service.azure.AzureService;
 import bio.terra.profile.service.crl.GcpCrlService;
 import bio.terra.profile.service.iam.SamService;
 import bio.terra.profile.service.job.JobMapKeys;
+import bio.terra.profile.service.profile.flight.common.VerifyUserBillingAccountAccessStep;
 import bio.terra.stairway.FlightMap;
 import java.util.List;
 import java.util.UUID;
@@ -55,7 +56,7 @@ class CreateProfileFlightUnitTest extends BaseUnitTest {
     assertEquals(6, steps.size());
     assertEquals(GetProfileStep.class, steps.get(0).getClass());
     assertEquals(steps.get(1).getClass(), CreateProfileStep.class);
-    assertEquals(steps.get(2).getClass(), CreateProfileVerifyAccountStep.class);
+    assertEquals(steps.get(2).getClass(), VerifyUserBillingAccountAccessStep.class);
     assertEquals(steps.get(3).getClass(), CreateProfileAuthzIamStep.class);
     assertEquals(steps.get(4).getClass(), CreateProfilePoliciesStep.class);
     assertEquals(steps.get(5).getClass(), CreateProfileFinishStep.class);

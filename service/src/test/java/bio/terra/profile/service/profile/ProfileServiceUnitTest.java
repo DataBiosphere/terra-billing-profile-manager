@@ -42,8 +42,8 @@ import bio.terra.profile.service.job.JobService;
 import bio.terra.profile.service.policy.TpsApiDispatch;
 import bio.terra.profile.service.profile.exception.ProfileNotFoundException;
 import bio.terra.profile.service.profile.flight.ProfileMapKeys;
+import bio.terra.profile.service.profile.flight.common.VerifyUserBillingAccountAccessStep;
 import bio.terra.profile.service.profile.flight.create.CreateProfileFlight;
-import bio.terra.profile.service.profile.flight.create.CreateProfileVerifyAccountStep;
 import bio.terra.profile.service.profile.flight.delete.DeleteProfileFlight;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.profile.service.profile.model.ProfileDescription;
@@ -402,7 +402,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     var billingCow = mock(CloudBillingClientCow.class);
     var iamPermissionsResponse =
         TestIamPermissionsResponse.newBuilder()
-            .addAllPermissions(CreateProfileVerifyAccountStep.PERMISSIONS_TO_TEST)
+            .addAllPermissions(VerifyUserBillingAccountAccessStep.PERMISSIONS_TO_TEST)
             .build();
     when(billingCow.testIamPermissions(any())).thenReturn(iamPermissionsResponse);
     StairwayComponent stairwayComponent = mock(StairwayComponent.class);
