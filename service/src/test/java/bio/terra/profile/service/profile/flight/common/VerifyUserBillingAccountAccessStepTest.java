@@ -40,7 +40,7 @@ class VerifyUserBillingAccountAccessStepTest extends BaseSpringUnitTest {
     user =
         AuthenticatedUserRequest.builder()
             .setSubjectId("12345")
-            .setEmail("profileId@unit.com")
+            .setEmail("profile@unit.com")
             .setToken("token")
             .build();
     profile =
