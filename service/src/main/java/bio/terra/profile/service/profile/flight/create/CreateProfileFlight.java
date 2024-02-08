@@ -42,7 +42,7 @@ public class CreateProfileFlight extends Flight {
       case GCP:
         addStep(
             new VerifyUserBillingAccountAccessStep(
-                crlService, billingProfile, billingProfile.getRequiredBillingAccountId(), user));
+                crlService, billingProfile.getRequiredBillingAccountId(), user));
         break;
       case AZURE:
         addStep(

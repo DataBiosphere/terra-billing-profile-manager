@@ -3,7 +3,6 @@ package bio.terra.profile.service.profile.flight.common;
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.service.crl.GcpCrlService;
 import bio.terra.profile.service.profile.exception.InaccessibleBillingAccountException;
-import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.stairway.FlightContext;
 import bio.terra.stairway.Step;
 import bio.terra.stairway.StepResult;
@@ -15,10 +14,7 @@ import java.util.List;
 
 /** Step to verify the user has access to a GCP profile's billing account. */
 public record VerifyUserBillingAccountAccessStep(
-    GcpCrlService crlService,
-    BillingProfile profile,
-    String billingAccountId,
-    AuthenticatedUserRequest user)
+    GcpCrlService crlService, String billingAccountId, AuthenticatedUserRequest user)
     implements Step {
 
   public static final List<String> PERMISSIONS_TO_TEST =
@@ -46,7 +42,7 @@ public record VerifyUserBillingAccountAccessStep(
       var message =
           String.format(
               "The user [%s] needs access to the billing account [%s] to perform the requested operation",
-              user.getEmail(), profile.getRequiredBillingAccountId());
+              user.getEmail(), billingAccountId);
       throw new InaccessibleBillingAccountException(message);
     }
 

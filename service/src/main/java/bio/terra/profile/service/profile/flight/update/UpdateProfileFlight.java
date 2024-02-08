@@ -38,7 +38,7 @@ public class UpdateProfileFlight extends Flight {
       addStep(new VerifyAccountUpdateAuthorizationStep(samService, profile, user));
       addStep(
           new VerifyUserBillingAccountAccessStep(
-              gcpCrlService, profile, updateProfileRequest.getBillingAccountId(), user));
+              gcpCrlService, updateProfileRequest.getBillingAccountId(), user));
     }
 
     addStep(
