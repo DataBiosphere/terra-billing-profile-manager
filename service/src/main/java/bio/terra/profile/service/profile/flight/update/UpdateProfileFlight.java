@@ -40,10 +40,11 @@ public class UpdateProfileFlight extends Flight {
     }
 
     addStep(
-        new UpdateProfileStep(
+        new UpdateProfileRecordStep(
             profileDao,
             profile,
             updateProfileRequest.getDescription(),
             updateProfileRequest.getBillingAccountId()));
+    addStep(new UpdateProfileSetResponseStep(profileDao, profile));
   }
 }

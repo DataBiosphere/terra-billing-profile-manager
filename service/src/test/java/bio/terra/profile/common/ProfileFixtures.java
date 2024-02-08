@@ -4,6 +4,7 @@ import bio.terra.policy.model.TpsPolicyInputs;
 import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.profile.service.profile.model.ProfileDescription;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -22,9 +23,9 @@ public class ProfileFixtures {
         Optional.of(tenantId),
         Optional.of(subscriptionId),
         Optional.of(mrgId),
-        null,
-        null,
-        null);
+        Instant.now(),
+        Instant.now(),
+        "fake@example.com");
   }
 
   public static ProfileDescription createAzureBillingProfileDescription(
@@ -51,9 +52,9 @@ public class ProfileFixtures {
         Optional.empty(),
         Optional.empty(),
         Optional.empty(),
-        null,
-        null,
-        null);
+        Instant.now(),
+        Instant.now(),
+        "fake@example.com");
   }
 
   public static ProfileDescription createGcpBillingProfileDescription(

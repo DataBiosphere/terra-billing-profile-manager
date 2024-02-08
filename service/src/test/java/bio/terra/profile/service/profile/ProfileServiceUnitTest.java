@@ -12,7 +12,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -31,6 +30,7 @@ import bio.terra.profile.common.BaseUnitTest;
 import bio.terra.profile.common.ProfileFixtures;
 import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.model.CloudPlatform;
+import bio.terra.profile.model.ProfileModel;
 import bio.terra.profile.model.SamPolicyModel;
 import bio.terra.profile.model.UpdateProfileRequest;
 import bio.terra.profile.service.iam.SamService;
@@ -40,11 +40,11 @@ import bio.terra.profile.service.job.JobBuilder;
 import bio.terra.profile.service.job.JobMapKeys;
 import bio.terra.profile.service.job.JobService;
 import bio.terra.profile.service.policy.TpsApiDispatch;
-import bio.terra.profile.service.profile.exception.ProfileNotFoundException;
 import bio.terra.profile.service.profile.flight.ProfileMapKeys;
 import bio.terra.profile.service.profile.flight.common.VerifyUserBillingAccountAccessStep;
 import bio.terra.profile.service.profile.flight.create.CreateProfileFlight;
 import bio.terra.profile.service.profile.flight.delete.DeleteProfileFlight;
+import bio.terra.profile.service.profile.flight.update.UpdateProfileFlight;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.profile.service.profile.model.ProfileDescription;
 import com.google.iam.v1.TestIamPermissionsResponse;
@@ -238,85 +238,41 @@ class ProfileServiceUnitTest extends BaseUnitTest {
   }
 
   @Test
-  void updateProfile_success() throws InterruptedException {
-    when(profileDao.updateProfile(any(), any(), any())).thenReturn(true);
-    when(profileDao.getBillingProfileById(any())).thenReturn(profile);
+  void updateProfile() throws InterruptedException {
+    var jobBuilder = mock(JobBuilder.class);
+    UpdateProfileRequest updateProfileRequest =
+        new UpdateProfileRequest().billingAccountId("billingAccount").description("description");
 
-    profileService.updateProfile(
-        profile.id(),
-        new UpdateProfileRequest().description("description").billingAccountId("billingAccount"),
-        user);
-    verify(samService, times(1))
-        .verifyAuthorization(
-            user, SamResourceType.PROFILE, profile.id(), SamAction.UPDATE_BILLING_ACCOUNT);
-    verify(samService, times(1))
-        .verifyAuthorization(
-            user, SamResourceType.PROFILE, profile.id(), SamAction.UPDATE_METADATA);
+    when(jobService.newJob()).thenReturn(jobBuilder);
+    when(jobBuilder.description(anyString())).thenReturn(jobBuilder);
+    when(jobBuilder.flightClass(UpdateProfileFlight.class)).thenReturn(jobBuilder);
+    when(jobBuilder.request(updateProfileRequest)).thenReturn(jobBuilder);
+    when(jobBuilder.addParameter(ProfileMapKeys.PROFILE, profile)).thenReturn(jobBuilder);
+    when(jobBuilder.userRequest(user)).thenReturn(jobBuilder);
+    when(jobBuilder.submitAndWait(BillingProfile.class)).thenReturn(profile);
+
+    when(profileDao.getBillingProfileById(profile.id())).thenReturn(profile);
+    when(samService.hasActions(user, SamResourceType.PROFILE, profile.id())).thenReturn(true);
+
+    ProfileModel result = profileService.updateProfile(profile.id(), updateProfileRequest, user);
+    verify(jobBuilder).submitAndWait(BillingProfile.class);
+    assertEquals(profile.toApiProfileModel(), result);
   }
 
   @Test
-  void updateProfile_description403() throws InterruptedException {
-    doThrow(new ForbiddenException("user not authorized"))
-        .when(samService)
-        .isAuthorized(user, SamResourceType.PROFILE, profile.id(), SamAction.UPDATE_METADATA);
-    when(profileDao.updateProfile(any(), any(), any())).thenReturn(true);
-    when(profileDao.getBillingProfileById(any())).thenReturn(profile);
-
-    profileService.updateProfile(
-        profile.id(), new UpdateProfileRequest().description("description"), user);
-    verify(samService, times(0))
-        .verifyAuthorization(
-            user, SamResourceType.PROFILE, profile.id(), SamAction.UPDATE_BILLING_ACCOUNT);
-    verify(samService, times(1))
-        .verifyAuthorization(
-            user, SamResourceType.PROFILE, profile.id(), SamAction.UPDATE_METADATA);
-  }
-
-  @Test
-  void updateProfile_billingAccount403() throws InterruptedException {
-    doThrow(new ForbiddenException("user not authorized"))
-        .when(samService)
-        .isAuthorized(
-            user, SamResourceType.PROFILE, profile.id(), SamAction.UPDATE_BILLING_ACCOUNT);
-    when(profileDao.updateProfile(any(), any(), any())).thenReturn(true);
-    when(profileDao.getBillingProfileById(any())).thenReturn(profile);
-
-    profileService.updateProfile(
-        profile.id(), new UpdateProfileRequest().billingAccountId("billingAccount"), user);
-    verify(samService, times(0))
-        .verifyAuthorization(
-            user, SamResourceType.PROFILE, profile.id(), SamAction.UPDATE_METADATA);
-    verify(samService, times(1))
-        .verifyAuthorization(
-            user, SamResourceType.PROFILE, profile.id(), SamAction.UPDATE_BILLING_ACCOUNT);
-  }
-
-  @Test
-  void updateProfile_notFound() throws InterruptedException {
-    when(profileDao.updateProfile(any(), any(), any())).thenReturn(false);
-    when(profileDao.getBillingProfileById(any())).thenReturn(profile);
-
+  void updateProfileNoAccess() throws InterruptedException {
+    when(samService.hasActions(eq(user), eq(SamResourceType.PROFILE), any())).thenReturn(false);
     assertThrows(
-        ProfileNotFoundException.class,
+        ForbiddenException.class,
         () ->
             profileService.updateProfile(
-                profile.id(),
+                UUID.randomUUID(),
                 new UpdateProfileRequest()
-                    .description("description")
-                    .billingAccountId("billingAccount"),
+                    .billingAccountId("billingAccount")
+                    .description("description"),
                 user));
-    verify(samService, times(1))
-        .verifyAuthorization(
-            user, SamResourceType.PROFILE, profile.id(), SamAction.UPDATE_METADATA);
-    verify(samService, times(1))
-        .verifyAuthorization(
-            user, SamResourceType.PROFILE, profile.id(), SamAction.UPDATE_BILLING_ACCOUNT);
   }
 
-  /**
-   * check billing account update access when changing billing account check metadata update access
-   * when changing description 404 if profile not updated
-   */
   @Test
   void getProfilePolicies() throws InterruptedException {
     when(samService.retrieveProfilePolicies(user, profile.id())).thenReturn(profilePolicies);

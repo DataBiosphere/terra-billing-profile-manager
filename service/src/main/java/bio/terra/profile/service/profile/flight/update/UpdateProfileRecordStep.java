@@ -1,7 +1,6 @@
 package bio.terra.profile.service.profile.flight.update;
 
 import bio.terra.profile.db.ProfileDao;
-import bio.terra.profile.service.job.JobMapKeys;
 import bio.terra.profile.service.profile.exception.ProfileNotFoundException;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.stairway.FlightContext;
@@ -9,9 +8,8 @@ import bio.terra.stairway.Step;
 import bio.terra.stairway.StepResult;
 import bio.terra.stairway.StepStatus;
 import javax.annotation.Nullable;
-import org.springframework.http.HttpStatus;
 
-public record UpdateProfileStep(
+public record UpdateProfileRecordStep(
     ProfileDao profileDao,
     BillingProfile profile,
     @Nullable String description,
@@ -20,12 +18,7 @@ public record UpdateProfileStep(
 
   @Override
   public StepResult doStep(FlightContext flightContext) {
-    var workingMap = flightContext.getWorkingMap();
-
     if (profileDao.updateProfile(profile.id(), description, billingAccountId)) {
-      var updatedProfile = profileDao.getBillingProfileById(profile.id());
-      workingMap.put(JobMapKeys.RESPONSE.getKeyName(), updatedProfile);
-      workingMap.put(JobMapKeys.STATUS_CODE.getKeyName(), HttpStatus.OK);
       return StepResult.getStepResultSuccess();
     } else {
       return new StepResult(
