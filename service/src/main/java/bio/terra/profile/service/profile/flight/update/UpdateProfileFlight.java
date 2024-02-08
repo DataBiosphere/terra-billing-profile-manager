@@ -11,6 +11,7 @@ import bio.terra.profile.service.profile.flight.common.VerifyUserBillingAccountA
 import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.stairway.Flight;
 import bio.terra.stairway.FlightMap;
+import java.util.Optional;
 import org.springframework.context.ApplicationContext;
 
 public class UpdateProfileFlight extends Flight {
@@ -38,7 +39,7 @@ public class UpdateProfileFlight extends Flight {
       addStep(new VerifyAccountUpdateAuthorizationStep(samService, profile, user));
       addStep(
           new VerifyUserBillingAccountAccessStep(
-              gcpCrlService, updateProfileRequest.getBillingAccountId(), user));
+              gcpCrlService, Optional.of(updateProfileRequest.getBillingAccountId()), user));
     }
 
     addStep(

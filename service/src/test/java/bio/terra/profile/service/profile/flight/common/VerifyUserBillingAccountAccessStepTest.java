@@ -58,9 +58,7 @@ class VerifyUserBillingAccountAccessStepTest extends BaseSpringUnitTest {
             Instant.now(),
             "creator");
 
-    step =
-        new VerifyUserBillingAccountAccessStep(
-            crlService, profile.getRequiredBillingAccountId(), user);
+    step = new VerifyUserBillingAccountAccessStep(crlService, profile.billingAccountId(), user);
 
     when(crlService.getBillingClientCow(eq(user))).thenReturn(billingClientCow);
   }

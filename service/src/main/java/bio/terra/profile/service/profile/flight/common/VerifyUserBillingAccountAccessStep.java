@@ -3,6 +3,7 @@ package bio.terra.profile.service.profile.flight.common;
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.service.crl.GcpCrlService;
 import bio.terra.profile.service.profile.exception.InaccessibleBillingAccountException;
+import bio.terra.profile.service.profile.exception.MissingRequiredFieldsException;
 import bio.terra.stairway.FlightContext;
 import bio.terra.stairway.Step;
 import bio.terra.stairway.StepResult;
@@ -11,10 +12,11 @@ import com.google.cloud.billing.v1.BillingAccountName;
 import com.google.iam.v1.TestIamPermissionsRequest;
 import com.google.iam.v1.TestIamPermissionsResponse;
 import java.util.List;
+import java.util.Optional;
 
 /** Step to verify the user has access to a GCP profile's billing account. */
 public record VerifyUserBillingAccountAccessStep(
-    GcpCrlService crlService, String billingAccountId, AuthenticatedUserRequest user)
+    GcpCrlService crlService, Optional<String> billingAccountId, AuthenticatedUserRequest user)
     implements Step {
 
   public static final List<String> PERMISSIONS_TO_TEST =
@@ -26,7 +28,11 @@ public record VerifyUserBillingAccountAccessStep(
 
     var testPermissionsRequest =
         TestIamPermissionsRequest.newBuilder()
-            .setResource(BillingAccountName.of(billingAccountId).toString())
+            .setResource(
+                BillingAccountName.of(
+                        billingAccountId.orElseThrow(
+                            () -> new MissingRequiredFieldsException("Missing billing account ID")))
+                    .toString())
             .addAllPermissions(PERMISSIONS_TO_TEST)
             .build();
 
