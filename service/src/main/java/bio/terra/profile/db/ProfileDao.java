@@ -193,6 +193,17 @@ public class ProfileDao {
     return rowsAffected > 0;
   }
 
+  @WriteTransaction
+  public boolean removeBillingAccount(UUID id) {
+    var sql =
+        "UPDATE billing_profile SET billing_account_id = null, last_modified = :last_modified where id = :id";
+    MapSqlParameterSource params =
+        new MapSqlParameterSource()
+            .addValue("last_modified", new Timestamp(Instant.now().toEpochMilli()))
+            .addValue("id", id);
+    return jdbcTemplate.update(sql, params) > 0;
+  }
+
   private static class BillingProfileMapper implements RowMapper<BillingProfile> {
 
     public BillingProfile mapRow(ResultSet rs, int rowNum) throws SQLException {

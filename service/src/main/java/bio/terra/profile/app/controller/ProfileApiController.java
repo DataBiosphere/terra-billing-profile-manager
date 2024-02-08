@@ -75,6 +75,13 @@ public class ProfileApiController implements ProfileApi {
   }
 
   @Override
+  public ResponseEntity<Void> removeBillingAccount(UUID id) {
+    AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
+    profileService.removeBillingAccount(id, user);
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
+
+  @Override
   public ResponseEntity<SamPolicyModelList> getProfilePolicies(UUID id) {
     AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
     List<SamPolicyModel> policies = profileService.getProfilePolicies(id, user);

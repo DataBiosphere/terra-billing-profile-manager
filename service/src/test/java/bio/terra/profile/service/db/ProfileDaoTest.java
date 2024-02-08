@@ -236,6 +236,15 @@ class ProfileDaoTest extends BaseSpringUnitTest {
     assert !profileDao.updateProfile(notFoundId, "description", "billingAccount");
   }
 
+  @Test
+  void removeBillingAccount() {
+    var profile = makeGCPProfile();
+    profileDao.createBillingProfile(profile, user);
+    assert profileDao.removeBillingAccount(profile.id());
+    assertEquals(
+        Optional.empty(), profileDao.getBillingProfileById(profile.id()).billingAccountId());
+  }
+
   // Keeps track of the profiles that are made so they can be cleaned up
   private BillingProfile makeGCPProfile() {
     var uuid = UUID.randomUUID();

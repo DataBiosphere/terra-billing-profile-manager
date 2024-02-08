@@ -15,7 +15,10 @@ import java.util.List;
 
 /** Step to verify the user has access to a GCP profile's billing account. */
 public record VerifyUserBillingAccountAccessStep(
-    GcpCrlService crlService, BillingProfile profile, AuthenticatedUserRequest user)
+    GcpCrlService crlService,
+    BillingProfile profile,
+    String billingAccountId,
+    AuthenticatedUserRequest user)
     implements Step {
 
   public static final List<String> PERMISSIONS_TO_TEST =
@@ -27,7 +30,7 @@ public record VerifyUserBillingAccountAccessStep(
 
     var testPermissionsRequest =
         TestIamPermissionsRequest.newBuilder()
-            .setResource(BillingAccountName.of(profile.getRequiredBillingAccountId()).toString())
+            .setResource(BillingAccountName.of(billingAccountId).toString())
             .addAllPermissions(PERMISSIONS_TO_TEST)
             .build();
 

@@ -178,6 +178,16 @@ public class ProfileService {
     return updateJob.submitAndWait(BillingProfile.class).toApiProfileModel();
   }
 
+  public void removeBillingAccount(UUID id, AuthenticatedUserRequest user) {
+    SamRethrow.onInterrupted(
+        () ->
+            samService.verifyAuthorization(
+                user, SamResourceType.PROFILE, id, SamAction.UPDATE_BILLING_ACCOUNT),
+        "verifyRemoveBillingAccountAuthz");
+
+    profileDao.removeBillingAccount(id);
+  }
+
   public List<SamPolicyModel> getProfilePolicies(UUID profileId, AuthenticatedUserRequest user) {
     return SamRethrow.onInterrupted(
         () -> samService.retrieveProfilePolicies(user, profileId), "retrieveProfilePolicies");

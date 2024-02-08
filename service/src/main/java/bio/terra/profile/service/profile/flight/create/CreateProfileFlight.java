@@ -40,7 +40,9 @@ public class CreateProfileFlight extends Flight {
     addStep(new CreateProfileStep(profileDao, billingProfile, user));
     switch (billingProfile.cloudPlatform()) {
       case GCP:
-        addStep(new VerifyUserBillingAccountAccessStep(crlService, billingProfile, user));
+        addStep(
+            new VerifyUserBillingAccountAccessStep(
+                crlService, billingProfile, billingProfile.getRequiredBillingAccountId(), user));
         break;
       case AZURE:
         addStep(

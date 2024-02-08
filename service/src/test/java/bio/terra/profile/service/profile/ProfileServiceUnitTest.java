@@ -13,6 +13,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import bio.terra.cloudres.google.billing.CloudBillingClientCow;
@@ -271,6 +272,27 @@ class ProfileServiceUnitTest extends BaseUnitTest {
                     .billingAccountId("billingAccount")
                     .description("description"),
                 user));
+  }
+
+  @Test
+  void removeBillingAccount() {
+    when(profileDao.removeBillingAccount(profile.id())).thenReturn(true);
+    profileService.removeBillingAccount(profile.id(), user);
+
+    verify(profileDao).removeBillingAccount(profile.id());
+  }
+
+  @Test
+  void removeBillingAccountNoAccess() throws InterruptedException {
+    doThrow(new ForbiddenException("forbidden"))
+        .when(samService)
+        .verifyAuthorization(
+            user, SamResourceType.PROFILE, profile.id(), SamAction.UPDATE_BILLING_ACCOUNT);
+    when(profileDao.removeBillingAccount(profile.id())).thenReturn(true);
+    assertThrows(
+        ForbiddenException.class, () -> profileService.removeBillingAccount(profile.id(), user));
+
+    verifyNoInteractions(profileDao);
   }
 
   @Test
