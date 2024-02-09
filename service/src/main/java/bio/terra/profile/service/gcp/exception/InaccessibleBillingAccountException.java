@@ -1,4 +1,4 @@
-package bio.terra.profile.service.profile.exception;
+package bio.terra.profile.service.gcp.exception;
 
 import bio.terra.common.exception.BadRequestException;
 

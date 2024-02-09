@@ -20,14 +20,14 @@ import bio.terra.profile.model.AzureManagedAppModel;
 import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.service.azure.AzureService;
 import bio.terra.profile.service.crl.GcpCrlService;
+import bio.terra.profile.service.gcp.GcpService;
+import bio.terra.profile.service.gcp.exception.InaccessibleBillingAccountException;
 import bio.terra.profile.service.iam.SamService;
 import bio.terra.profile.service.policy.TpsApiDispatch;
 import bio.terra.profile.service.policy.exception.PolicyServiceAPIException;
 import bio.terra.profile.service.profile.ProfileService;
 import bio.terra.profile.service.profile.exception.InaccessibleApplicationDeploymentException;
-import bio.terra.profile.service.profile.exception.InaccessibleBillingAccountException;
 import bio.terra.profile.service.profile.exception.MissingRequiredFieldsException;
-import bio.terra.profile.service.profile.flight.common.VerifyUserBillingAccountAccessStep;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.profile.service.profile.model.ProfileDescription;
 import com.google.iam.v1.TestIamPermissionsResponse;
@@ -62,7 +62,7 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
     when(crlService.getBillingClientCow(any())).thenReturn(billingCow);
     var iamPermissionsResponse =
         TestIamPermissionsResponse.newBuilder()
-            .addAllPermissions(VerifyUserBillingAccountAccessStep.PERMISSIONS_TO_TEST)
+            .addAllPermissions(GcpService.BILLING_ACCOUNT_PERMISSIONS_TO_TEST)
             .build();
     when(billingCow.testIamPermissions(any())).thenReturn(iamPermissionsResponse);
     var profile = ProfileFixtures.createGcpBillingProfile("ABCD1234");
@@ -86,7 +86,7 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
     when(crlService.getBillingClientCow(any())).thenReturn(billingCow);
     var iamPermissionsResponse =
         TestIamPermissionsResponse.newBuilder()
-            .addAllPermissions(VerifyUserBillingAccountAccessStep.PERMISSIONS_TO_TEST)
+            .addAllPermissions(GcpService.BILLING_ACCOUNT_PERMISSIONS_TO_TEST)
             .build();
     when(billingCow.testIamPermissions(any())).thenReturn(iamPermissionsResponse);
     var profile =
@@ -131,7 +131,7 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
     when(crlService.getBillingClientCow(any())).thenReturn(billingCow);
     var iamPermissionsResponse =
         TestIamPermissionsResponse.newBuilder()
-            .addAllPermissions(VerifyUserBillingAccountAccessStep.PERMISSIONS_TO_TEST)
+            .addAllPermissions(GcpService.BILLING_ACCOUNT_PERMISSIONS_TO_TEST)
             .build();
     when(billingCow.testIamPermissions(any())).thenReturn(iamPermissionsResponse);
     var policies =
@@ -155,7 +155,7 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
     when(crlService.getBillingClientCow(any())).thenReturn(billingCow);
     var iamPermissionsResponse =
         TestIamPermissionsResponse.newBuilder()
-            .addAllPermissions(VerifyUserBillingAccountAccessStep.PERMISSIONS_TO_TEST)
+            .addAllPermissions(GcpService.BILLING_ACCOUNT_PERMISSIONS_TO_TEST)
             .build();
     when(billingCow.testIamPermissions(any())).thenReturn(iamPermissionsResponse);
     doThrow(new PolicyServiceAPIException("foo"))

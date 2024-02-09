@@ -5,7 +5,7 @@ import bio.terra.profile.app.configuration.AzureConfiguration;
 import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.service.azure.AzureService;
-import bio.terra.profile.service.crl.GcpCrlService;
+import bio.terra.profile.service.gcp.GcpService;
 import bio.terra.profile.service.iam.SamService;
 import bio.terra.profile.service.job.JobMapKeys;
 import bio.terra.profile.service.policy.TpsApiDispatch;
@@ -23,7 +23,7 @@ public class CreateProfileFlight extends Flight {
 
     ApplicationContext appContext = (ApplicationContext) applicationContext;
     ProfileDao profileDao = appContext.getBean(ProfileDao.class);
-    GcpCrlService crlService = appContext.getBean(GcpCrlService.class);
+    GcpService gcpService = appContext.getBean(GcpService.class);
     SamService samService = appContext.getBean(SamService.class);
     AzureService azureService = appContext.getBean(AzureService.class);
     AzureConfiguration azureConfig = appContext.getBean(AzureConfiguration.class);
@@ -42,7 +42,7 @@ public class CreateProfileFlight extends Flight {
       case GCP:
         addStep(
             new VerifyUserBillingAccountAccessStep(
-                crlService, billingProfile.billingAccountId(), user));
+                gcpService, billingProfile.billingAccountId(), user));
         break;
       case AZURE:
         addStep(

@@ -8,9 +8,9 @@ import bio.terra.policy.model.TpsPaoGetResult;
 import bio.terra.policy.model.TpsPolicyInputs;
 import bio.terra.profile.app.common.MetricUtils;
 import bio.terra.profile.db.ProfileDao;
-import bio.terra.profile.model.ProfileModel;
 import bio.terra.profile.model.SamPolicyModel;
 import bio.terra.profile.model.UpdateProfileRequest;
+import bio.terra.profile.service.gcp.GcpService;
 import bio.terra.profile.service.iam.SamRethrow;
 import bio.terra.profile.service.iam.SamService;
 import bio.terra.profile.service.iam.model.SamAction;
@@ -23,7 +23,6 @@ import bio.terra.profile.service.profile.exception.ProfileNotFoundException;
 import bio.terra.profile.service.profile.flight.ProfileMapKeys;
 import bio.terra.profile.service.profile.flight.create.CreateProfileFlight;
 import bio.terra.profile.service.profile.flight.delete.DeleteProfileFlight;
-import bio.terra.profile.service.profile.flight.update.UpdateProfileFlight;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.profile.service.profile.model.ProfileDescription;
 import java.util.List;
@@ -45,17 +44,20 @@ public class ProfileService {
   private final SamService samService;
   private final JobService jobService;
   private final TpsApiDispatch tpsApiDispatch;
+  private final GcpService gcpService;
 
   @Autowired
   public ProfileService(
       ProfileDao profileDao,
       SamService samService,
       JobService jobService,
-      TpsApiDispatch tpsApiDispatch) {
+      TpsApiDispatch tpsApiDispatch,
+      GcpService gcpService) {
     this.profileDao = profileDao;
     this.samService = samService;
     this.jobService = jobService;
     this.tpsApiDispatch = tpsApiDispatch;
+    this.gcpService = gcpService;
   }
 
   /**
@@ -122,20 +124,17 @@ public class ProfileService {
    * @throws ProfileNotFoundException when the profile is not found
    */
   public ProfileDescription getProfile(UUID id, AuthenticatedUserRequest user) {
-    BillingProfile profile = getProfileWithAccessCheck(id, user);
-
-    Optional<TpsPolicyInputs> policies;
-    try {
-      policies =
-          Optional.ofNullable(
-              tpsApiDispatch
-                  .getOrCreatePao(id, TpsComponent.BPM, TpsObjectType.BILLING_PROFILE)
-                  .getEffectiveAttributes());
-    } catch (InterruptedException e) {
-      throw new PolicyServiceAPIException("Interrupted during TPS getPao operation.", e);
+    // Check Sam permissions before checking in database
+    var hasActions =
+        SamRethrow.onInterrupted(
+            () -> samService.hasActions(user, SamResourceType.PROFILE, id), "hasActions");
+    if (Boolean.FALSE.equals(hasActions)) {
+      throw new ForbiddenException("forbidden");
     }
+    // Throws 404 if not found
+    BillingProfile profile = profileDao.getBillingProfileById(id);
 
-    return new ProfileDescription(profile, policies);
+    return profileWithPolicies(profile);
   }
 
   public List<ProfileDescription> listProfiles(
@@ -162,20 +161,31 @@ public class ProfileService {
     }
   }
 
-  public ProfileModel updateProfile(
+  public ProfileDescription updateProfile(
       UUID id, UpdateProfileRequest requestBody, AuthenticatedUserRequest user) {
-    BillingProfile profile = getProfileWithAccessCheck(id, user);
-    String description = String.format("Update billing profile id [%s]", id);
-    logger.info(description);
-    var updateJob =
-        jobService
-            .newJob()
-            .description(description)
-            .flightClass(UpdateProfileFlight.class)
-            .request(requestBody)
-            .addParameter(ProfileMapKeys.PROFILE, profile)
-            .userRequest(user);
-    return updateJob.submitAndWait(BillingProfile.class).toApiProfileModel();
+    if (requestBody.getDescription() != null) {
+      SamRethrow.onInterrupted(
+          () ->
+              samService.verifyAuthorization(
+                  user, SamResourceType.PROFILE, id, SamAction.UPDATE_METADATA),
+          "verifyMetadataUpdateAuthz");
+    }
+
+    if (requestBody.getBillingAccountId() != null) {
+      SamRethrow.onInterrupted(
+          () ->
+              samService.verifyAuthorization(
+                  user, SamResourceType.PROFILE, id, SamAction.UPDATE_BILLING_ACCOUNT),
+          "verifyBillingAccountUpdateAuthz");
+      gcpService.verifyUserBillingAccountAccess(
+          Optional.of(requestBody.getBillingAccountId()), user);
+    }
+
+    if (!profileDao.updateProfile(
+        id, requestBody.getDescription(), requestBody.getBillingAccountId())) {
+      throw new ProfileNotFoundException(String.format("Profile %s not found, update failed.", id));
+    }
+    return profileWithPolicies(profileDao.getBillingProfileById(id));
   }
 
   public void removeBillingAccount(UUID id, AuthenticatedUserRequest user) {
@@ -207,15 +217,18 @@ public class ProfileService {
         "deletePolicyMember");
   }
 
-  private BillingProfile getProfileWithAccessCheck(UUID id, AuthenticatedUserRequest user) {
-    // Check Sam permissions before checking in database
-    var hasActions =
-        SamRethrow.onInterrupted(
-            () -> samService.hasActions(user, SamResourceType.PROFILE, id), "hasActions");
-    if (Boolean.FALSE.equals(hasActions)) {
-      throw new ForbiddenException("forbidden");
+  private ProfileDescription profileWithPolicies(BillingProfile profile) {
+    Optional<TpsPolicyInputs> policies;
+    try {
+      policies =
+          Optional.ofNullable(
+              tpsApiDispatch
+                  .getOrCreatePao(profile.id(), TpsComponent.BPM, TpsObjectType.BILLING_PROFILE)
+                  .getEffectiveAttributes());
+    } catch (InterruptedException e) {
+      throw new PolicyServiceAPIException("Interrupted during TPS getPao operation.", e);
     }
-    // Throws 404 if not found
-    return profileDao.getBillingProfileById(id);
+
+    return new ProfileDescription(profile, policies);
   }
 }
