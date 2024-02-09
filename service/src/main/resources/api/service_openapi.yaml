@@ -152,6 +152,24 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
 
+  /api/profiles/v1/{profileId}/billingAccount:
+    parameters:
+      - $ref: '#/components/parameters/ProfileId'
+    delete:
+      summary: Remove billing account from billing profile
+      operationId: removeBillingAccount
+      tags:
+        - Profile
+      responses:
+        '204':
+          description: Success
+        '403':
+          $ref: '#/components/responses/PermissionDenied'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
   /api/profiles/v1/{profileId}/spendReport:
     parameters:
       - $ref: '#/components/parameters/ProfileId'
@@ -418,13 +436,7 @@ components:
 
     UpdateProfileRequest:
       type: object
-      required:
-        - id
       properties:
-        id:
-          type: string
-          description: The ID of the profile in Billing Profile Manager
-          format: uuid
         billingAccountId:
           type: string
           description: Unique identifier of the billing account from Google

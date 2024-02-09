@@ -12,7 +12,9 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import bio.terra.cloudres.google.billing.CloudBillingClientCow;
@@ -31,6 +33,9 @@ import bio.terra.profile.common.ProfileFixtures;
 import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.model.SamPolicyModel;
+import bio.terra.profile.model.UpdateProfileRequest;
+import bio.terra.profile.service.gcp.GcpService;
+import bio.terra.profile.service.gcp.exception.InaccessibleBillingAccountException;
 import bio.terra.profile.service.iam.SamService;
 import bio.terra.profile.service.iam.model.SamAction;
 import bio.terra.profile.service.iam.model.SamResourceType;
@@ -38,9 +43,9 @@ import bio.terra.profile.service.job.JobBuilder;
 import bio.terra.profile.service.job.JobMapKeys;
 import bio.terra.profile.service.job.JobService;
 import bio.terra.profile.service.policy.TpsApiDispatch;
+import bio.terra.profile.service.profile.exception.ProfileNotFoundException;
 import bio.terra.profile.service.profile.flight.ProfileMapKeys;
 import bio.terra.profile.service.profile.flight.create.CreateProfileFlight;
-import bio.terra.profile.service.profile.flight.create.CreateProfileVerifyAccountStep;
 import bio.terra.profile.service.profile.flight.delete.DeleteProfileFlight;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.profile.service.profile.model.ProfileDescription;
@@ -63,6 +68,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
   @Mock private SamService samService;
   @Mock private JobService jobService;
   @Mock private TpsApiDispatch tpsApiDispatch;
+  @Mock private GcpService gcpService;
 
   private ProfileService profileService;
   private AuthenticatedUserRequest user;
@@ -81,7 +87,8 @@ class ProfileServiceUnitTest extends BaseUnitTest {
 
   @BeforeEach
   void before() {
-    profileService = new ProfileService(profileDao, samService, jobService, tpsApiDispatch);
+    profileService =
+        new ProfileService(profileDao, samService, jobService, tpsApiDispatch, gcpService);
     user =
         AuthenticatedUserRequest.builder()
             .setSubjectId("12345")
@@ -235,6 +242,219 @@ class ProfileServiceUnitTest extends BaseUnitTest {
   }
 
   @Test
+  void updateProfileSuccess() throws InterruptedException {
+    var newBillingAccount = "newBillingAccount";
+    var newDescription = "newDescription";
+    var updateRequest =
+        new UpdateProfileRequest().description(newDescription).billingAccountId(newBillingAccount);
+    var updatedProfile =
+        new BillingProfile(
+            profile.id(),
+            profile.displayName(),
+            newDescription,
+            profile.biller(),
+            profile.cloudPlatform(),
+            Optional.of(newBillingAccount),
+            profile.tenantId(),
+            profile.subscriptionId(),
+            profile.managedResourceGroupId(),
+            profile.createdTime(),
+            profile.lastModified(),
+            profile.createdBy());
+
+    when(profileDao.updateProfile(profile.id(), newDescription, newBillingAccount))
+        .thenReturn(true);
+    when(profileDao.getBillingProfileById(profile.id())).thenReturn(updatedProfile);
+    when(tpsApiDispatch.getOrCreatePao(any(), any(), any())).thenReturn(new TpsPaoGetResult());
+
+    var res = profileService.updateProfile(profile.id(), updateRequest, user);
+    assertEquals(newBillingAccount, res.billingProfile().billingAccountId().get());
+    assertEquals(newDescription, res.billingProfile().description());
+    verify(samService)
+        .verifyAuthorization(
+            user, SamResourceType.PROFILE, profile.id(), SamAction.UPDATE_METADATA);
+    verify(samService)
+        .verifyAuthorization(
+            user, SamResourceType.PROFILE, profile.id(), SamAction.UPDATE_BILLING_ACCOUNT);
+    verify(gcpService).verifyUserBillingAccountAccess(Optional.of(newBillingAccount), user);
+  }
+
+  @Test
+  void updateProfileBillingAccountOnly() throws InterruptedException {
+    var newBillingAccount = "newBillingAccount";
+    var updateRequest = new UpdateProfileRequest().billingAccountId(newBillingAccount);
+    var updatedProfile =
+        new BillingProfile(
+            profile.id(),
+            profile.displayName(),
+            profile.description(),
+            profile.biller(),
+            profile.cloudPlatform(),
+            Optional.of(newBillingAccount),
+            profile.tenantId(),
+            profile.subscriptionId(),
+            profile.managedResourceGroupId(),
+            profile.createdTime(),
+            profile.lastModified(),
+            profile.createdBy());
+
+    when(profileDao.updateProfile(profile.id(), null, newBillingAccount)).thenReturn(true);
+    when(profileDao.getBillingProfileById(profile.id())).thenReturn(updatedProfile);
+    when(tpsApiDispatch.getOrCreatePao(any(), any(), any())).thenReturn(new TpsPaoGetResult());
+
+    var res = profileService.updateProfile(profile.id(), updateRequest, user);
+    assertEquals(newBillingAccount, res.billingProfile().billingAccountId().get());
+    assertEquals(profile.description(), res.billingProfile().description());
+    verify(samService, times(0))
+        .verifyAuthorization(
+            user, SamResourceType.PROFILE, profile.id(), SamAction.UPDATE_METADATA);
+    verify(samService)
+        .verifyAuthorization(
+            user, SamResourceType.PROFILE, profile.id(), SamAction.UPDATE_BILLING_ACCOUNT);
+    verify(gcpService).verifyUserBillingAccountAccess(Optional.of(newBillingAccount), user);
+  }
+
+  @Test
+  void updateProfileDescriptionOnly() throws InterruptedException {
+    var newDescription = "newDescription";
+    var updateRequest = new UpdateProfileRequest().description(newDescription);
+    var updatedProfile =
+        new BillingProfile(
+            profile.id(),
+            profile.displayName(),
+            newDescription,
+            profile.biller(),
+            profile.cloudPlatform(),
+            profile.billingAccountId(),
+            profile.tenantId(),
+            profile.subscriptionId(),
+            profile.managedResourceGroupId(),
+            profile.createdTime(),
+            profile.lastModified(),
+            profile.createdBy());
+
+    when(profileDao.updateProfile(profile.id(), newDescription, null)).thenReturn(true);
+    when(profileDao.getBillingProfileById(profile.id())).thenReturn(updatedProfile);
+    when(tpsApiDispatch.getOrCreatePao(any(), any(), any())).thenReturn(new TpsPaoGetResult());
+
+    var res = profileService.updateProfile(profile.id(), updateRequest, user);
+    assertEquals(
+        profile.getRequiredBillingAccountId(), res.billingProfile().billingAccountId().get());
+    assertEquals(newDescription, res.billingProfile().description());
+    verify(samService)
+        .verifyAuthorization(
+            user, SamResourceType.PROFILE, profile.id(), SamAction.UPDATE_METADATA);
+    verify(samService, times(0))
+        .verifyAuthorization(
+            user, SamResourceType.PROFILE, profile.id(), SamAction.UPDATE_BILLING_ACCOUNT);
+    verifyNoInteractions(gcpService);
+  }
+
+  @Test
+  void updateProfileDescriptionNoSamAccess() throws InterruptedException {
+    var newDescription = "newDescription";
+    var updateRequest = new UpdateProfileRequest().description(newDescription);
+
+    doThrow(new ForbiddenException("forbidden"))
+        .when(samService)
+        .verifyAuthorization(
+            user, SamResourceType.PROFILE, profile.id(), SamAction.UPDATE_METADATA);
+
+    assertThrows(
+        ForbiddenException.class,
+        () -> profileService.updateProfile(profile.id(), updateRequest, user));
+    verify(samService)
+        .verifyAuthorization(
+            user, SamResourceType.PROFILE, profile.id(), SamAction.UPDATE_METADATA);
+    verify(samService, times(0))
+        .verifyAuthorization(
+            user, SamResourceType.PROFILE, profile.id(), SamAction.UPDATE_BILLING_ACCOUNT);
+    verifyNoInteractions(gcpService);
+    verifyNoInteractions(profileDao);
+  }
+
+  @Test
+  void updateProfileBillingAccountNoSamAccess() throws InterruptedException {
+    var newBillingAccount = "newBillingAccount";
+    var updateRequest = new UpdateProfileRequest().billingAccountId(newBillingAccount);
+
+    doThrow(new ForbiddenException("forbidden"))
+        .when(samService)
+        .verifyAuthorization(
+            user, SamResourceType.PROFILE, profile.id(), SamAction.UPDATE_BILLING_ACCOUNT);
+
+    assertThrows(
+        ForbiddenException.class,
+        () -> profileService.updateProfile(profile.id(), updateRequest, user));
+    verify(samService, times(0))
+        .verifyAuthorization(
+            user, SamResourceType.PROFILE, profile.id(), SamAction.UPDATE_METADATA);
+    verify(samService)
+        .verifyAuthorization(
+            user, SamResourceType.PROFILE, profile.id(), SamAction.UPDATE_BILLING_ACCOUNT);
+    verifyNoInteractions(gcpService);
+    verifyNoInteractions(profileDao);
+  }
+
+  @Test
+  void updateProfileBillingAccountNoGcpAccess() throws InterruptedException {
+    var newBillingAccount = "newBillingAccount";
+    var updateRequest = new UpdateProfileRequest().billingAccountId(newBillingAccount);
+
+    doThrow(new InaccessibleBillingAccountException("forbidden"))
+        .when(gcpService)
+        .verifyUserBillingAccountAccess(Optional.of(newBillingAccount), user);
+
+    assertThrows(
+        InaccessibleBillingAccountException.class,
+        () -> profileService.updateProfile(profile.id(), updateRequest, user));
+    verify(samService, times(0))
+        .verifyAuthorization(
+            user, SamResourceType.PROFILE, profile.id(), SamAction.UPDATE_METADATA);
+    verify(samService)
+        .verifyAuthorization(
+            user, SamResourceType.PROFILE, profile.id(), SamAction.UPDATE_BILLING_ACCOUNT);
+    verify(gcpService).verifyUserBillingAccountAccess(Optional.of(newBillingAccount), user);
+    verifyNoInteractions(profileDao);
+  }
+
+  @Test
+  void updateProfileNotFound() {
+    var newBillingAccount = "newBillingAccount";
+    var newDescription = "newDescription";
+    var updateRequest =
+        new UpdateProfileRequest().description(newDescription).billingAccountId(newBillingAccount);
+
+    when(profileDao.updateProfile(profile.id(), newDescription, newBillingAccount))
+        .thenReturn(false);
+
+    assertThrows(
+        ProfileNotFoundException.class,
+        () -> profileService.updateProfile(profile.id(), updateRequest, user));
+  }
+
+  @Test
+  void removeBillingAccount() {
+    when(profileDao.removeBillingAccount(profile.id())).thenReturn(true);
+    profileService.removeBillingAccount(profile.id(), user);
+
+    verify(profileDao).removeBillingAccount(profile.id());
+  }
+
+  @Test
+  void removeBillingAccountNoAccess() throws InterruptedException {
+    doThrow(new ForbiddenException("forbidden"))
+        .when(samService)
+        .verifyAuthorization(
+            user, SamResourceType.PROFILE, profile.id(), SamAction.UPDATE_BILLING_ACCOUNT);
+    when(profileDao.removeBillingAccount(profile.id())).thenReturn(true);
+    assertThrows(
+        ForbiddenException.class, () -> profileService.removeBillingAccount(profile.id(), user));
+
+    verifyNoInteractions(profileDao);
+  }
+
+  @Test
   void getProfilePolicies() throws InterruptedException {
     when(samService.retrieveProfilePolicies(user, profile.id())).thenReturn(profilePolicies);
     var result = profileService.getProfilePolicies(profile.id(), user);
@@ -319,7 +539,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     var billingCow = mock(CloudBillingClientCow.class);
     var iamPermissionsResponse =
         TestIamPermissionsResponse.newBuilder()
-            .addAllPermissions(CreateProfileVerifyAccountStep.PERMISSIONS_TO_TEST)
+            .addAllPermissions(GcpService.BILLING_ACCOUNT_PERMISSIONS_TO_TEST)
             .build();
     when(billingCow.testIamPermissions(any())).thenReturn(iamPermissionsResponse);
     StairwayComponent stairwayComponent = mock(StairwayComponent.class);

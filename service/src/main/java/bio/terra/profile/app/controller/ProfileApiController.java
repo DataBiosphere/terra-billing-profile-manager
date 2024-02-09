@@ -61,9 +61,23 @@ public class ProfileApiController implements ProfileApi {
   }
 
   @Override
+  public ResponseEntity<ProfileModel> updateProfile(UUID id, UpdateProfileRequest body) {
+    AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
+    ProfileDescription updatedProfile = profileService.updateProfile(id, body, user);
+    return new ResponseEntity<>(updatedProfile.toApiProfileModel(), HttpStatus.OK);
+  }
+
+  @Override
   public ResponseEntity<Void> deleteProfile(UUID id) {
     AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
     profileService.deleteProfile(id, user);
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
+
+  @Override
+  public ResponseEntity<Void> removeBillingAccount(UUID id) {
+    AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
+    profileService.removeBillingAccount(id, user);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 

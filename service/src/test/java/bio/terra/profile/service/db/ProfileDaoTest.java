@@ -12,6 +12,7 @@ import bio.terra.profile.common.BaseSpringUnitTest;
 import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.service.profile.exception.DuplicateManagedApplicationException;
+import bio.terra.profile.service.profile.exception.MissingRequiredFieldsException;
 import bio.terra.profile.service.profile.exception.ProfileNotFoundException;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import java.util.ArrayList;
@@ -181,6 +182,67 @@ class ProfileDaoTest extends BaseSpringUnitTest {
 
     var result = profileDao.listManagedResourceGroupsInSubscription(subscriptionId);
     assertEquals(List.of(managedResourceGroupId), result);
+  }
+
+  @Test
+  void updateProfile_descriptionOnly() {
+    var profile = makeGCPProfile();
+    profileDao.createBillingProfile(profile, user);
+
+    assert profileDao.updateProfile(profile.id(), "new description", null);
+    var result = profileDao.getBillingProfileById(profile.id());
+    assertEquals("new description", result.description());
+    assertEquals(profile.billingAccountId(), result.billingAccountId());
+  }
+
+  @Test
+  void updateProfile_billingAccountOnly() {
+    var profile = makeGCPProfile();
+    profileDao.createBillingProfile(profile, user);
+
+    assert profileDao.updateProfile(profile.id(), null, "newBillingAccountId");
+    var result = profileDao.getBillingProfileById(profile.id());
+    assertEquals(profile.description(), result.description());
+    assertEquals(Optional.of("newBillingAccountId"), result.billingAccountId());
+  }
+
+  @Test
+  void updateProfile_descriptionAndBillingAccount() {
+    var profile = makeGCPProfile();
+    profileDao.createBillingProfile(profile, user);
+
+    assert profileDao.updateProfile(profile.id(), "new description", "newBillingAccountId");
+    var result = profileDao.getBillingProfileById(profile.id());
+    assertEquals("new description", result.description());
+    assertEquals(Optional.of("newBillingAccountId"), result.billingAccountId());
+  }
+
+  @Test
+  void updateProfile_throwNoFields() {
+    var profile = makeGCPProfile();
+    profileDao.createBillingProfile(profile, user);
+
+    assertThrows(
+        MissingRequiredFieldsException.class,
+        () -> profileDao.updateProfile(profile.id(), null, null));
+  }
+
+  @Test
+  void updateProfile_falseIfProfileNotFound() {
+    UUID notFoundId = UUID.randomUUID();
+    assertThrows(
+        ProfileNotFoundException.class, () -> profileDao.getBillingProfileById(notFoundId));
+
+    assert !profileDao.updateProfile(notFoundId, "description", "billingAccount");
+  }
+
+  @Test
+  void removeBillingAccount() {
+    var profile = makeGCPProfile();
+    profileDao.createBillingProfile(profile, user);
+    assert profileDao.removeBillingAccount(profile.id());
+    assertEquals(
+        Optional.empty(), profileDao.getBillingProfileById(profile.id()).billingAccountId());
   }
 
   // Keeps track of the profiles that are made so they can be cleaned up
