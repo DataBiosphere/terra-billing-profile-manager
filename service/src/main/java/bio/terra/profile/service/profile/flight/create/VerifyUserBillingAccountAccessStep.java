@@ -1,4 +1,4 @@
-package bio.terra.profile.service.profile.flight.common;
+package bio.terra.profile.service.profile.flight.create;
 
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.service.gcp.GcpService;
