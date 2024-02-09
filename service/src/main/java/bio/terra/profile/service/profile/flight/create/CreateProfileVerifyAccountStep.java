@@ -10,7 +10,7 @@ import bio.terra.stairway.StepStatus;
 import java.util.Optional;
 
 /** Step to verify the user has access to a GCP profile's billing account. */
-public record VerifyUserBillingAccountAccessStep(
+public record CreateProfileVerifyAccountStep(
     GcpService gcpService, Optional<String> billingAccountId, AuthenticatedUserRequest user)
     implements Step {
 

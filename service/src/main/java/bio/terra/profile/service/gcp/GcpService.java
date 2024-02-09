@@ -7,6 +7,7 @@ import bio.terra.profile.service.profile.exception.MissingRequiredFieldsExceptio
 import com.google.cloud.billing.v1.BillingAccountName;
 import com.google.iam.v1.TestIamPermissionsRequest;
 import com.google.iam.v1.TestIamPermissionsResponse;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -21,7 +22,7 @@ public class GcpService {
       LoggerFactory.getLogger(bio.terra.profile.service.gcp.GcpService.class);
 
   public static final List<String> BILLING_ACCOUNT_PERMISSIONS_TO_TEST =
-      List.of("billing.resourceAssociations.create");
+      Collections.singletonList("billing.resourceAssociations.create");
 
   private final GcpCrlService crlService;
 

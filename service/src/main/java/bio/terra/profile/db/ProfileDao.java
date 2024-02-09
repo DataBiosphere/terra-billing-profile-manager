@@ -185,9 +185,7 @@ public class ProfileDao {
     String sql =
         String.format("UPDATE billing_profile SET %s WHERE id = :id", String.join(",", setClause));
 
-    int rowsAffected = jdbcTemplate.update(sql, params);
-
-    return rowsAffected > 0;
+    return jdbcTemplate.update(sql, params) > 0;
   }
 
   @WriteTransaction
