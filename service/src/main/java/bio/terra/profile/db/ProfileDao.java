@@ -11,8 +11,6 @@ import bio.terra.profile.service.profile.exception.ProfileNotFoundException;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -182,8 +180,7 @@ public class ProfileDao {
       setClause.add("billing_account_id = :billing_account_id");
     }
 
-    params.addValue("last_modified", new Timestamp(Instant.now().toEpochMilli()));
-    setClause.add("last_modified = :last_modified");
+    setClause.add("last_modified = current_timestamp(6)");
 
     String sql =
         String.format("UPDATE billing_profile SET %s WHERE id = :id", String.join(",", setClause));
@@ -196,11 +193,8 @@ public class ProfileDao {
   @WriteTransaction
   public boolean removeBillingAccount(UUID id) {
     var sql =
-        "UPDATE billing_profile SET billing_account_id = null, last_modified = :last_modified where id = :id";
-    MapSqlParameterSource params =
-        new MapSqlParameterSource()
-            .addValue("last_modified", new Timestamp(Instant.now().toEpochMilli()))
-            .addValue("id", id);
+        "UPDATE billing_profile SET billing_account_id = null, last_modified = current_timestamp(6) where id = :id";
+    MapSqlParameterSource params = new MapSqlParameterSource().addValue("id", id);
     return jdbcTemplate.update(sql, params) > 0;
   }
 
