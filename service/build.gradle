@@ -42,14 +42,7 @@ dependencies {
 	implementation group: 'bio.terra', name: 'terra-cloud-resource-lib', version: "1.2.7-SNAPSHOT"
 
 	// Sam
-	implementation group: "org.broadinstitute.dsde.workbench", name: "sam-client_2.13", version: "0.1-fd8ee25"
-
-	// Transitive dependency constraints due to security vulnerabilities in prior versions.
-	// These are not directly included, they are just constrained if they are pulled in as
-	// transitive dependencies.
-	constraints {
-		implementation('org.json:json:20231013')
-	}
+	implementation group: "org.broadinstitute.dsde.workbench", name: "sam-client_2.13", version: "0.1-0c4b377"
 
     // TPS
     implementation group: "bio.terra", name:"terra-policy-client", version:"1.0.9-SNAPSHOT"
