@@ -22,6 +22,7 @@ public class SamServiceTest {
 
   @Pact(consumer = "bpm", provider = "sam")
   public RequestResponsePact statusApiPact(PactDslWithProvider builder) {
+    var statusShape = new PactDslJsonBody().booleanValue("ok", true).object("systems");
     return builder
         .given("Sam is ok")
         .uponReceiving("a status request")
@@ -29,7 +30,7 @@ public class SamServiceTest {
         .method("GET")
         .willRespondWith()
         .status(200)
-        .body(new PactDslJsonBody().booleanValue("ok", true))
+        .body(statusShape)
         .toPact();
   }
 
@@ -39,7 +40,8 @@ public class SamServiceTest {
         new PactDslJsonBody()
             .stringType("userSubjectId")
             .stringType("userEmail")
-            .booleanType("enabled");
+            .booleanType("enabled")
+            .booleanType("adminEnabled");
     return builder
         .given("user status info request with access token")
         .uponReceiving("a request for the user's status")
