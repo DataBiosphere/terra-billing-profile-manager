@@ -13,7 +13,7 @@ apply from: 'generators.gradle'
 apply from: 'publishing.gradle'
 
 dependencies {
-	implementation 'io.sentry:sentry:7.4.0'
+	implementation 'io.sentry:sentry:7.5.0'
 
 	implementation 'bio.terra:terra-common-lib:0.1.9-SNAPSHOT'
 
@@ -37,7 +37,7 @@ dependencies {
 	implementation group: "com.azure.resourcemanager", name: "azure-resourcemanager-managedapplications", version: "1.0.0-beta.3"
 	implementation group: "com.azure.resourcemanager", name: "azure-resourcemanager-subscription", version: "1.0.0-beta.2"
 	implementation group: 'com.azure.resourcemanager', name: 'azure-resourcemanager-costmanagement', version: "1.0.0-beta.6"
-	implementation group: 'com.azure.resourcemanager', name: 'azure-resourcemanager-containerservice', version: '2.35.0'
+	implementation group: 'com.azure.resourcemanager', name: 'azure-resourcemanager-containerservice', version: '2.36.0'
 
 	implementation group: 'bio.terra', name: 'terra-cloud-resource-lib', version: "1.2.7-SNAPSHOT"
 
