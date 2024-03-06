@@ -1,5 +1,8 @@
 package bio.terra.profile.app.configuration;
 
+import com.azure.core.credential.TokenCredential;
+import com.azure.core.credential.TokenRequestContext;
+import com.azure.identity.DefaultAzureCredentialBuilder;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
@@ -18,6 +21,7 @@ public class PolicyServiceConfiguration {
 
   private String basePath;
   private String clientCredentialFilePath;
+  private Boolean azureControlPlaneEnabled;
 
   private static final List<String> POLICY_SERVICE_ACCOUNT_SCOPES =
       List.of("openid", "email", "profile");
@@ -38,13 +42,32 @@ public class PolicyServiceConfiguration {
     return clientCredentialFilePath;
   }
 
+  public void setAzureControlPlaneEnabled(Boolean azureControlPlaneEnabled) {
+    this.azureControlPlaneEnabled = azureControlPlaneEnabled;
+  }
+
+  public Boolean getAzureControlPlaneEnabled() {
+    return azureControlPlaneEnabled;
+  }
+
   public String getAccessToken() throws IOException {
-    try (FileInputStream fileInputStream = new FileInputStream(clientCredentialFilePath)) {
-      GoogleCredentials credentials =
-          ServiceAccountCredentials.fromStream(fileInputStream)
-              .createScoped(POLICY_SERVICE_ACCOUNT_SCOPES);
-      AccessToken token = credentials.refreshAccessToken();
-      return token.getTokenValue();
+    if (azureControlPlaneEnabled) {
+      TokenCredential credential = new DefaultAzureCredentialBuilder().build();
+      // The Microsoft Authentication Library (MSAL) currently specifies offline_access, openid,
+      // profile, and email by default in authorization and token requests.
+      com.azure.core.credential.AccessToken token =
+          credential
+              .getToken(new TokenRequestContext().addScopes("https://graph.microsoft.com/.default"))
+              .block();
+      return token.getToken();
+    } else {
+      try (FileInputStream fileInputStream = new FileInputStream(clientCredentialFilePath)) {
+        GoogleCredentials credentials =
+            ServiceAccountCredentials.fromStream(fileInputStream)
+                .createScoped(POLICY_SERVICE_ACCOUNT_SCOPES);
+        AccessToken token = credentials.refreshAccessToken();
+        return token.getTokenValue();
+      }
     }
   }
 }
