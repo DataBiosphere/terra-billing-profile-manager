@@ -185,7 +185,6 @@ public class AzureService {
       SubscriptionClient sc = resourceManager.subscriptionClient();
       var subscription = sc.getSubscriptions().get(subscriptionId.toString());
       return UUID.fromString(subscription.tenantId());
-      // return UUID.fromString("72f988bf-86f1-41af-91ab-2d7cd011db47");
     } catch (ManagementException e) {
       if (INACCESSIBLE_SUB_CODES.contains(e.getValue().getCode())) {
         throw new InaccessibleSubscriptionException("Subscription not accessible", e);
