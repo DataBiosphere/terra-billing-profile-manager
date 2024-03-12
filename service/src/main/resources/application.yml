@@ -88,6 +88,7 @@ profile:
   policy:
     client-credential-file-path: build/resources/main/generated/bpm-client-sa.json
     base-path: ${env.tps.basePath}
+    azure-control-plane-enabled: false
 
   stairway-database:
     password: ${env.db.stairway.pass}
@@ -113,7 +114,8 @@ profile:
     managed-app-tenant-id: ${env.azure.managedAppTenantId}
 
     application-offers:
-      - name: terra-dev-preview
+      #- name: terra-dev-preview
+      - name: terra-prod #temp change to support finding prod apps deployed to internal msft subscription
         publisher: thebroadinstituteinc1615909626976
         authorized-user-key: authorizedTerraUser
 

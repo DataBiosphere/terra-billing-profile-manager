@@ -18,9 +18,18 @@ public class PolicyServiceConfiguration {
 
   private String basePath;
   private String clientCredentialFilePath;
+  private Boolean azureControlPlaneEnabled;
 
   private static final List<String> POLICY_SERVICE_ACCOUNT_SCOPES =
       List.of("openid", "email", "profile");
+
+  public void setAzureControlPlaneEnabled(Boolean azureControlPlaneEnabled) {
+    this.azureControlPlaneEnabled = azureControlPlaneEnabled;
+  }
+
+  public Boolean getAzureControlPlaneEnabled() {
+    return azureControlPlaneEnabled;
+  }
 
   public String getBasePath() {
     return basePath;
