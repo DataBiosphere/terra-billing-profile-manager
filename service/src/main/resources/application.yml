@@ -114,8 +114,7 @@ profile:
     managed-app-tenant-id: ${env.azure.managedAppTenantId}
 
     application-offers:
-      #- name: terra-dev-preview
-      - name: terra-prod #temp change to support finding prod apps deployed to internal msft subscription
+      - name: terra-prod
         publisher: thebroadinstituteinc1615909626976
         authorized-user-key: authorizedTerraUser
 
