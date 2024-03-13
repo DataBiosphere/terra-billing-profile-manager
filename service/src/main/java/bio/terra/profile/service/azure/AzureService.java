@@ -2,6 +2,7 @@ package bio.terra.profile.service.azure;
 
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.app.configuration.AzureConfiguration;
+import bio.terra.profile.app.configuration.PolicyServiceConfiguration;
 import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.model.AzureManagedAppModel;
 import bio.terra.profile.service.azure.exception.InaccessibleSubscriptionException;
@@ -30,6 +31,7 @@ public class AzureService {
   public static final String AZURE_SUB_NOT_FOUND = "SubscriptionNotFound";
   public static final String AZURE_AUTH_FAILED = "AuthorizationFailed";
   public static final String INVALID_AUTH_TOKEN = "InvalidAuthenticationTokenTenant";
+  public static final String AUTHORIZED_USER_KEY = "authorizedTerraUser";
 
   private static final Set<String> INACCESSIBLE_SUB_CODES =
       Set.of(AZURE_SUB_NOT_FOUND, AZURE_AUTH_FAILED, INVALID_AUTH_TOKEN);
@@ -37,13 +39,18 @@ public class AzureService {
   private final AzureCrlService crlService;
   private final Set<AzureConfiguration.AzureApplicationOffer> azureAppOffers;
   private final ProfileDao profileDao;
+  private final PolicyServiceConfiguration policyServiceConfiguration;
 
   @Autowired
   public AzureService(
-      AzureCrlService crlService, AzureConfiguration azureConfiguration, ProfileDao profileDao) {
+      AzureCrlService crlService,
+      AzureConfiguration azureConfiguration,
+      ProfileDao profileDao,
+      PolicyServiceConfiguration policyServiceConfiguration) {
     this.crlService = crlService;
     this.azureAppOffers = azureConfiguration.getApplicationOffers();
     this.profileDao = profileDao;
+    this.policyServiceConfiguration = policyServiceConfiguration;
   }
 
   /**
@@ -60,7 +67,6 @@ public class AzureService {
     var tenantId = getTenantForSubscription(subscriptionId);
 
     Stream<Application> applications = getApplicationsForSubscription(subscriptionId);
-
     List<String> assignedManagedResourceGroups =
         profileDao.listManagedResourceGroupsInSubscription(subscriptionId);
 
@@ -110,43 +116,57 @@ public class AzureService {
   }
 
   private boolean isAuthedTerraManagedApp(AuthenticatedUserRequest userRequest, Application app) {
-    if (app.plan() == null) {
-      logger.debug(
-          "App deployment has no plan, ignoring [mrg_id={}]", app.managedResourceGroupId());
-      return false;
-    }
+    if (!policyServiceConfiguration.getAzureControlPlaneEnabled()) {
+      // not running under Azure Control Plane, match plan product name, publisher, and authed user email
+      if (app.plan() == null) {
+        logger.debug(
+            "App deployment has no plan, ignoring [mrg_id={}]", app.managedResourceGroupId());
+        return false;
+      }
 
-    var maybeOffer =
-        azureAppOffers.stream()
-            .filter(
-                o ->
-                    o.getName().equals(app.plan().product())
-                        && o.getPublisher().equals(app.plan().publisher()))
-            .findFirst();
-    if (maybeOffer.isEmpty()) {
-      logger.debug(
-          "App deployment is not a deployment of a well-known Terra offer, ignoring [mrg_id={}]",
-          app.managedResourceGroupId());
-      return false;
-    }
-
-    var offer = maybeOffer.get();
-    var authedUserKey = offer.getAuthorizedUserKey();
-    if (app.parameters() != null && app.parameters() instanceof Map rawParams) {
-      if (!rawParams.containsKey(authedUserKey)) {
-        logger.warn(
-            "Terra app deployment with no authorized user key {} [mrg_id={}]",
-            authedUserKey,
+      var maybeOffer =
+          azureAppOffers.stream()
+              .filter(
+                  o ->
+                      o.getName().equals(app.plan().product())
+                          && o.getPublisher().equals(app.plan().publisher()))
+              .findFirst();
+      if (maybeOffer.isEmpty()) {
+        logger.debug(
+            "App deployment is not a deployment of a well-known Terra offer, ignoring [mrg_id={}]",
             app.managedResourceGroupId());
         return false;
       }
-      var paramValues = (Map) rawParams.get(authedUserKey);
-      var authedUsers = ((String) paramValues.get("value")).split(",");
 
-      return Arrays.stream(authedUsers)
-          .anyMatch(user -> user.trim().equalsIgnoreCase(userRequest.getEmail()));
+      var offer = maybeOffer.get();
+      var authedUserKey = offer.getAuthorizedUserKey();
+      if (app.parameters() != null && app.parameters() instanceof Map rawParams) {
+        if (!rawParams.containsKey(authedUserKey)) {
+          logger.warn(
+              "Terra app deployment with no authorized user key {} [mrg_id={}]",
+              authedUserKey,
+              app.managedResourceGroupId());
+          return false;
+        }
+        var paramValues = (Map) rawParams.get(authedUserKey);
+        var authedUsers = ((String) paramValues.get("value")).split(",");
+
+        return Arrays.stream(authedUsers)
+            .anyMatch(user -> user.trim().equalsIgnoreCase(userRequest.getEmail()));
+      }
+
+      return false;
+    } else {
+      // running under Azure Control Plane, match ServiceCatalog kind and authed user email
+      if (app.kind().equals("ServiceCatalog")) {
+        if (app.parameters() != null && app.parameters() instanceof Map rawParams) {
+          var paramValues = (Map) rawParams.get(AUTHORIZED_USER_KEY);
+          var authedUsers = ((String) paramValues.get("value")).split(",");
+          return Arrays.stream(authedUsers)
+              .anyMatch(user -> user.trim().equalsIgnoreCase(userRequest.getEmail()));
+        }
+      }
     }
-
     return false;
   }
 

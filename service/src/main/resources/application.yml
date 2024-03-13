@@ -114,7 +114,7 @@ profile:
     managed-app-tenant-id: ${env.azure.managedAppTenantId}
 
     application-offers:
-      - name: terra-dev-preview
+      - name: terra-prod
         publisher: thebroadinstituteinc1615909626976
         authorized-user-key: authorizedTerraUser
 
