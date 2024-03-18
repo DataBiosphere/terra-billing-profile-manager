@@ -4,7 +4,7 @@ import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.common.stairway.MonitoringHook;
 import bio.terra.common.stairway.StairwayComponent;
 import bio.terra.profile.app.common.ErrorReportUtils;
-import bio.terra.profile.app.common.MdcHook;
+import bio.terra.profile.app.common.StairwayLoggingHook;
 import bio.terra.profile.app.configuration.IngressConfiguration;
 import bio.terra.profile.app.configuration.JobConfiguration;
 import bio.terra.profile.app.configuration.StairwayDatabaseConfiguration;
@@ -58,7 +58,7 @@ public class JobService {
   private final IngressConfiguration ingressConfig;
   private final StairwayDatabaseConfiguration stairwayDatabaseConfiguration;
   private final ScheduledExecutorService executor;
-  private final MdcHook mdcHook;
+  private final StairwayLoggingHook stairwayLoggingHook;
   private final StairwayComponent stairwayComponent;
   private final ApplicationContext context;
   private final Logger logger = LoggerFactory.getLogger(JobService.class);
@@ -71,7 +71,7 @@ public class JobService {
       JobConfiguration jobConfig,
       IngressConfiguration ingressConfig,
       StairwayDatabaseConfiguration stairwayDatabaseConfiguration,
-      MdcHook mdcHook,
+      StairwayLoggingHook stairwayLoggingHook,
       StairwayComponent stairwayComponent,
       ApplicationContext context,
       ObjectMapper objectMapper,
@@ -80,7 +80,7 @@ public class JobService {
     this.ingressConfig = ingressConfig;
     this.stairwayDatabaseConfiguration = stairwayDatabaseConfiguration;
     this.executor = Executors.newScheduledThreadPool(jobConfig.maxThreads());
-    this.mdcHook = mdcHook;
+    this.stairwayLoggingHook = stairwayLoggingHook;
     this.stairwayComponent = stairwayComponent;
     this.context = context;
     this.objectMapper = objectMapper;
@@ -89,7 +89,7 @@ public class JobService {
 
   // Fully fluent style of JobBuilder
   public JobBuilder newJob() {
-    return new JobBuilder(this, stairwayComponent, mdcHook, openTelemetry);
+    return new JobBuilder(this, stairwayComponent, openTelemetry);
   }
 
   // submit a new job to stairway
@@ -165,7 +165,7 @@ public class JobService {
             .newStairwayOptionsBuilder()
             .dataSource(stairwayDatabaseConfiguration.getDataSource())
             .context(context)
-            .addHook(mdcHook)
+            .addHook(stairwayLoggingHook)
             .addHook(new MonitoringHook(openTelemetry))
             .exceptionSerializer(new StairwayExceptionSerializer(objectMapper)));
   }
