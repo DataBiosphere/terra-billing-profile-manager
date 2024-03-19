@@ -30,6 +30,8 @@ public class AzureService {
   public static final String AZURE_SUB_NOT_FOUND = "SubscriptionNotFound";
   public static final String AZURE_AUTH_FAILED = "AuthorizationFailed";
   public static final String INVALID_AUTH_TOKEN = "InvalidAuthenticationTokenTenant";
+  public static final String AUTHORIZED_USER_KEY = "authorizedTerraUser";
+  public static final String KIND_SERVICE_CATALOG = "ServiceCatalog";
 
   private static final Set<String> INACCESSIBLE_SUB_CODES =
       Set.of(AZURE_SUB_NOT_FOUND, AZURE_AUTH_FAILED, INVALID_AUTH_TOKEN);
@@ -61,23 +63,9 @@ public class AzureService {
 
     Stream<Application> applications = getApplicationsForSubscription(subscriptionId);
 
-    List<String> assignedManagedResourceGroups =
-        profileDao.listManagedResourceGroupsInSubscription(subscriptionId);
-
     return applications
         .filter(app -> isAuthedTerraManagedApp(userRequest, app))
-        .map(
-            app ->
-                new AzureManagedAppModel()
-                    .applicationDeploymentName(app.name())
-                    .subscriptionId(subscriptionId)
-                    .managedResourceGroupId(
-                        normalizeManagedResourceGroupId(app.managedResourceGroupId()))
-                    .tenantId(tenantId)
-                    .assigned(
-                        assignedManagedResourceGroups.contains(
-                            normalizeManagedResourceGroupId(app.managedResourceGroupId())))
-                    .region(app.regionName()))
+        .map(app -> mapAppToAzureManagedApp(app, subscriptionId, tenantId))
         .filter(app -> includeAssignedApplications || !app.isAssigned())
         .distinct()
         .toList();
@@ -182,5 +170,52 @@ public class AzureService {
   private Stream<Application> getApplicationsForSubscription(UUID subscriptionId) {
     var appMgr = crlService.getApplicationManager(subscriptionId);
     return appMgr.applications().list().stream();
+  }
+
+  public List<AzureManagedAppModel> getServiceCatalogManagedAppDeployments(
+      UUID subscriptionId,
+      Boolean includeAssignedApplications,
+      AuthenticatedUserRequest userRequest) {
+
+    var tenantId = getTenantForSubscription(subscriptionId);
+    Stream<Application> applications = getApplicationsForSubscription(subscriptionId);
+
+    return applications
+        .filter(app -> isServiceCatalogTerraManagedApp(userRequest, app))
+        .map(app -> mapAppToAzureManagedApp(app, subscriptionId, tenantId))
+        .filter(app -> includeAssignedApplications || !app.isAssigned())
+        .distinct()
+        .toList();
+  }
+
+  private boolean isServiceCatalogTerraManagedApp(
+      AuthenticatedUserRequest userRequest, Application app) {
+    // running under Azure Control Plane, match ServiceCatalog kind and authed user email
+    if (app.kind().equals(KIND_SERVICE_CATALOG)) {
+      if (app.parameters() != null && app.parameters() instanceof Map rawParams) {
+        var paramValues = (Map) rawParams.get(AUTHORIZED_USER_KEY);
+        var authedUsers = ((String) paramValues.get("value")).split(",");
+        return Arrays.stream(authedUsers)
+            .anyMatch(user -> user.trim().equalsIgnoreCase(userRequest.getEmail()));
+      }
+    }
+    return false;
+  }
+
+  private AzureManagedAppModel mapAppToAzureManagedApp(
+      Application app, UUID subscriptionId, UUID tenantId) {
+
+    List<String> assignedManagedResourceGroups =
+        profileDao.listManagedResourceGroupsInSubscription(subscriptionId);
+
+    return new AzureManagedAppModel()
+        .applicationDeploymentName(app.name())
+        .subscriptionId(subscriptionId)
+        .managedResourceGroupId(normalizeManagedResourceGroupId(app.managedResourceGroupId()))
+        .tenantId(tenantId)
+        .assigned(
+            assignedManagedResourceGroups.contains(
+                normalizeManagedResourceGroupId(app.managedResourceGroupId())))
+        .region(app.regionName());
   }
 }
