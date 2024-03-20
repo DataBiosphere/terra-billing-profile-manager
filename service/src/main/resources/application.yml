@@ -88,7 +88,6 @@ profile:
   policy:
     client-credential-file-path: build/resources/main/generated/bpm-client-sa.json
     base-path: ${env.tps.basePath}
-    azure-control-plane-enabled: false
 
   stairway-database:
     password: ${env.db.stairway.pass}
@@ -112,6 +111,7 @@ profile:
     managed-app-clientId: ${env.azure.managedAppClientId}
     managed-app-client-secret: ${env.azure.managedAppClientSecret}
     managed-app-tenant-id: ${env.azure.managedAppTenantId}
+    control-plane-enabled: false
 
     application-offers:
       - name: terra-dev-preview

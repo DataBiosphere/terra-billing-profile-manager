@@ -9,6 +9,7 @@ import com.google.auth.oauth2.ServiceAccountCredentials;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -21,7 +22,7 @@ public class PolicyServiceConfiguration {
 
   private String basePath;
   private String clientCredentialFilePath;
-  private Boolean azureControlPlaneEnabled;
+  private final AzureConfiguration azureConfiguration;
 
   private static final List<String> POLICY_SERVICE_ACCOUNT_SCOPES =
       List.of("openid", "email", "profile");
@@ -42,16 +43,13 @@ public class PolicyServiceConfiguration {
     return clientCredentialFilePath;
   }
 
-  public void setAzureControlPlaneEnabled(Boolean azureControlPlaneEnabled) {
-    this.azureControlPlaneEnabled = azureControlPlaneEnabled;
-  }
-
-  public Boolean getAzureControlPlaneEnabled() {
-    return azureControlPlaneEnabled;
+  @Autowired
+  PolicyServiceConfiguration(AzureConfiguration azureConfiguration) {
+    this.azureConfiguration = azureConfiguration;
   }
 
   public String getAccessToken() throws IOException {
-    if (azureControlPlaneEnabled) {
+    if (azureConfiguration.controlPlaneEnabled()) {
       TokenCredential credential = new DefaultAzureCredentialBuilder().build();
       // The Microsoft Authentication Library (MSAL) currently specifies offline_access, openid,
       // profile, and email by default in authorization and token requests.

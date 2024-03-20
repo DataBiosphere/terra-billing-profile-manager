@@ -12,6 +12,7 @@ public record AzureConfiguration(
     String managedAppClientId,
     String managedAppClientSecret,
     String managedAppTenantId,
+    Boolean controlPlaneEnabled,
     Set<AzureApplicationOffer> applicationOffers,
     Set<String> requiredProviders) {
   private static final Logger logger = LoggerFactory.getLogger(AzureConfiguration.class);
@@ -85,5 +86,9 @@ public record AzureConfiguration(
 
   public Set<String> getRequiredProviders() {
     return requiredProviders;
+  }
+
+  public Boolean getControlPlaneEnabled() {
+    return controlPlaneEnabled;
   }
 }

@@ -7,7 +7,6 @@ import static org.mockito.Mockito.when;
 
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.app.configuration.AzureConfiguration;
-import bio.terra.profile.app.configuration.PolicyServiceConfiguration;
 import bio.terra.profile.common.BaseUnitTest;
 import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.model.AzureManagedAppModel;
@@ -160,8 +159,6 @@ class AzureServiceUnitTest extends BaseUnitTest {
     when(crlService.getResourceManager(subId)).thenReturn(resourceManager);
 
     var profileDao = mock(ProfileDao.class);
-    var policyServiceConfiguration = mock(PolicyServiceConfiguration.class);
-    when(policyServiceConfiguration.getAzureControlPlaneEnabled()).thenReturn(false);
 
     var offer = new AzureConfiguration.AzureApplicationOffer();
     offer.setName(offerName);
@@ -171,7 +168,7 @@ class AzureServiceUnitTest extends BaseUnitTest {
     var azureService =
         new AzureService(
             crlService,
-            new AzureConfiguration("fake", "fake", "fake", offers, ImmutableSet.of()),
+            new AzureConfiguration("fake", "fake", "fake", false, offers, ImmutableSet.of()),
             profileDao);
 
     var result = azureService.getAuthorizedManagedAppDeployments(subId, true, user);
@@ -189,11 +186,20 @@ class AzureServiceUnitTest extends BaseUnitTest {
 
   @Test
   void getServiceCatalogManagedApps() {
+    var marketPlaceTerraApp =
+        mockApplicationCalls(
+            offerName,
+            offerPublisher,
+            Optional.of(authedUserEmail),
+            "mrg_fake1",
+            "fake_app_1",
+            marketPlaceAppKind);
+
     var serviceCatalogTerraApp =
         mockApplicationCalls(
-            "", "", Optional.of(authedUserEmail), "mrg_fake4", "fake_app_4", serviceCatalogAppKind);
+            "", "", Optional.of(authedUserEmail), "mrg_fake2", "fake_app_2", serviceCatalogAppKind);
 
-    var appsList = List.of(serviceCatalogTerraApp);
+    var appsList = List.of(marketPlaceTerraApp, serviceCatalogTerraApp);
 
     var crlService = mock(AzureCrlService.class);
     var appManager = mockApplicationManager(appsList);
@@ -202,8 +208,6 @@ class AzureServiceUnitTest extends BaseUnitTest {
     when(crlService.getResourceManager(subId)).thenReturn(resourceManager);
 
     var profileDao = mock(ProfileDao.class);
-    var policyServiceConfiguration = mock(PolicyServiceConfiguration.class);
-    when(policyServiceConfiguration.getAzureControlPlaneEnabled()).thenReturn(true);
 
     var offer = new AzureConfiguration.AzureApplicationOffer();
     offer.setName(offerName);
@@ -213,16 +217,16 @@ class AzureServiceUnitTest extends BaseUnitTest {
     var azureService =
         new AzureService(
             crlService,
-            new AzureConfiguration("fake", "fake", "fake", offers, ImmutableSet.of()),
+            new AzureConfiguration("fake", "fake", "fake", true, offers, ImmutableSet.of()),
             profileDao);
 
-    var result = azureService.getServiceCatalogManagedAppDeployments(subId, true, user);
+    var result = azureService.getAuthorizedManagedAppDeployments(subId, true, user);
     var expected =
         List.of(
             new AzureManagedAppModel()
-                .applicationDeploymentName("fake_app_4")
+                .applicationDeploymentName("fake_app_2")
                 .tenantId(tenantId)
-                .managedResourceGroupId("mrg_fake4")
+                .managedResourceGroupId("mrg_fake2")
                 .subscriptionId(subId)
                 .assigned(false)
                 .region(regionName));
@@ -258,7 +262,7 @@ class AzureServiceUnitTest extends BaseUnitTest {
     var azureService =
         new AzureService(
             crlService,
-            new AzureConfiguration("fake", "fake", "fake", offers, ImmutableSet.of()),
+            new AzureConfiguration("fake", "fake", "fake", false, offers, ImmutableSet.of()),
             profileDao);
 
     var result = azureService.getAuthorizedManagedAppDeployments(subId, true, user);
@@ -328,7 +332,7 @@ class AzureServiceUnitTest extends BaseUnitTest {
     var azureService =
         new AzureService(
             crlService,
-            new AzureConfiguration("fake", "fake", "fake", offers, ImmutableSet.of()),
+            new AzureConfiguration("fake", "fake", "fake", false, offers, ImmutableSet.of()),
             profileDao);
 
     var result = azureService.getAuthorizedManagedAppDeployments(subId, false, user);
@@ -378,7 +382,7 @@ class AzureServiceUnitTest extends BaseUnitTest {
     var azureService =
         new AzureService(
             crlService,
-            new AzureConfiguration("fake", "fake", "fake", offers, ImmutableSet.of()),
+            new AzureConfiguration("fake", "fake", "fake", false, offers, ImmutableSet.of()),
             profileDao);
 
     AzureManagedAppModel assignedAzureManagedAppModel =
@@ -438,7 +442,7 @@ class AzureServiceUnitTest extends BaseUnitTest {
     var azureService =
         new AzureService(
             crlService,
-            new AzureConfiguration("fake", "fake", "fake", offers, ImmutableSet.of()),
+            new AzureConfiguration("fake", "fake", "fake", false, offers, ImmutableSet.of()),
             profileDao);
 
     var result = azureService.getAuthorizedManagedAppDeployments(subId, true, user);
@@ -467,7 +471,8 @@ class AzureServiceUnitTest extends BaseUnitTest {
     var azureService =
         new AzureService(
             crlService,
-            new AzureConfiguration("fake", "fake", "fake", ImmutableSet.of(), ImmutableSet.of()),
+            new AzureConfiguration(
+                "fake", "fake", "fake", false, ImmutableSet.of(), ImmutableSet.of()),
             mock(ProfileDao.class));
     assertThrows(
         InaccessibleSubscriptionException.class,
@@ -485,7 +490,8 @@ class AzureServiceUnitTest extends BaseUnitTest {
     var azureService =
         new AzureService(
             crlService,
-            new AzureConfiguration("fake", "fake", "fake", ImmutableSet.of(), ImmutableSet.of()),
+            new AzureConfiguration(
+                "fake", "fake", "fake", false, ImmutableSet.of(), ImmutableSet.of()),
             mock(ProfileDao.class));
 
     assertThrows(
