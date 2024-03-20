@@ -3,7 +3,6 @@ package bio.terra.profile.app.controller;
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.common.iam.AuthenticatedUserRequestFactory;
 import bio.terra.profile.api.AzureApi;
-import bio.terra.profile.model.AzureManagedAppModel;
 import bio.terra.profile.model.AzureManagedAppsResponseModel;
 import bio.terra.profile.service.azure.AzureService;
 import jakarta.servlet.http.HttpServletRequest;
