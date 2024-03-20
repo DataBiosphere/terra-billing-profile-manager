@@ -7,7 +7,6 @@ import bio.terra.profile.model.AzureManagedAppModel;
 import bio.terra.profile.model.AzureManagedAppsResponseModel;
 import bio.terra.profile.service.azure.AzureService;
 import jakarta.servlet.http.HttpServletRequest;
-import java.util.List;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -35,9 +34,8 @@ public class AzureApiController implements AzureApi {
   public ResponseEntity<AzureManagedAppsResponseModel> getManagedAppDeployments(
       UUID azureSubscriptionId, Boolean includeAssignedApplications) {
     final AuthenticatedUserRequest userRequest = authenticatedUserRequestFactory.from(request);
-    List<AzureManagedAppModel> managedApps;
 
-    managedApps =
+    var managedApps =
         this.azureService.getAuthorizedManagedAppDeployments(
             azureSubscriptionId, includeAssignedApplications, userRequest);
 
