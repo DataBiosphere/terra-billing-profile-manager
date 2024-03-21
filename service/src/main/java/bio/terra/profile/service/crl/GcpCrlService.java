@@ -27,23 +27,32 @@ public class GcpCrlService {
   /** Returns a GCP {@link CloudBillingClientCow} which wraps Google Billing API. */
   public CloudBillingClientCow getBillingClientCow(AuthenticatedUserRequest user) {
     try {
-      return new CloudBillingClientCow(
-          clientConfig, getUserCredentials(getGoogleAccessToken(user.getToken())));
+      return new CloudBillingClientCow(clientConfig, getUserCredentials(user.getToken()));
     } catch (IOException e) {
       throw new CrlInternalException("Error creating billing client wrapper", e);
     }
   }
 
   private GoogleCredentials getUserCredentials(String token) {
-    return GoogleCredentials.newBuilder().setAccessToken(new AccessToken(token, null)).build();
+    return GoogleCredentials.newBuilder()
+        .setAccessToken(new AccessToken(getGoogleAccessToken(token), null))
+        .build();
   }
 
+  /**
+   * The user's token might be a JWT from B2C or a Google access token. If the user signed in to
+   * Google through B2C, their JWT will include their Google access token as a claim. Try to parse
+   * the token as if it's a JWT and return the Google access token in the claim. If parsing fails,
+   * assume the token is a Google access token and return it as is.
+   *
+   * <p>Note that we do not fully validate the JWT here as requests to BPM go through its proxy
+   * which does validate the JWT.
+   */
   private String getGoogleAccessToken(String userToken) {
     try {
       var jwt = SignedJWT.parse(userToken);
       return (String) jwt.getJWTClaimsSet().getClaim(GOOGLE_ACCESS_TOKEN_CLAIM);
     } catch (ParseException e) {
-      // even if the token is not a valid JWT, it may still be a valid Google access token
       return userToken;
     }
   }
