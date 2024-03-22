@@ -6,7 +6,9 @@ import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.service.crl.exception.CrlInternalException;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
+import com.nimbusds.jwt.SignedJWT;
 import java.io.IOException;
+import java.text.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Component;
 public class GcpCrlService {
 
   private final ClientConfig clientConfig;
+  private static final String GOOGLE_ACCESS_TOKEN_CLAIM = "idp_access_token";
 
   @Autowired
   public GcpCrlService(ClientConfig clientConfig) {
@@ -31,6 +34,26 @@ public class GcpCrlService {
   }
 
   private GoogleCredentials getUserCredentials(String token) {
-    return GoogleCredentials.newBuilder().setAccessToken(new AccessToken(token, null)).build();
+    return GoogleCredentials.newBuilder()
+        .setAccessToken(new AccessToken(getGoogleAccessToken(token), null))
+        .build();
+  }
+
+  /**
+   * The user's token might be a JWT from B2C or a Google access token. If the user signed in to
+   * Google through B2C, their JWT will include their Google access token as a claim. Try to parse
+   * the token as if it's a JWT and return the Google access token in the claim. If parsing fails,
+   * assume the token is a Google access token and return it as is.
+   *
+   * <p>Note that we do not fully validate the JWT here as requests to BPM go through its proxy
+   * which does validate the JWT.
+   */
+  private String getGoogleAccessToken(String userToken) {
+    try {
+      var jwt = SignedJWT.parse(userToken);
+      return (String) jwt.getJWTClaimsSet().getClaim(GOOGLE_ACCESS_TOKEN_CLAIM);
+    } catch (ParseException e) {
+      return userToken;
+    }
   }
 }
