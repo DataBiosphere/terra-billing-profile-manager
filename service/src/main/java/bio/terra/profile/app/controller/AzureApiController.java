@@ -33,6 +33,7 @@ public class AzureApiController implements AzureApi {
   public ResponseEntity<AzureManagedAppsResponseModel> getManagedAppDeployments(
       UUID azureSubscriptionId, Boolean includeAssignedApplications) {
     final AuthenticatedUserRequest userRequest = authenticatedUserRequestFactory.from(request);
+
     var managedApps =
         this.azureService.getAuthorizedManagedAppDeployments(
             azureSubscriptionId, includeAssignedApplications, userRequest);
