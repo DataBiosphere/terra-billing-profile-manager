@@ -39,18 +39,10 @@ repositories {
 dependencies {
     compileOnly "com.google.code.findbugs:annotations:3.0.1"
     implementation 'io.swagger.core.v3:swagger-annotations:2.1.12'
+    implementation 'io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.2.0'
     swaggerCodegen 'io.swagger.codegen.v3:swagger-codegen-cli:3.0.47'
 
     implementation 'org.slf4j:slf4j-api'
-
-    testImplementation 'ch.qos.logback:logback-classic'
-    testImplementation 'org.hamcrest:hamcrest:2.2'
-
-    // OpenTelemetry
-    // Versioned by Spring Boot Dependency Manager via opentelemetry-bom:
-    implementation 'io.opentelemetry:opentelemetry-api'
-    // Needed for @WithSpan annotations:
-    implementation 'io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.2.0'
 }
 
 // Modify the standard :test task to only include unit-tagged tests.

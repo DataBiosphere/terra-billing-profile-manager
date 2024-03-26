@@ -6,8 +6,6 @@ plugins {
     id 'org.springframework.boot'
 }
 
-// Spring Boot 3.1.2 pulls in postgresql 42.6.0, vulnerable to CVE-2024-1597
-ext['postgresql.version'] = '42.7.2'
-// Spring Boot 3.1.2 pulls in opentelemetry-bom 1.25.0.
+// Spring Boot 3.2.3 pulls in opentelemetry-bom 1.31.0.
 // It must have version >= 1.34.1 for compatibility with terra-common-lib 1.0.9:
 ext['opentelemetry.version'] = '1.36.0'
