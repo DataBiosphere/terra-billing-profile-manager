@@ -30,6 +30,10 @@ public class AzureService {
   public static final String AZURE_SUB_NOT_FOUND = "SubscriptionNotFound";
   public static final String AZURE_AUTH_FAILED = "AuthorizationFailed";
   public static final String INVALID_AUTH_TOKEN = "InvalidAuthenticationTokenTenant";
+  public static final String AUTHORIZED_USER_KEY = "authorizedTerraUser";
+  public static final String KIND_SERVICE_CATALOG = "ServiceCatalog";
+
+  private final Boolean azureControlPlaneEnabled;
 
   private static final Set<String> INACCESSIBLE_SUB_CODES =
       Set.of(AZURE_SUB_NOT_FOUND, AZURE_AUTH_FAILED, INVALID_AUTH_TOKEN);
@@ -44,6 +48,7 @@ public class AzureService {
     this.crlService = crlService;
     this.azureAppOffers = azureConfiguration.getApplicationOffers();
     this.profileDao = profileDao;
+    this.azureControlPlaneEnabled = azureConfiguration.controlPlaneEnabled();
   }
 
   /**
@@ -65,7 +70,11 @@ public class AzureService {
         profileDao.listManagedResourceGroupsInSubscription(subscriptionId);
 
     return applications
-        .filter(app -> isAuthedTerraManagedApp(userRequest, app))
+        .filter(
+            app ->
+                azureControlPlaneEnabled
+                    ? isServiceCatalogTerraManagedApp(userRequest, app)
+                    : isAuthedTerraManagedApp(userRequest, app))
         .map(
             app ->
                 new AzureManagedAppModel()
@@ -182,5 +191,19 @@ public class AzureService {
   private Stream<Application> getApplicationsForSubscription(UUID subscriptionId) {
     var appMgr = crlService.getApplicationManager(subscriptionId);
     return appMgr.applications().list().stream();
+  }
+
+  private boolean isServiceCatalogTerraManagedApp(
+      AuthenticatedUserRequest userRequest, Application app) {
+    // running under Azure Control Plane, match ServiceCatalog kind and authed user email
+    if (app.kind().equals(KIND_SERVICE_CATALOG)) {
+      if (app.parameters() != null && app.parameters() instanceof Map rawParams) {
+        var paramValues = (Map) rawParams.get(AUTHORIZED_USER_KEY);
+        var authedUsers = ((String) paramValues.get("value")).split(",");
+        return Arrays.stream(authedUsers)
+            .anyMatch(user -> user.trim().equalsIgnoreCase(userRequest.getEmail()));
+      }
+    }
+    return false;
   }
 }

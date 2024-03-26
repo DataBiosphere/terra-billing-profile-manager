@@ -60,7 +60,7 @@ class CreateProfileVerifyDeployedApplicationStepTest extends BaseSpringUnitTest 
             "creator");
     var azureConfiguration =
         new AzureConfiguration(
-            "fake_client", "fake_secret", "fake_tenant", ImmutableSet.of(), providers);
+            "fake_client", "fake_secret", "fake_tenant", false, ImmutableSet.of(), providers);
     when(azureService.getRegisteredProviderNamespacesForSubscription(
             profile.getRequiredTenantId(), profile.getRequiredSubscriptionId()))
         .thenReturn(providers);

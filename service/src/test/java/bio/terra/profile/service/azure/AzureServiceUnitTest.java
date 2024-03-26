@@ -50,6 +50,8 @@ class AzureServiceUnitTest extends BaseUnitTest {
   String offerPublisher = "known_terra_publisher";
   String authorizedUserKey = "authorizedTerraUser";
   String regionName = "application-region";
+  String marketPlaceAppKind = "Marketplace";
+  String serviceCatalogAppKind = "ServiceCatalog";
 
   private ApplicationManager mockApplicationManager(List<Application> apps) {
     var appsIter = mock(PagedIterable.class);
@@ -79,7 +81,8 @@ class AzureServiceUnitTest extends BaseUnitTest {
       String offerPublisher,
       Optional<String> authedUserEmail,
       String managedResourceGroupId,
-      String applicationName) {
+      String applicationName,
+      String kind) {
     var application = mock(Application.class);
     when(application.plan())
         .thenReturn(new Plan().withProduct(offerName).withPublisher(offerPublisher));
@@ -95,6 +98,7 @@ class AzureServiceUnitTest extends BaseUnitTest {
     when(application.managedResourceGroupId()).thenReturn(managedResourceGroupId);
     when(application.name()).thenReturn(applicationName);
     when(application.regionName()).thenReturn(regionName);
+    when(application.kind()).thenReturn(kind);
     return application;
   }
 
@@ -102,22 +106,51 @@ class AzureServiceUnitTest extends BaseUnitTest {
   void getManagedApps() {
     var authedTerraApp =
         mockApplicationCalls(
-            offerName, offerPublisher, Optional.of(authedUserEmail), "mrg_fake1", "fake_app_1");
+            offerName,
+            offerPublisher,
+            Optional.of(authedUserEmail),
+            "mrg_fake1",
+            "fake_app_1",
+            marketPlaceAppKind);
 
     var unauthedTerraApp =
         mockApplicationCalls(
-            offerName, offerPublisher, Optional.empty(), "mrg_fake2", "fake_app_2");
+            offerName,
+            offerPublisher,
+            Optional.empty(),
+            "mrg_fake2",
+            "fake_app_2",
+            marketPlaceAppKind);
 
     var otherNonTerraApp =
         mockApplicationCalls(
-            "other_offer", offerPublisher, Optional.empty(), "mrg_fake3", "fake_app3");
+            "other_offer",
+            offerPublisher,
+            Optional.empty(),
+            "mrg_fake3",
+            "fake_app3",
+            marketPlaceAppKind);
 
     var differentPublisherApp =
         mockApplicationCalls(
-            offerName, "other_publisher", Optional.of(authedUserEmail), "mrg_fake1", "fake_app_1");
+            offerName,
+            "other_publisher",
+            Optional.of(authedUserEmail),
+            "mrg_fake1",
+            "fake_app_1",
+            marketPlaceAppKind);
+
+    var serviceCatalogTerraApp =
+        mockApplicationCalls(
+            "", "", Optional.of(authedUserEmail), "mrg_fake4", "fake_app_4", serviceCatalogAppKind);
 
     var appsList =
-        List.of(authedTerraApp, unauthedTerraApp, otherNonTerraApp, differentPublisherApp);
+        List.of(
+            authedTerraApp,
+            unauthedTerraApp,
+            otherNonTerraApp,
+            differentPublisherApp,
+            serviceCatalogTerraApp);
 
     var crlService = mock(AzureCrlService.class);
     var appManager = mockApplicationManager(appsList);
@@ -135,11 +168,10 @@ class AzureServiceUnitTest extends BaseUnitTest {
     var azureService =
         new AzureService(
             crlService,
-            new AzureConfiguration("fake", "fake", "fake", offers, ImmutableSet.of()),
+            new AzureConfiguration("fake", "fake", "fake", false, offers, ImmutableSet.of()),
             profileDao);
 
     var result = azureService.getAuthorizedManagedAppDeployments(subId, true, user);
-
     var expected =
         List.of(
             new AzureManagedAppModel()
@@ -153,13 +185,67 @@ class AzureServiceUnitTest extends BaseUnitTest {
   }
 
   @Test
+  void getServiceCatalogManagedApps() {
+    var marketPlaceTerraApp =
+        mockApplicationCalls(
+            offerName,
+            offerPublisher,
+            Optional.of(authedUserEmail),
+            "mrg_fake1",
+            "fake_app_1",
+            marketPlaceAppKind);
+
+    var serviceCatalogTerraApp =
+        mockApplicationCalls(
+            "", "", Optional.of(authedUserEmail), "mrg_fake2", "fake_app_2", serviceCatalogAppKind);
+
+    var appsList = List.of(marketPlaceTerraApp, serviceCatalogTerraApp);
+
+    var crlService = mock(AzureCrlService.class);
+    var appManager = mockApplicationManager(appsList);
+    when(crlService.getApplicationManager(subId)).thenReturn(appManager);
+    var resourceManager = mockResourceManager(subId, tenantId);
+    when(crlService.getResourceManager(subId)).thenReturn(resourceManager);
+
+    var profileDao = mock(ProfileDao.class);
+
+    var offer = new AzureConfiguration.AzureApplicationOffer();
+    offer.setName(offerName);
+    offer.setPublisher(offerPublisher);
+    offer.setAuthorizedUserKey(authorizedUserKey);
+    var offers = Set.of(offer);
+    var azureService =
+        new AzureService(
+            crlService,
+            new AzureConfiguration("fake", "fake", "fake", true, offers, ImmutableSet.of()),
+            profileDao);
+
+    var result = azureService.getAuthorizedManagedAppDeployments(subId, true, user);
+    var expected =
+        List.of(
+            new AzureManagedAppModel()
+                .applicationDeploymentName("fake_app_2")
+                .tenantId(tenantId)
+                .managedResourceGroupId("mrg_fake2")
+                .subscriptionId(subId)
+                .assigned(false)
+                .region(regionName));
+    assertEquals(result, expected);
+  }
+
+  @Test
   void getManagedApps_dedupesApps() {
     var crlService = mock(AzureCrlService.class);
     var profileDao = mock(ProfileDao.class);
 
     var authedTerraApp =
         mockApplicationCalls(
-            offerName, offerPublisher, Optional.of(authedUserEmail), "mrg_fake1", "fake_app_1");
+            offerName,
+            offerPublisher,
+            Optional.of(authedUserEmail),
+            "mrg_fake1",
+            "fake_app_1",
+            marketPlaceAppKind);
 
     var appsList = List.of(authedTerraApp, authedTerraApp);
 
@@ -176,7 +262,7 @@ class AzureServiceUnitTest extends BaseUnitTest {
     var azureService =
         new AzureService(
             crlService,
-            new AzureConfiguration("fake", "fake", "fake", offers, ImmutableSet.of()),
+            new AzureConfiguration("fake", "fake", "fake", false, offers, ImmutableSet.of()),
             profileDao);
 
     var result = azureService.getAuthorizedManagedAppDeployments(subId, true, user);
@@ -200,7 +286,8 @@ class AzureServiceUnitTest extends BaseUnitTest {
             offerPublisher,
             Optional.of(authedUserEmail),
             assignedTerraAppManagedResourceGroupId,
-            applicationName);
+            applicationName,
+            marketPlaceAppKind);
 
     var unassignedTerraApp =
         mockApplicationCalls(
@@ -208,7 +295,8 @@ class AzureServiceUnitTest extends BaseUnitTest {
             offerPublisher,
             Optional.of(authedUserEmail),
             unassignedTerraAppManagedResourceGroupId,
-            applicationName);
+            applicationName,
+            marketPlaceAppKind);
 
     var offer = new AzureConfiguration.AzureApplicationOffer();
     offer.setName(offerName);
@@ -244,7 +332,7 @@ class AzureServiceUnitTest extends BaseUnitTest {
     var azureService =
         new AzureService(
             crlService,
-            new AzureConfiguration("fake", "fake", "fake", offers, ImmutableSet.of()),
+            new AzureConfiguration("fake", "fake", "fake", false, offers, ImmutableSet.of()),
             profileDao);
 
     var result = azureService.getAuthorizedManagedAppDeployments(subId, false, user);
@@ -267,7 +355,8 @@ class AzureServiceUnitTest extends BaseUnitTest {
             offerPublisher,
             Optional.of(authedUserEmail),
             assignedTerraAppManagedResourceGroupId,
-            applicationName);
+            applicationName,
+            marketPlaceAppKind);
 
     var unassignedTerraApp =
         mockApplicationCalls(
@@ -275,7 +364,8 @@ class AzureServiceUnitTest extends BaseUnitTest {
             offerPublisher,
             Optional.of(authedUserEmail),
             unassignedTerraAppManagedResourceGroupId,
-            applicationName);
+            applicationName,
+            marketPlaceAppKind);
 
     var appsList = List.of(assignedTerraApp, unassignedTerraApp);
     var crlService = mock(AzureCrlService.class);
@@ -292,7 +382,7 @@ class AzureServiceUnitTest extends BaseUnitTest {
     var azureService =
         new AzureService(
             crlService,
-            new AzureConfiguration("fake", "fake", "fake", offers, ImmutableSet.of()),
+            new AzureConfiguration("fake", "fake", "fake", false, offers, ImmutableSet.of()),
             profileDao);
 
     AzureManagedAppModel assignedAzureManagedAppModel =
@@ -328,7 +418,12 @@ class AzureServiceUnitTest extends BaseUnitTest {
   void getManagedApps_handlesDifferentEmailFormats(String authorizedEmails) {
     var authedTerraApp =
         mockApplicationCalls(
-            offerName, offerPublisher, Optional.of(authorizedEmails), "mrg_fake1", "fake_app_1");
+            offerName,
+            offerPublisher,
+            Optional.of(authorizedEmails),
+            "mrg_fake1",
+            "fake_app_1",
+            marketPlaceAppKind);
 
     var appsList = List.of(authedTerraApp);
     var crlService = mock(AzureCrlService.class);
@@ -347,7 +442,7 @@ class AzureServiceUnitTest extends BaseUnitTest {
     var azureService =
         new AzureService(
             crlService,
-            new AzureConfiguration("fake", "fake", "fake", offers, ImmutableSet.of()),
+            new AzureConfiguration("fake", "fake", "fake", false, offers, ImmutableSet.of()),
             profileDao);
 
     var result = azureService.getAuthorizedManagedAppDeployments(subId, true, user);
@@ -376,7 +471,8 @@ class AzureServiceUnitTest extends BaseUnitTest {
     var azureService =
         new AzureService(
             crlService,
-            new AzureConfiguration("fake", "fake", "fake", ImmutableSet.of(), ImmutableSet.of()),
+            new AzureConfiguration(
+                "fake", "fake", "fake", false, ImmutableSet.of(), ImmutableSet.of()),
             mock(ProfileDao.class));
     assertThrows(
         InaccessibleSubscriptionException.class,
@@ -394,7 +490,8 @@ class AzureServiceUnitTest extends BaseUnitTest {
     var azureService =
         new AzureService(
             crlService,
-            new AzureConfiguration("fake", "fake", "fake", ImmutableSet.of(), ImmutableSet.of()),
+            new AzureConfiguration(
+                "fake", "fake", "fake", false, ImmutableSet.of(), ImmutableSet.of()),
             mock(ProfileDao.class));
 
     assertThrows(
