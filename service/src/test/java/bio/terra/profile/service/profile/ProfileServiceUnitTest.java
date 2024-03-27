@@ -27,7 +27,6 @@ import bio.terra.policy.model.TpsObjectType;
 import bio.terra.policy.model.TpsPaoGetResult;
 import bio.terra.policy.model.TpsPolicyInput;
 import bio.terra.policy.model.TpsPolicyInputs;
-import bio.terra.profile.app.common.MdcHook;
 import bio.terra.profile.common.BaseUnitTest;
 import bio.terra.profile.common.ProfileFixtures;
 import bio.terra.profile.db.ProfileDao;
@@ -544,10 +543,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     when(billingCow.testIamPermissions(any())).thenReturn(iamPermissionsResponse);
     StairwayComponent stairwayComponent = mock(StairwayComponent.class);
 
-    var builder =
-        spy(
-            new JobBuilder(
-                jobService, stairwayComponent, mock(MdcHook.class), OpenTelemetry.noop()));
+    var builder = spy(new JobBuilder(jobService, stairwayComponent, OpenTelemetry.noop()));
     when(jobService.newJob()).thenReturn(builder);
 
     var profileDescription = ProfileFixtures.createGcpBillingProfileDescription("ABCD1234");
