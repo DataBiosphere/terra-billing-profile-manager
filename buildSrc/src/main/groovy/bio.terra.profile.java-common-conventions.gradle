@@ -5,6 +5,7 @@ plugins {
 
     id 'com.diffplug.spotless'
     id 'org.hidetake.swagger.generator'
+    id 'com.srcclr.gradle'
 }
 
 boolean isCiServer = System.getenv().containsKey("CI")
@@ -92,4 +93,8 @@ jacocoTestReport {
         // sonarqube requires XML coverage output to upload coverage data
         xml.required = true
     }
+}
+
+srcclr {
+    scope = "runtimeClasspath"
 }
