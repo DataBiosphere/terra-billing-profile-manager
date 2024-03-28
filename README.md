@@ -76,23 +76,5 @@ Automatically fix linting issues:
 ./gradlew generateSwaggerCode
 ```
 
-### Running SourceClear locally
-
-[SourceClear](https://srcclr.github.io) is a static analysis tool that scans a project's Java
-dependencies for known vulnerabilities. If you are working on addressing dependency vulnerabilities
-in response to a SourceClear finding and want to run a scan locally, you need to get the API token
-from Vault before running the Gradle task.
-
-```sh
-export SRCCLR_API_TOKEN=$(vault read -field=api_token secret/secops/ci/srcclr/gradle-agent)
-./gradlew srcclr
-```
-
-High-level results are outputted to the terminal.
-Full results are uploaded to [Veracode](https://sca.analysiscenter.veracode.com/workspaces/jppForw/projects/551485/issues)
-(if running off of a feature branch, navigate to Project Details > Selected Branch > Change to select your feature branch).
-You can request a Veracode account to view full results from #dsp-infosec-champions.
-
-
 ## Tech Stack
 BPM adheres to the [Terra Tech Stack](https://docs.google.com/document/d/1JkTrtaci7EI0TnuR-68zYgTx_mRCNu-u2eV9XhexWTI/edit#heading=h.5z6knaqygr4a). See linked document for relevant technology choices and the rationale behind their inclusion in this service. 
