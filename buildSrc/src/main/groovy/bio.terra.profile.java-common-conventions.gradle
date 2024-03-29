@@ -23,7 +23,7 @@ java {
 }
 
 // If true, search local repository (~/.m2/repository/) first for dependencies.
-def useMavenLocal = true
+def useMavenLocal = false
 repositories {
     if (useMavenLocal) {
         mavenLocal() // must be listed first to take effect
