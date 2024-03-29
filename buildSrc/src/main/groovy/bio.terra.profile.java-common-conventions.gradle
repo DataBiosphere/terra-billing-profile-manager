@@ -22,7 +22,12 @@ java {
     }
 }
 
+// If true, search local repository (~/.m2/repository/) first for dependencies.
+def useMavenLocal = true
 repositories {
+    if (useMavenLocal) {
+        mavenLocal() // must be listed first to take effect
+    }
     maven {
         // Terra proxy for maven central
         url 'https://broadinstitute.jfrog.io/broadinstitute/maven-central/'
@@ -34,7 +39,6 @@ repositories {
     maven {
         url 'https://broadinstitute.jfrog.io/broadinstitute/libs-snapshot-local/'
     }
-    //mavenLocal()
 }
 
 dependencies {
