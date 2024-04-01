@@ -5,6 +5,7 @@ plugins {
 
     id 'com.diffplug.spotless'
     id 'org.hidetake.swagger.generator'
+    id 'com.srcclr.gradle'
 }
 
 boolean isCiServer = System.getenv().containsKey("CI")
@@ -21,7 +22,12 @@ java {
     }
 }
 
+// If true, search local repository (~/.m2/repository/) first for dependencies.
+def useMavenLocal = false
 repositories {
+    if (useMavenLocal) {
+        mavenLocal() // must be listed first to take effect
+    }
     maven {
         // Terra proxy for maven central
         url 'https://broadinstitute.jfrog.io/broadinstitute/maven-central/'
@@ -33,29 +39,15 @@ repositories {
     maven {
         url 'https://broadinstitute.jfrog.io/broadinstitute/libs-snapshot-local/'
     }
-    //mavenLocal()
 }
 
 dependencies {
     compileOnly "com.google.code.findbugs:annotations:3.0.1"
     implementation 'io.swagger.core.v3:swagger-annotations:2.1.12'
+    implementation 'io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.2.0'
     swaggerCodegen 'io.swagger.codegen.v3:swagger-codegen-cli:3.0.47'
 
     implementation 'org.slf4j:slf4j-api'
-
-    testImplementation 'ch.qos.logback:logback-classic'
-    testImplementation 'org.hamcrest:hamcrest:2.2'
-
-    var openTelemetryVersion = '1.31.0'
-    implementation "io.opentelemetry:opentelemetry-api:${openTelemetryVersion}"
-    implementation "io.opentelemetry:opentelemetry-sdk:${openTelemetryVersion}"
-    implementation "io.opentelemetry:opentelemetry-sdk-metrics:${openTelemetryVersion}"
-    implementation "io.opentelemetry:opentelemetry-exporter-logging:${openTelemetryVersion}"
-    implementation "io.opentelemetry.semconv:opentelemetry-semconv:1.21.0-alpha"
-    implementation "io.opentelemetry.instrumentation:opentelemetry-spring-webmvc-6.0:${openTelemetryVersion}-alpha"
-    implementation "io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:${openTelemetryVersion}"
-    implementation "io.opentelemetry.instrumentation:opentelemetry-spring-boot:${openTelemetryVersion}-alpha"
-    implementation "com.google.cloud.opentelemetry:exporter-trace:0.25.2"
 }
 
 // Modify the standard :test task to only include unit-tagged tests.
@@ -105,4 +97,8 @@ jacocoTestReport {
         // sonarqube requires XML coverage output to upload coverage data
         xml.required = true
     }
+}
+
+srcclr {
+    scope = "runtimeClasspath"
 }
