@@ -108,10 +108,13 @@ profile:
     username: ${env.db.profile.user}
 
   azure:
+    #managed-app-workloadClientId: ${env.azure.managedAppWorkloadClientId}
     managed-app-clientId: ${env.azure.managedAppClientId}
     managed-app-client-secret: ${env.azure.managedAppClientSecret}
     managed-app-tenant-id: ${env.azure.managedAppTenantId}
-    control-plane-enabled: false
+
+    managed-app-workloadClientId: 661e243c-5ef9-4a9c-9be3-b7f5585828b3
+    control-plane-enabled: true
 
     application-offers:
       - name: terra-dev-preview

@@ -2,6 +2,7 @@ package bio.terra.profile.app.configuration;
 
 import com.azure.core.credential.TokenCredential;
 import com.azure.identity.ClientSecretCredentialBuilder;
+import com.azure.identity.DefaultAzureCredentialBuilder;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +13,7 @@ public record AzureConfiguration(
     String managedAppClientId,
     String managedAppClientSecret,
     String managedAppTenantId,
+    String managedAppWorkloadClientId,
     Boolean controlPlaneEnabled,
     Set<AzureApplicationOffer> applicationOffers,
     Set<String> requiredProviders) {
@@ -63,11 +65,17 @@ public record AzureConfiguration(
   }
 
   public TokenCredential buildManagedAppCredentials() {
-    return new ClientSecretCredentialBuilder()
-        .clientId(managedAppClientId)
-        .clientSecret(managedAppClientSecret)
-        .tenantId(managedAppTenantId)
-        .build();
+    if (controlPlaneEnabled) {
+      return new DefaultAzureCredentialBuilder()
+          .managedIdentityClientId(managedAppWorkloadClientId)
+          .build();
+    } else {
+      return new ClientSecretCredentialBuilder()
+          .clientId(managedAppClientId)
+          .clientSecret(managedAppClientSecret)
+          .tenantId(managedAppTenantId)
+          .build();
+    }
   }
 
   /**
