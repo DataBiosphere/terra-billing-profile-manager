@@ -27,10 +27,12 @@ import bio.terra.policy.model.TpsObjectType;
 import bio.terra.policy.model.TpsPaoGetResult;
 import bio.terra.policy.model.TpsPolicyInput;
 import bio.terra.policy.model.TpsPolicyInputs;
+import bio.terra.profile.app.configuration.EnterpriseConfiguration;
 import bio.terra.profile.common.BaseUnitTest;
 import bio.terra.profile.common.ProfileFixtures;
 import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.model.CloudPlatform;
+import bio.terra.profile.model.Organization;
 import bio.terra.profile.model.SamPolicyModel;
 import bio.terra.profile.model.UpdateProfileRequest;
 import bio.terra.profile.service.gcp.GcpService;
@@ -68,6 +70,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
   @Mock private JobService jobService;
   @Mock private TpsApiDispatch tpsApiDispatch;
   @Mock private GcpService gcpService;
+  @Mock private EnterpriseConfiguration enterpriseConfiguration;
 
   private ProfileService profileService;
   private AuthenticatedUserRequest user;
@@ -87,7 +90,13 @@ class ProfileServiceUnitTest extends BaseUnitTest {
   @BeforeEach
   void before() {
     profileService =
-        new ProfileService(profileDao, samService, jobService, tpsApiDispatch, gcpService);
+        new ProfileService(
+            profileDao,
+            samService,
+            jobService,
+            tpsApiDispatch,
+            gcpService,
+            enterpriseConfiguration);
     user =
         AuthenticatedUserRequest.builder()
             .setSubjectId("12345")
@@ -108,7 +117,9 @@ class ProfileServiceUnitTest extends BaseUnitTest {
             Instant.now(),
             Instant.now(),
             "creator");
-    profileDescription = new ProfileDescription(profile);
+    profileDescription =
+        new ProfileDescription(
+            profile, Optional.empty(), Optional.of(new Organization().enterprise(false)));
 
     userPolicy = new SamPolicyModel().name("user").members(List.of("user@unit.com"));
     ownerPolicy = new SamPolicyModel().name("owner").members(List.of("owner@unit.com"));
@@ -124,6 +135,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     when(jobBuilder.flightClass(CreateProfileFlight.class)).thenReturn(jobBuilder);
     when(jobBuilder.request(profileDescription)).thenReturn(jobBuilder);
     when(jobBuilder.userRequest(user)).thenReturn(jobBuilder);
+    when(jobBuilder.addParameter(eq(ProfileMapKeys.ORGANIZATION), any())).thenReturn(jobBuilder);
     when(jobBuilder.submitAndWait(ProfileDescription.class)).thenReturn(profileDescription);
 
     ProfileDescription result = profileService.createProfile(profileDescription, user);
@@ -191,7 +203,10 @@ class ProfileServiceUnitTest extends BaseUnitTest {
             profile.id(), TpsComponent.BPM, TpsObjectType.BILLING_PROFILE))
         .thenReturn(new TpsPaoGetResult().effectiveAttributes(policies));
     var result = profileService.getProfile(profile.id(), user);
-    assertEquals(new ProfileDescription(profile, Optional.of(policies)), result);
+    assertEquals(
+        new ProfileDescription(
+            profile, Optional.of(policies), Optional.of(new Organization().enterprise(false))),
+        result);
   }
 
   @Test
@@ -237,7 +252,11 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     assertThat(
         result,
         Matchers.containsInAnyOrder(
-            profileDescription, new ProfileDescription(protectedProfile, Optional.of(policies))));
+            profileDescription,
+            new ProfileDescription(
+                protectedProfile,
+                Optional.of(policies),
+                Optional.of(new Organization().enterprise(false)))));
   }
 
   @Test

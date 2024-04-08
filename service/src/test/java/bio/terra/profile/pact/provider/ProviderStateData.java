@@ -27,7 +27,8 @@ public class ProviderStateData {
           "");
 
   static ProfileDescription gcpBillingProfileDescription =
-      new ProfileDescription(gcpBillingProfile, Optional.of(new TpsPolicyInputs()));
+      new ProfileDescription(
+          gcpBillingProfile, Optional.of(new TpsPolicyInputs()), Optional.empty());
 
   static BillingProfile azureBillingProfile =
       new BillingProfile(
@@ -46,5 +47,6 @@ public class ProviderStateData {
           "");
 
   static ProfileDescription azureBillingProfileDescription =
-      new ProfileDescription(azureBillingProfile, Optional.of(new TpsPolicyInputs()));
+      new ProfileDescription(
+          azureBillingProfile, Optional.of(new TpsPolicyInputs()), Optional.empty());
 }
