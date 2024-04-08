@@ -22,6 +22,7 @@ env:
     managedAppClientId: ${MANAGED_APP_CLIENT_ID:app-client}
     managedAppClientSecret: ${MANAGED_APP_CLIENT_SECRET:app-secret}
     managedAppTenantId: ${MANAGED_APP_TENANT_ID:app-tenant}
+    managedAppWorkloadClientId: ${MANAGED_APP_WORKLOAD_CLIENT_ID:app-workload-clientid}
   sentry:
     dsn: ${SENTRY_DSN:}
     environment: ${DEPLOY_ENV:}
@@ -108,13 +109,11 @@ profile:
     username: ${env.db.profile.user}
 
   azure:
-    #managed-app-workloadClientId: ${env.azure.managedAppWorkloadClientId}
     managed-app-clientId: ${env.azure.managedAppClientId}
     managed-app-client-secret: ${env.azure.managedAppClientSecret}
     managed-app-tenant-id: ${env.azure.managedAppTenantId}
-
-    managed-app-workloadClientId: 661e243c-5ef9-4a9c-9be3-b7f5585828b3
-    control-plane-enabled: true
+    managed-app-workloadClientId: ${env.azure.managedAppWorkloadClientId}
+    control-plane-enabled: false
 
     application-offers:
       - name: terra-dev-preview
