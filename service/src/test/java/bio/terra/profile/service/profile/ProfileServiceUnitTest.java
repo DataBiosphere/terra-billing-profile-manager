@@ -55,6 +55,7 @@ import io.opentelemetry.api.OpenTelemetry;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
@@ -210,6 +211,30 @@ class ProfileServiceUnitTest extends BaseUnitTest {
   }
 
   @Test
+  void getProfileWithEnterpriseOrganization() throws InterruptedException {
+    var enterpriseSubscription = UUID.randomUUID();
+    when(enterpriseConfiguration.subscriptions()).thenReturn(Set.of(enterpriseSubscription));
+    var enterpriseProfile =
+        ProfileFixtures.createAzureBillingProfile(
+            UUID.randomUUID(), enterpriseSubscription, "enterpriseMRG");
+    var nonEnterpriseProfile =
+        ProfileFixtures.createAzureBillingProfile(
+            UUID.randomUUID(), UUID.randomUUID(), "nonEnterpriseMRG");
+
+    when(profileDao.getBillingProfileById(enterpriseProfile.id())).thenReturn(enterpriseProfile);
+    when(profileDao.getBillingProfileById(nonEnterpriseProfile.id()))
+        .thenReturn(nonEnterpriseProfile);
+    when(samService.hasActions(eq(user), eq(SamResourceType.PROFILE), any())).thenReturn(true);
+    when(tpsApiDispatch.getOrCreatePao(any(), any(), any())).thenReturn(new TpsPaoGetResult());
+
+    var enterpriseResult = profileService.getProfile(enterpriseProfile.id(), user);
+    var nonEnterpriseResult = profileService.getProfile(nonEnterpriseProfile.id(), user);
+
+    assert (enterpriseResult.organization().get().isEnterprise());
+    assert (!nonEnterpriseResult.organization().get().isEnterprise());
+  }
+
+  @Test
   void listProfiles() throws InterruptedException {
     when(samService.listProfileIds(user)).thenReturn(List.of(profile.id()));
     when(profileDao.listBillingProfiles(anyInt(), anyInt(), eq(List.of(profile.id()))))
@@ -238,10 +263,18 @@ class ProfileServiceUnitTest extends BaseUnitTest {
             Instant.now(),
             Instant.now(),
             "creator");
-    when(samService.listProfileIds(user)).thenReturn(List.of(profile.id(), protectedProfile.id()));
+    var enterpriseSubscription = UUID.randomUUID();
+    var enterpriseProfile =
+        ProfileFixtures.createAzureBillingProfile(
+            UUID.randomUUID(), enterpriseSubscription, "enterpriseMRG");
+    when(enterpriseConfiguration.subscriptions()).thenReturn(Set.of(enterpriseSubscription));
+    when(samService.listProfileIds(user))
+        .thenReturn(List.of(profile.id(), protectedProfile.id(), enterpriseProfile.id()));
     when(profileDao.listBillingProfiles(
-            anyInt(), anyInt(), eq(List.of(profile.id(), protectedProfile.id()))))
-        .thenReturn(List.of(profile, protectedProfile));
+            anyInt(),
+            anyInt(),
+            eq(List.of(profile.id(), protectedProfile.id(), enterpriseProfile.id()))))
+        .thenReturn(List.of(profile, protectedProfile, enterpriseProfile));
     when(tpsApiDispatch.listPaos(argThat(l -> l.contains(profile.id()))))
         .thenReturn(
             List.of(
@@ -256,7 +289,11 @@ class ProfileServiceUnitTest extends BaseUnitTest {
             new ProfileDescription(
                 protectedProfile,
                 Optional.of(policies),
-                Optional.of(new Organization().enterprise(false)))));
+                Optional.of(new Organization().enterprise(false))),
+            new ProfileDescription(
+                enterpriseProfile,
+                Optional.empty(),
+                Optional.of(new Organization().enterprise(true)))));
   }
 
   @Test
