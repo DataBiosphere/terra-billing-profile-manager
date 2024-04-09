@@ -702,7 +702,7 @@ components:
         - enterprise
       properties:
         enterprise:
-          description: whether this organization has a signed BAA with Terra
+          description: whether this is an enterprise organization i.e. they have a signed BAA
           type: boolean
 
     SpendReport:
