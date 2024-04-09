@@ -55,7 +55,11 @@ public class PolicyServiceConfiguration {
       // profile, and email by default in authorization and token requests.
       com.azure.core.credential.AccessToken token =
           credential
-              .getToken(new TokenRequestContext().addScopes("https://graph.microsoft.com/.default"))
+              // .getToken(new
+              // TokenRequestContext().addScopes("https://graph.microsoft.com/.default"))
+              .getToken(
+                  new TokenRequestContext()
+                      .addScopes("661e243c-5ef9-4a9c-9be3-b7f5585828b3/.default"))
               .block();
       return token.getToken();
     } else {
