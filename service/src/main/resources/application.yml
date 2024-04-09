@@ -22,7 +22,7 @@ env:
     managedAppClientId: ${MANAGED_APP_CLIENT_ID:app-client}
     managedAppClientSecret: ${MANAGED_APP_CLIENT_SECRET:app-secret}
     managedAppTenantId: ${MANAGED_APP_TENANT_ID:app-tenant}
-    managedAppWorkloadClientId: ${MANAGED_APP_WORKLOAD_CLIENT_ID:app-workload-clientid}
+    #managedAppWorkloadClientId: ${MANAGED_APP_WORKLOAD_CLIENT_ID:app-workload-clientid}
   sentry:
     dsn: ${SENTRY_DSN:}
     environment: ${DEPLOY_ENV:}
