@@ -2,7 +2,9 @@ package bio.terra.profile.service.profile;
 
 import static org.hamcrest.MatcherAssert.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -230,8 +232,8 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     var enterpriseResult = profileService.getProfile(enterpriseProfile.id(), user);
     var nonEnterpriseResult = profileService.getProfile(nonEnterpriseProfile.id(), user);
 
-    assert (enterpriseResult.organization().get().isEnterprise());
-    assert (!nonEnterpriseResult.organization().get().isEnterprise());
+    assertTrue(enterpriseResult.organization().get().isEnterprise());
+    assertFalse(nonEnterpriseResult.organization().get().isEnterprise());
   }
 
   @Test
