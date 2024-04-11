@@ -2,9 +2,7 @@ package bio.terra.profile.service.profile;
 
 import static org.hamcrest.MatcherAssert.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -29,12 +27,10 @@ import bio.terra.policy.model.TpsObjectType;
 import bio.terra.policy.model.TpsPaoGetResult;
 import bio.terra.policy.model.TpsPolicyInput;
 import bio.terra.policy.model.TpsPolicyInputs;
-import bio.terra.profile.app.configuration.EnterpriseConfiguration;
 import bio.terra.profile.common.BaseUnitTest;
 import bio.terra.profile.common.ProfileFixtures;
 import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.model.CloudPlatform;
-import bio.terra.profile.model.Organization;
 import bio.terra.profile.model.SamPolicyModel;
 import bio.terra.profile.model.UpdateProfileRequest;
 import bio.terra.profile.service.gcp.GcpService;
@@ -57,7 +53,6 @@ import io.opentelemetry.api.OpenTelemetry;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
@@ -73,7 +68,6 @@ class ProfileServiceUnitTest extends BaseUnitTest {
   @Mock private JobService jobService;
   @Mock private TpsApiDispatch tpsApiDispatch;
   @Mock private GcpService gcpService;
-  @Mock private EnterpriseConfiguration enterpriseConfiguration;
 
   private ProfileService profileService;
   private AuthenticatedUserRequest user;
@@ -93,13 +87,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
   @BeforeEach
   void before() {
     profileService =
-        new ProfileService(
-            profileDao,
-            samService,
-            jobService,
-            tpsApiDispatch,
-            gcpService,
-            enterpriseConfiguration);
+        new ProfileService(profileDao, samService, jobService, tpsApiDispatch, gcpService);
     user =
         AuthenticatedUserRequest.builder()
             .setSubjectId("12345")
@@ -120,9 +108,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
             Instant.now(),
             Instant.now(),
             "creator");
-    profileDescription =
-        new ProfileDescription(
-            profile, Optional.empty(), Optional.of(new Organization().enterprise(false)));
+    profileDescription = new ProfileDescription(profile);
 
     userPolicy = new SamPolicyModel().name("user").members(List.of("user@unit.com"));
     ownerPolicy = new SamPolicyModel().name("owner").members(List.of("owner@unit.com"));
@@ -138,7 +124,6 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     when(jobBuilder.flightClass(CreateProfileFlight.class)).thenReturn(jobBuilder);
     when(jobBuilder.request(profileDescription)).thenReturn(jobBuilder);
     when(jobBuilder.userRequest(user)).thenReturn(jobBuilder);
-    when(jobBuilder.addParameter(eq(ProfileMapKeys.ORGANIZATION), any())).thenReturn(jobBuilder);
     when(jobBuilder.submitAndWait(ProfileDescription.class)).thenReturn(profileDescription);
 
     ProfileDescription result = profileService.createProfile(profileDescription, user);
@@ -206,34 +191,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
             profile.id(), TpsComponent.BPM, TpsObjectType.BILLING_PROFILE))
         .thenReturn(new TpsPaoGetResult().effectiveAttributes(policies));
     var result = profileService.getProfile(profile.id(), user);
-    assertEquals(
-        new ProfileDescription(
-            profile, Optional.of(policies), Optional.of(new Organization().enterprise(false))),
-        result);
-  }
-
-  @Test
-  void getProfileWithEnterpriseOrganization() throws InterruptedException {
-    var enterpriseSubscription = UUID.randomUUID();
-    when(enterpriseConfiguration.subscriptions()).thenReturn(Set.of(enterpriseSubscription));
-    var enterpriseProfile =
-        ProfileFixtures.createAzureBillingProfile(
-            UUID.randomUUID(), enterpriseSubscription, "enterpriseMRG");
-    var nonEnterpriseProfile =
-        ProfileFixtures.createAzureBillingProfile(
-            UUID.randomUUID(), UUID.randomUUID(), "nonEnterpriseMRG");
-
-    when(profileDao.getBillingProfileById(enterpriseProfile.id())).thenReturn(enterpriseProfile);
-    when(profileDao.getBillingProfileById(nonEnterpriseProfile.id()))
-        .thenReturn(nonEnterpriseProfile);
-    when(samService.hasActions(eq(user), eq(SamResourceType.PROFILE), any())).thenReturn(true);
-    when(tpsApiDispatch.getOrCreatePao(any(), any(), any())).thenReturn(new TpsPaoGetResult());
-
-    var enterpriseResult = profileService.getProfile(enterpriseProfile.id(), user);
-    var nonEnterpriseResult = profileService.getProfile(nonEnterpriseProfile.id(), user);
-
-    assertTrue(enterpriseResult.organization().get().isEnterprise());
-    assertFalse(nonEnterpriseResult.organization().get().isEnterprise());
+    assertEquals(new ProfileDescription(profile, Optional.of(policies)), result);
   }
 
   @Test
@@ -265,18 +223,10 @@ class ProfileServiceUnitTest extends BaseUnitTest {
             Instant.now(),
             Instant.now(),
             "creator");
-    var enterpriseSubscription = UUID.randomUUID();
-    var enterpriseProfile =
-        ProfileFixtures.createAzureBillingProfile(
-            UUID.randomUUID(), enterpriseSubscription, "enterpriseMRG");
-    when(enterpriseConfiguration.subscriptions()).thenReturn(Set.of(enterpriseSubscription));
-    when(samService.listProfileIds(user))
-        .thenReturn(List.of(profile.id(), protectedProfile.id(), enterpriseProfile.id()));
+    when(samService.listProfileIds(user)).thenReturn(List.of(profile.id(), protectedProfile.id()));
     when(profileDao.listBillingProfiles(
-            anyInt(),
-            anyInt(),
-            eq(List.of(profile.id(), protectedProfile.id(), enterpriseProfile.id()))))
-        .thenReturn(List.of(profile, protectedProfile, enterpriseProfile));
+            anyInt(), anyInt(), eq(List.of(profile.id(), protectedProfile.id()))))
+        .thenReturn(List.of(profile, protectedProfile));
     when(tpsApiDispatch.listPaos(argThat(l -> l.contains(profile.id()))))
         .thenReturn(
             List.of(
@@ -287,15 +237,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     assertThat(
         result,
         Matchers.containsInAnyOrder(
-            profileDescription,
-            new ProfileDescription(
-                protectedProfile,
-                Optional.of(policies),
-                Optional.of(new Organization().enterprise(false))),
-            new ProfileDescription(
-                enterpriseProfile,
-                Optional.empty(),
-                Optional.of(new Organization().enterprise(true)))));
+            profileDescription, new ProfileDescription(protectedProfile, Optional.of(policies))));
   }
 
   @Test

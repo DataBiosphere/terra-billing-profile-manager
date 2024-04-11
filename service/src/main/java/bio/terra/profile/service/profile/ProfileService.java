@@ -7,9 +7,7 @@ import bio.terra.policy.model.TpsObjectType;
 import bio.terra.policy.model.TpsPaoGetResult;
 import bio.terra.policy.model.TpsPolicyInputs;
 import bio.terra.profile.app.common.MetricUtils;
-import bio.terra.profile.app.configuration.EnterpriseConfiguration;
 import bio.terra.profile.db.ProfileDao;
-import bio.terra.profile.model.Organization;
 import bio.terra.profile.model.SamPolicyModel;
 import bio.terra.profile.model.UpdateProfileRequest;
 import bio.terra.profile.service.gcp.GcpService;
@@ -46,7 +44,6 @@ public class ProfileService {
   private final SamService samService;
   private final JobService jobService;
   private final TpsApiDispatch tpsApiDispatch;
-  private final EnterpriseConfiguration enterpriseConfiguration;
   private final GcpService gcpService;
 
   @Autowired
@@ -55,13 +52,11 @@ public class ProfileService {
       SamService samService,
       JobService jobService,
       TpsApiDispatch tpsApiDispatch,
-      GcpService gcpService,
-      EnterpriseConfiguration enterpriseConfiguration) {
+      GcpService gcpService) {
     this.profileDao = profileDao;
     this.samService = samService;
     this.jobService = jobService;
     this.tpsApiDispatch = tpsApiDispatch;
-    this.enterpriseConfiguration = enterpriseConfiguration;
     this.gcpService = gcpService;
   }
 
@@ -86,10 +81,7 @@ public class ProfileService {
             .description(description)
             .flightClass(CreateProfileFlight.class)
             .request(profileDescription)
-            .userRequest(user)
-            .addParameter(
-                ProfileMapKeys.ORGANIZATION,
-                getProfileOrganization(profileDescription.billingProfile()));
+            .userRequest(user);
     Callable<ProfileDescription> executeProfileCreation =
         () -> createJob.submitAndWait(ProfileDescription.class);
     return MetricUtils.recordProfileCreation(
@@ -142,7 +134,7 @@ public class ProfileService {
     // Throws 404 if not found
     BillingProfile profile = profileDao.getBillingProfileById(id);
 
-    return profileDescription(profile);
+    return profileWithPolicies(profile);
   }
 
   public List<ProfileDescription> listProfiles(
@@ -162,9 +154,7 @@ public class ProfileService {
           .map(
               profile ->
                   new ProfileDescription(
-                      profile,
-                      Optional.ofNullable(policyById.get(profile.id())),
-                      Optional.of(getProfileOrganization(profile))))
+                      profile, Optional.ofNullable(policyById.get(profile.id()))))
           .toList();
     } catch (InterruptedException e) {
       throw new PolicyServiceAPIException("Interrupted during TPS listPaos operation.", e);
@@ -195,7 +185,7 @@ public class ProfileService {
         id, requestBody.getDescription(), requestBody.getBillingAccountId())) {
       throw new ProfileNotFoundException(String.format("Profile %s not found, update failed.", id));
     }
-    return profileDescription(profileDao.getBillingProfileById(id));
+    return profileWithPolicies(profileDao.getBillingProfileById(id));
   }
 
   public void removeBillingAccount(UUID id, AuthenticatedUserRequest user) {
@@ -227,16 +217,7 @@ public class ProfileService {
         "deletePolicyMember");
   }
 
-  private Organization getProfileOrganization(BillingProfile profile) {
-    return new Organization()
-        .enterprise(
-            profile
-                .subscriptionId()
-                .map(enterpriseConfiguration.subscriptions()::contains)
-                .orElse(false));
-  }
-
-  private ProfileDescription profileDescription(BillingProfile profile) {
+  private ProfileDescription profileWithPolicies(BillingProfile profile) {
     Optional<TpsPolicyInputs> policies;
     try {
       policies =
@@ -248,6 +229,6 @@ public class ProfileService {
       throw new PolicyServiceAPIException("Interrupted during TPS getPao operation.", e);
     }
 
-    return new ProfileDescription(profile, policies, Optional.of(getProfileOrganization(profile)));
+    return new ProfileDescription(profile, policies);
   }
 }

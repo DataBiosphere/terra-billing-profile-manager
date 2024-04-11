@@ -137,9 +137,6 @@ profile:
     dsn: ${env.sentry.dsn}
     environment: ${env.sentry.environment}
 
-  enterprise:
-    subscriptions:
-
 terra.common:
   kubernetes:
     in-kubernetes: false
