@@ -212,7 +212,6 @@ public class BPMProviderTest {
     when(jobBuilder.flightClass(CreateProfileFlight.class)).thenReturn(jobBuilder);
     when(jobBuilder.request(any())).thenReturn(jobBuilder);
     when(jobBuilder.userRequest(any())).thenReturn(jobBuilder);
-    when(jobBuilder.addParameter(any(), any())).thenReturn(jobBuilder);
     when(jobBuilder.submitAndWait(ProfileDescription.class)).thenReturn(profile);
 
     return Map.of(
