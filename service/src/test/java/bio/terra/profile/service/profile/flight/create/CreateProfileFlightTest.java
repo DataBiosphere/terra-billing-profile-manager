@@ -14,6 +14,7 @@ import bio.terra.policy.model.TpsPolicyInput;
 import bio.terra.policy.model.TpsPolicyInputs;
 import bio.terra.profile.app.common.MetricUtils;
 import bio.terra.profile.app.configuration.AzureConfiguration;
+import bio.terra.profile.app.configuration.EnterpriseConfiguration;
 import bio.terra.profile.common.BaseSpringUnitTest;
 import bio.terra.profile.common.ProfileFixtures;
 import bio.terra.profile.model.AzureManagedAppModel;
@@ -48,6 +49,7 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
   @MockBean SamService samService;
   @MockBean AzureService azureService;
   @MockBean TpsApiDispatch tpsApiDispatch;
+  @MockBean EnterpriseConfiguration enterpriseConfiguration;
 
   AuthenticatedUserRequest userRequest =
       AuthenticatedUserRequest.builder()
