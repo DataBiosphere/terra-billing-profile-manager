@@ -168,7 +168,8 @@ class AzureServiceUnitTest extends BaseUnitTest {
     var azureService =
         new AzureService(
             crlService,
-            new AzureConfiguration("fake", "fake", "fake", false, ".default", offers, ImmutableSet.of()),
+            new AzureConfiguration(
+                "fake", "fake", "fake", false, ".default", offers, ImmutableSet.of()),
             profileDao);
 
     var result = azureService.getAuthorizedManagedAppDeployments(subId, true, user);
@@ -217,7 +218,8 @@ class AzureServiceUnitTest extends BaseUnitTest {
     var azureService =
         new AzureService(
             crlService,
-            new AzureConfiguration("fake", "fake", "fake", true, ".default", offers, ImmutableSet.of()),
+            new AzureConfiguration(
+                "fake", "fake", "fake", true, ".default", offers, ImmutableSet.of()),
             profileDao);
 
     var result = azureService.getAuthorizedManagedAppDeployments(subId, true, user);
@@ -262,7 +264,8 @@ class AzureServiceUnitTest extends BaseUnitTest {
     var azureService =
         new AzureService(
             crlService,
-            new AzureConfiguration("fake", "fake", "fake", false, ".default", offers, ImmutableSet.of()),
+            new AzureConfiguration(
+                "fake", "fake", "fake", false, ".default", offers, ImmutableSet.of()),
             profileDao);
 
     var result = azureService.getAuthorizedManagedAppDeployments(subId, true, user);
@@ -332,7 +335,8 @@ class AzureServiceUnitTest extends BaseUnitTest {
     var azureService =
         new AzureService(
             crlService,
-            new AzureConfiguration("fake", "fake", "fake", false, ".default", offers, ImmutableSet.of()),
+            new AzureConfiguration(
+                "fake", "fake", "fake", false, ".default", offers, ImmutableSet.of()),
             profileDao);
 
     var result = azureService.getAuthorizedManagedAppDeployments(subId, false, user);
@@ -382,7 +386,8 @@ class AzureServiceUnitTest extends BaseUnitTest {
     var azureService =
         new AzureService(
             crlService,
-            new AzureConfiguration("fake", "fake", "fake", false, ".default", offers, ImmutableSet.of()),
+            new AzureConfiguration(
+                "fake", "fake", "fake", false, ".default", offers, ImmutableSet.of()),
             profileDao);
 
     AzureManagedAppModel assignedAzureManagedAppModel =
@@ -442,7 +447,8 @@ class AzureServiceUnitTest extends BaseUnitTest {
     var azureService =
         new AzureService(
             crlService,
-            new AzureConfiguration("fake", "fake", "fake", false, ".default", offers, ImmutableSet.of()),
+            new AzureConfiguration(
+                "fake", "fake", "fake", false, ".default", offers, ImmutableSet.of()),
             profileDao);
 
     var result = azureService.getAuthorizedManagedAppDeployments(subId, true, user);
