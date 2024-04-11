@@ -1,4 +1,4 @@
 rootProject.name = 'terra-billing-profile-manager'
 include('service', 'client', 'client-javax')
 
-gradle.ext.releaseVersion = '0.1.531-SNAPSHOT'
+gradle.ext.releaseVersion = '0.1.532-SNAPSHOT'
