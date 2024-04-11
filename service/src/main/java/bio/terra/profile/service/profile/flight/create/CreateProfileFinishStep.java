@@ -1,6 +1,7 @@
 package bio.terra.profile.service.profile.flight.create;
 
 import bio.terra.policy.model.TpsPolicyInputs;
+import bio.terra.profile.model.Organization;
 import bio.terra.profile.service.job.JobMapKeys;
 import bio.terra.profile.service.profile.exception.MissingRequiredFieldsException;
 import bio.terra.profile.service.profile.flight.ProfileMapKeys;
@@ -26,9 +27,13 @@ public record CreateProfileFinishStep() implements Step {
 
     Optional<TpsPolicyInputs> policies =
         Optional.ofNullable(workingMap.get(ProfileMapKeys.POLICIES, TpsPolicyInputs.class));
+    Optional<Organization> organization =
+        Optional.ofNullable(
+            context.getInputParameters().get(ProfileMapKeys.ORGANIZATION, Organization.class));
 
     workingMap.put(
-        JobMapKeys.RESPONSE.getKeyName(), new ProfileDescription(createdProfile, policies));
+        JobMapKeys.RESPONSE.getKeyName(),
+        new ProfileDescription(createdProfile, policies, organization));
     workingMap.put(JobMapKeys.STATUS_CODE.getKeyName(), HttpStatus.CREATED);
     return StepResult.getStepResultSuccess();
   }
