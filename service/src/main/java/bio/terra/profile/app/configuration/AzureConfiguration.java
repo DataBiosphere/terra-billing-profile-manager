@@ -65,7 +65,7 @@ public record AzureConfiguration(
   }
 
   public TokenCredential buildManagedAppCredentials() {
-    if (controlPlaneEnabled) {
+    if (Boolean.TRUE.equals(controlPlaneEnabled)) {
       return new DefaultAzureCredentialBuilder()
           .managedIdentityClientId(managedAppWorkloadClientId)
           .build();
