@@ -38,7 +38,7 @@ public class AzureCrlService {
     // We must use FQDN because there are two `Defaults` symbols imported otherwise.
     return bio.terra.cloudres.azure.resourcemanager.common.Defaults.crlConfigure(
             clientConfig, ResourceManager.configure())
-        .authenticate(azureConfiguration.createChainedCredential(), azureProfile)
+        .authenticate(azureConfiguration.buildManagedAppCredentials(), azureProfile)
         .withSubscription(subscriptionId.toString());
   }
 
@@ -47,7 +47,7 @@ public class AzureCrlService {
         new AzureProfile(null, subscriptionId.toString(), AzureEnvironment.AZURE);
 
     return ApplicationManager.authenticate(
-        azureConfiguration.createChainedCredential(), azureProfile);
+        azureConfiguration.buildManagedAppCredentials(), azureProfile);
   }
 
   public CostManagementManager getCostManagementManager(UUID subscriptionId) {
@@ -55,7 +55,7 @@ public class AzureCrlService {
         new AzureProfile(null, subscriptionId.toString(), AzureEnvironment.AZURE);
 
     return CostManagementManager.authenticate(
-        azureConfiguration.createChainedCredential(), azureProfile);
+        azureConfiguration.buildManagedAppCredentials(), azureProfile);
   }
 
   public ContainerServiceManager getContainerServiceManager(UUID subscriptionId) {
@@ -63,6 +63,6 @@ public class AzureCrlService {
         new AzureProfile(null, subscriptionId.toString(), AzureEnvironment.AZURE);
 
     return ContainerServiceManager.authenticate(
-        azureConfiguration.createChainedCredential(), azureProfile);
+        azureConfiguration.buildManagedAppCredentials(), azureProfile);
   }
 }

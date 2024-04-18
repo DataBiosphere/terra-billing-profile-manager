@@ -1,5 +1,6 @@
 package bio.terra.profile.app.configuration;
 
+import com.azure.core.credential.TokenCredential;
 import com.azure.identity.*;
 import java.util.Set;
 import org.slf4j.Logger;
@@ -62,7 +63,7 @@ public record AzureConfiguration(
     }
   }
 
-  public ChainedTokenCredential createChainedCredential() {
+  public TokenCredential buildManagedAppCredentials() {
 
     ManagedIdentityCredential managedIdentityCredential =
         new ManagedIdentityCredentialBuilder().clientId(managedAppWorkloadClientId).build();
