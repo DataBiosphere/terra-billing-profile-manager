@@ -31,13 +31,17 @@ public class ProfileFixtures {
   public static ProfileDescription createAzureBillingProfileDescription(
       UUID tenantId, UUID subscriptionId, String mrgId, TpsPolicyInputs policies) {
     return new ProfileDescription(
-        createAzureBillingProfile(tenantId, subscriptionId, mrgId), Optional.ofNullable(policies));
+        createAzureBillingProfile(tenantId, subscriptionId, mrgId),
+        Optional.ofNullable(policies),
+        Optional.empty());
   }
 
   public static ProfileDescription createAzureBillingProfileDescription(
       UUID tenantId, UUID subscriptionId, String mrgId) {
     return new ProfileDescription(
-        createAzureBillingProfile(tenantId, subscriptionId, mrgId), Optional.empty());
+        createAzureBillingProfile(tenantId, subscriptionId, mrgId),
+        Optional.empty(),
+        Optional.empty());
   }
 
   public static BillingProfile createGcpBillingProfile(String billingAccountId) {
@@ -60,10 +64,11 @@ public class ProfileFixtures {
   public static ProfileDescription createGcpBillingProfileDescription(
       String billingAccountId, TpsPolicyInputs policies) {
     return new ProfileDescription(
-        createGcpBillingProfile(billingAccountId), Optional.ofNullable(policies));
+        createGcpBillingProfile(billingAccountId), Optional.ofNullable(policies), Optional.empty());
   }
 
   public static ProfileDescription createGcpBillingProfileDescription(String billingAccountId) {
-    return new ProfileDescription(createGcpBillingProfile(billingAccountId), Optional.empty());
+    return new ProfileDescription(
+        createGcpBillingProfile(billingAccountId), Optional.empty(), Optional.empty());
   }
 }

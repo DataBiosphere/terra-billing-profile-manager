@@ -574,6 +574,8 @@ components:
           description: Identity of the user who originally created the profile
         policies:
           $ref: '#/components/schemas/BpmApiPolicyInputs'
+        organization:
+          $ref: '#/components/schemas/Organization'
 
     SystemStatus:
       type: object
@@ -692,6 +694,16 @@ components:
           type: string
         value:
           type: string
+
+    Organization:
+      description: details about user's organization
+      type: object
+      required:
+        - enterprise
+      properties:
+        enterprise:
+          description: whether this is an enterprise organization i.e. they have a signed BAA
+          type: boolean
 
     SpendReport:
       type: object
