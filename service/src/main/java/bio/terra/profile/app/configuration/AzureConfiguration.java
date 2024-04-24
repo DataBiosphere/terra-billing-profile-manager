@@ -1,7 +1,7 @@
 package bio.terra.profile.app.configuration;
 
 import com.azure.core.credential.TokenCredential;
-import com.azure.identity.ClientSecretCredentialBuilder;
+import com.azure.identity.*;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +12,7 @@ public record AzureConfiguration(
     String managedAppClientId,
     String managedAppClientSecret,
     String managedAppTenantId,
+    String managedAppWorkloadClientId,
     Boolean controlPlaneEnabled,
     String authTokenScope,
     Set<AzureApplicationOffer> applicationOffers,
@@ -64,10 +65,26 @@ public record AzureConfiguration(
   }
 
   public TokenCredential buildManagedAppCredentials() {
-    return new ClientSecretCredentialBuilder()
-        .clientId(managedAppClientId)
-        .clientSecret(managedAppClientSecret)
-        .tenantId(managedAppTenantId)
+
+    ManagedIdentityCredential managedIdentityCredential =
+        new ManagedIdentityCredentialBuilder().clientId(managedAppWorkloadClientId).build();
+
+    ClientSecretCredential servicePrincipalCredential =
+        new ClientSecretCredentialBuilder()
+            .clientId(managedAppClientId)
+            .clientSecret(managedAppClientSecret)
+            .tenantId(managedAppTenantId)
+            .build();
+
+    // when an access token is requested, the chain will try each
+    // credential in order, stopping when one provides a token
+
+    // Managed identity can't be used to authenticate locally running applications.
+    // BPM must be deployed to an Azure service that supports Managed Identity,
+    // otherwise we'll fall through to ServicePrincipal auth
+    return new ChainedTokenCredentialBuilder()
+        .addLast(managedIdentityCredential)
+        .addLast(servicePrincipalCredential)
         .build();
   }
 
