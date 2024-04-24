@@ -14,6 +14,7 @@ public record AzureConfiguration(
     String managedAppTenantId,
     String managedAppWorkloadClientId,
     Boolean controlPlaneEnabled,
+    String authTokenScope,
     Set<AzureApplicationOffer> applicationOffers,
     Set<String> requiredProviders) {
   private static final Logger logger = LoggerFactory.getLogger(AzureConfiguration.class);

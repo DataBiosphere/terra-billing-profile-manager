@@ -2,6 +2,8 @@ package bio.terra.profile.app.controller;
 
 import bio.terra.common.exception.AbstractGlobalExceptionHandler;
 import bio.terra.common.exception.BadRequestException;
+import bio.terra.common.exception.ErrorReportException;
+import bio.terra.common.exception.ForbiddenException;
 import bio.terra.common.sam.exception.SamUnauthorizedException;
 import bio.terra.profile.model.ErrorReport;
 import io.sentry.Sentry;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 /**
  * This module provides a top-level exception handler for controllers. All exceptions that rise
@@ -67,10 +70,19 @@ public class GlobalExceptionHandler extends AbstractGlobalExceptionHandler<Error
     return new ResponseEntity<>(errorReport, HttpStatus.BAD_REQUEST);
   }
 
-  @ExceptionHandler({SamUnauthorizedException.class})
-  public ResponseEntity<ErrorReport> samUnauthorizedExceptionHandler(SamUnauthorizedException ex) {
+  // handle these types of ErrorReportException here, so we don't spew stack traces to the logs
+  @ExceptionHandler({SamUnauthorizedException.class, ForbiddenException.class})
+  public ResponseEntity<ErrorReport> unauthorizedExceptions(ErrorReportException ex) {
     ErrorReport errorReport =
-        new ErrorReport().message("Unauthorized").statusCode(HttpStatus.UNAUTHORIZED.value());
-    return new ResponseEntity<>(errorReport, HttpStatus.UNAUTHORIZED);
+        new ErrorReport().message(ex.getMessage()).statusCode(ex.getStatusCode().value());
+    return new ResponseEntity<>(errorReport, ex.getStatusCode());
+  }
+
+  @ExceptionHandler({NoResourceFoundException.class})
+  public ResponseEntity<ErrorReport> notFoundException() {
+    ErrorReport errorReport =
+        new ErrorReport().message("Not found").statusCode(HttpStatus.NOT_FOUND.value());
+
+    return new ResponseEntity<>(errorReport, HttpStatus.NOT_FOUND);
   }
 }

@@ -13,7 +13,7 @@ apply from: 'generators.gradle'
 apply from: 'publishing.gradle'
 
 dependencies {
-	implementation 'io.sentry:sentry:7.6.0'
+	implementation 'io.sentry:sentry:7.8.0'
 
 	implementation 'bio.terra:terra-common-lib:1.1.6-SNAPSHOT'
 
@@ -32,13 +32,13 @@ dependencies {
 	implementation 'io.micrometer:micrometer-registry-prometheus'
 
 	// Google dependencies
-	implementation platform('com.google.cloud:libraries-bom:26.35.0')
+	implementation platform('com.google.cloud:libraries-bom:26.37.0')
 
 	// Cloud Resource Library
 	implementation group: "com.azure.resourcemanager", name: "azure-resourcemanager-managedapplications", version: "1.0.0-beta.3"
 	implementation group: "com.azure.resourcemanager", name: "azure-resourcemanager-subscription", version: "1.0.0-beta.2"
 	implementation group: 'com.azure.resourcemanager', name: 'azure-resourcemanager-costmanagement', version: "1.0.0-beta.6"
-	implementation group: 'com.azure.resourcemanager', name: 'azure-resourcemanager-containerservice', version: '2.37.0'
+	implementation group: 'com.azure.resourcemanager', name: 'azure-resourcemanager-containerservice', version: '2.38.0'
 
 	implementation group: 'bio.terra', name: 'terra-cloud-resource-lib', version: "1.2.7-SNAPSHOT"
 
@@ -56,9 +56,9 @@ dependencies {
 	// Allows us to mock final classes
 	testImplementation 'org.mockito:mockito-inline:5.2.0'
 
-	testImplementation 'au.com.dius.pact.consumer:junit5:4.6.8'
-	testImplementation("au.com.dius.pact.provider:junit5:4.6.8")
-	testImplementation("au.com.dius.pact.provider:junit5spring:4.6.8")
+	testImplementation 'au.com.dius.pact.consumer:junit5:4.6.9'
+	testImplementation("au.com.dius.pact.provider:junit5:4.6.9")
+	testImplementation("au.com.dius.pact.provider:junit5spring:4.6.9")
 	testImplementation 'com.google.code.findbugs:annotations:3.0.1u2'
 }
 test {

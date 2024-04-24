@@ -65,6 +65,7 @@ class CreateProfileVerifyDeployedApplicationStepTest extends BaseSpringUnitTest 
             "fake_secret",
             "fake_tenant",
             false,
+            ".default",
             ImmutableSet.of(),
             providers);
     when(azureService.getRegisteredProviderNamespacesForSubscription(
