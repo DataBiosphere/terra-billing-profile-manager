@@ -112,7 +112,7 @@ jobs:
     needs: [ bump-check, init-github-context ]
     if: ${{ needs.bump-check.outputs.is-bump == 'no' }}
     outputs:
-      pact-b64: ${{ steps.encode-pact.outputs.pact-b64 }}
+      pact-paths: ${{ steps.locate-pacts.outputs.pact-paths }}
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK
