@@ -13,7 +13,7 @@ apply from: 'generators.gradle'
 apply from: 'publishing.gradle'
 
 dependencies {
-	implementation 'io.sentry:sentry:7.8.0'
+	implementation 'io.sentry:sentry:7.9.0'
 
 	implementation 'bio.terra:terra-common-lib:1.1.6-SNAPSHOT'
 
@@ -26,13 +26,13 @@ dependencies {
 	implementation 'org.springframework:spring-aspects'
 	implementation group: "org.apache.commons", name: "commons-lang3"
 	implementation group: 'jakarta.ws.rs', name: 'jakarta.ws.rs-api', version: '3.1.0'
-	implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.37.3'
+	implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.39'
 
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'io.micrometer:micrometer-registry-prometheus'
 
 	// Google dependencies
-	implementation platform('com.google.cloud:libraries-bom:26.38.0')
+	implementation platform('com.google.cloud:libraries-bom:26.39.0')
 
 	// Cloud Resource Library
 	implementation group: "com.azure.resourcemanager", name: "azure-resourcemanager-managedapplications", version: "1.0.0-beta.3"
