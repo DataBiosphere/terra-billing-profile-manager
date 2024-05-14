@@ -2,28 +2,11 @@ plugins {
     id 'groovy-gradle-plugin'
 }
 
+apply from: 'dependencies.gradle'
+
 repositories {
     maven {
         url 'https://broadinstitute.jfrog.io/artifactory/plugins-snapshot'
     }
     gradlePluginPortal()
 }
-
-dependencies {
-    implementation 'com.diffplug.spotless:spotless-plugin-gradle:6.25.0'
-    implementation 'com.google.cloud.tools.jib:com.google.cloud.tools.jib.gradle.plugin:3.4.0'
-    implementation 'de.undercouch.download:de.undercouch.download.gradle.plugin:5.6.0'
-    implementation 'io.spring.dependency-management:io.spring.dependency-management.gradle.plugin:1.1.5'
-    implementation 'org.hidetake.swagger.generator:org.hidetake.swagger.generator.gradle.plugin:2.19.2'
-    implementation 'org.springframework.boot:spring-boot-gradle-plugin:3.2.3'
-    implementation 'bio.terra:terra-test-runner:0.2.0-SNAPSHOT'
-    implementation 'com.srcclr.gradle:com.srcclr.gradle.gradle.plugin:3.1.12'
-
-    // Transitive dependency constraints due to security vulnerabilities in prior versions.
-    // These are not directly included, they are just constrained if they are pulled in as
-    // transitive dependencies.
-    constraints {
-        implementation('org.graalvm.sdk:graal-sdk:24.0.1')
-    }
-}
-

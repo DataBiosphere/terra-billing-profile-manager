@@ -11,56 +11,8 @@ plugins {
 
 apply from: 'generators.gradle'
 apply from: 'publishing.gradle'
+apply from: 'dependencies.gradle'
 
-dependencies {
-	implementation 'io.sentry:sentry:7.9.0'
-
-	implementation 'bio.terra:terra-common-lib:1.1.6-SNAPSHOT'
-
-	implementation 'org.apache.commons:commons-dbcp2'
-	implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'org.springframework.boot:spring-boot-starter-cache'
-	implementation 'org.springframework.retry:spring-retry'
-	implementation 'org.springframework:spring-aop'
-	implementation 'org.springframework:spring-aspects'
-	implementation group: "org.apache.commons", name: "commons-lang3"
-	implementation group: 'jakarta.ws.rs', name: 'jakarta.ws.rs-api', version: '3.1.0'
-	implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.39'
-
-	implementation 'org.springframework.boot:spring-boot-starter-actuator'
-	implementation 'io.micrometer:micrometer-registry-prometheus'
-
-	// Google dependencies
-	implementation platform('com.google.cloud:libraries-bom:26.39.0')
-
-	// Cloud Resource Library
-	implementation group: "com.azure.resourcemanager", name: "azure-resourcemanager-managedapplications", version: "1.0.0-beta.3"
-	implementation group: "com.azure.resourcemanager", name: "azure-resourcemanager-subscription", version: "1.0.0-beta.2"
-	implementation group: 'com.azure.resourcemanager', name: 'azure-resourcemanager-costmanagement', version: "1.0.0-beta.6"
-	implementation group: 'com.azure.resourcemanager', name: 'azure-resourcemanager-containerservice', version: '2.38.0'
-
-	implementation group: 'bio.terra', name: 'terra-cloud-resource-lib', version: "1.2.7-SNAPSHOT"
-
-	// Sam
-	implementation group: "org.broadinstitute.dsde.workbench", name: "sam-client_2.13", version: "0.1-0c4b377"
-
-    // TPS
-    implementation group: "bio.terra", name:"terra-policy-client", version:"1.0.9-SNAPSHOT"
-
-
-    // Test deps
-	testImplementation('org.springframework.boot:spring-boot-starter-test') {
-		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
-	}
-	// Allows us to mock final classes
-	testImplementation 'org.mockito:mockito-inline:5.2.0'
-
-	testImplementation 'au.com.dius.pact.consumer:junit5:4.6.9'
-	testImplementation("au.com.dius.pact.provider:junit5:4.6.9")
-	testImplementation("au.com.dius.pact.provider:junit5spring:4.6.9")
-	testImplementation 'com.google.code.findbugs:annotations:3.0.1u2'
-}
 test {
 	systemProperties['pact.rootDir'] = "$buildDir/pacts"
 	systemProperties['pact.provider.version'] = "$project.version"
