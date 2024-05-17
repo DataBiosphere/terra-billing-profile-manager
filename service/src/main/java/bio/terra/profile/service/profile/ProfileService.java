@@ -53,13 +53,13 @@ public class ProfileService {
 
   @Autowired
   public ProfileService(
-          ProfileDao profileDao,
-          SamService samService,
-          JobService jobService,
-          TpsApiDispatch tpsApiDispatch,
-          GcpService gcpService,
-          EnterpriseConfiguration enterpriseConfiguration,
-          LimitsConfiguration limitsConfiguration) {
+      ProfileDao profileDao,
+      SamService samService,
+      JobService jobService,
+      TpsApiDispatch tpsApiDispatch,
+      GcpService gcpService,
+      EnterpriseConfiguration enterpriseConfiguration,
+      LimitsConfiguration limitsConfiguration) {
     this.profileDao = profileDao;
     this.samService = samService;
     this.jobService = jobService;
@@ -238,7 +238,7 @@ public class ProfileService {
                 .subscriptionId()
                 .map(enterpriseConfiguration.subscriptions()::contains)
                 .orElse(false))
-            .limits(profile.subscriptionId().map(limitsConfiguration.limits()::get).orElse(null));
+        .limits(profile.subscriptionId().map(limitsConfiguration.limits()::get).orElse(null));
   }
 
   private ProfileDescription profileDescription(BillingProfile profile) {

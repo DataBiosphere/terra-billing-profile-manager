@@ -100,7 +100,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
             tpsApiDispatch,
             gcpService,
             enterpriseConfiguration,
-                limitsConfiguration);
+            limitsConfiguration);
     user =
         AuthenticatedUserRequest.builder()
             .setSubjectId("12345")
@@ -243,15 +243,14 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     Map<String, String> limitMap = Map.of("vcpus", "4");
     when(limitsConfiguration.limits()).thenReturn(Map.of(organizationSubscription, limitMap));
     var limitedProfile =
-            ProfileFixtures.createAzureBillingProfile(
-                    UUID.randomUUID(), organizationSubscription, "limitedMRG");
+        ProfileFixtures.createAzureBillingProfile(
+            UUID.randomUUID(), organizationSubscription, "limitedMRG");
     var nonLimitedProfile =
-            ProfileFixtures.createAzureBillingProfile(
-                    UUID.randomUUID(), UUID.randomUUID(), "nonLimitedMRG");
+        ProfileFixtures.createAzureBillingProfile(
+            UUID.randomUUID(), UUID.randomUUID(), "nonLimitedMRG");
 
     when(profileDao.getBillingProfileById(limitedProfile.id())).thenReturn(limitedProfile);
-    when(profileDao.getBillingProfileById(nonLimitedProfile.id()))
-            .thenReturn(nonLimitedProfile);
+    when(profileDao.getBillingProfileById(nonLimitedProfile.id())).thenReturn(nonLimitedProfile);
     when(samService.hasActions(eq(user), eq(SamResourceType.PROFILE), any())).thenReturn(true);
     when(tpsApiDispatch.getOrCreatePao(any(), any(), any())).thenReturn(new TpsPaoGetResult());
 
