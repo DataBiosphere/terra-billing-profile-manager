@@ -1,30 +1,27 @@
 #!/bin/bash
+# Render a client SA for TPS connectivity and Azure managed app creds. for connectivity w/deployed MRGs
 
 ENV=${1:-dev}
-VAULT_TOKEN=${2:-$(cat "$HOME"/.vault-token)}
-
-VAULT_ADDR="https://clotho.broadinstitute.org:8200"
 
 LOCAL_CONFIG_OUTPUT="service/src/main/resources/generated/local-properties.yaml"
 
-VAULT_COMMAND="docker run --rm -i -e VAULT_TOKEN="${VAULT_TOKEN}" broadinstitute/dsde-toolbox:dev vault read"
-
 function azure_creds {
-  AZURE_VAULT_PATH="secret/dsde/terra/azure/dev/billingprofilemanager/managed-app-publisher"
-  $VAULT_COMMAND -format=yaml $AZURE_VAULT_PATH \
-  | yq '.out.env.azure.managedAppClientId = .data.client-id | .out.env.azure.managedAppClientSecret = .data.client-secret  | .out.env.azure.managedAppTenantId = .data.tenant-id | .out' \
-  > $LOCAL_CONFIG_OUTPUT
+  echo -n "Fetching azure credentials..."
+  gcloud secrets versions access latest --project=broad-dsde-${ENV} --secret=bpm-managed-app-publisher-creds \
+  | yq '.out.env.azure.managedAppClientId = .client-id | .out.env.azure.managedAppClientSecret = .client-secret  | .out.env.azure.managedAppTenantId = .tenant-id | .out' \
+  > ${LOCAL_CONFIG_OUTPUT}
+  echo "done."
 }
 
-
 function service_creds {
+  # this SA key is required for connectivity to TPS for policy management
+  echo -n "Fetching service credentials..."
   LOCAL_TPS_SA_PATH="service/src/main/resources/generated/bpm-client-sa.json"
-  TPS_VAULT_PATH="secret/dsde/terra/kernel/dev/dev/bpm/app-sa"
-  tempfile=$(mktemp)
-  $VAULT_COMMAND -format=json "$TPS_VAULT_PATH" \
-  | jq -r .data.key | base64 -d \
-  > "$LOCAL_TPS_SA_PATH"
+  gcloud secrets versions access latest --project=broad-dsde-${ENV} --secret=bpm-sa-secret \
+  | jq -r '."key.json"' > ${LOCAL_TPS_SA_PATH}
+  echo "done."
 }
 
 azure_creds
 service_creds
+
