@@ -1,10 +1,7 @@
 package bio.terra.profile.service.profile;
 
 import static org.hamcrest.MatcherAssert.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -30,6 +27,7 @@ import bio.terra.policy.model.TpsPaoGetResult;
 import bio.terra.policy.model.TpsPolicyInput;
 import bio.terra.policy.model.TpsPolicyInputs;
 import bio.terra.profile.app.configuration.EnterpriseConfiguration;
+import bio.terra.profile.app.configuration.LimitsConfiguration;
 import bio.terra.profile.common.BaseUnitTest;
 import bio.terra.profile.common.ProfileFixtures;
 import bio.terra.profile.db.ProfileDao;
@@ -56,6 +54,7 @@ import com.google.iam.v1.TestIamPermissionsResponse;
 import io.opentelemetry.api.OpenTelemetry;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -74,6 +73,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
   @Mock private TpsApiDispatch tpsApiDispatch;
   @Mock private GcpService gcpService;
   @Mock private EnterpriseConfiguration enterpriseConfiguration;
+  @Mock private LimitsConfiguration limitsConfiguration;
 
   private ProfileService profileService;
   private AuthenticatedUserRequest user;
@@ -99,7 +99,8 @@ class ProfileServiceUnitTest extends BaseUnitTest {
             jobService,
             tpsApiDispatch,
             gcpService,
-            enterpriseConfiguration);
+            enterpriseConfiguration,
+                limitsConfiguration);
     user =
         AuthenticatedUserRequest.builder()
             .setSubjectId("12345")
@@ -234,6 +235,36 @@ class ProfileServiceUnitTest extends BaseUnitTest {
 
     assertTrue(enterpriseResult.organization().get().isEnterprise());
     assertFalse(nonEnterpriseResult.organization().get().isEnterprise());
+  }
+
+  @Test
+  void getProfileWithOrganizationLimits() throws InterruptedException {
+    var organizationSubscription = UUID.randomUUID();
+    Map<String, String> limitMap = Map.of("vcpus", "4");
+    when(limitsConfiguration.limits()).thenReturn(Map.of(organizationSubscription, limitMap));
+    var limitedProfile =
+            ProfileFixtures.createAzureBillingProfile(
+                    UUID.randomUUID(), organizationSubscription, "limitedMRG");
+    var nonLimitedProfile =
+            ProfileFixtures.createAzureBillingProfile(
+                    UUID.randomUUID(), UUID.randomUUID(), "nonLimitedMRG");
+
+    when(profileDao.getBillingProfileById(limitedProfile.id())).thenReturn(limitedProfile);
+    when(profileDao.getBillingProfileById(nonLimitedProfile.id()))
+            .thenReturn(nonLimitedProfile);
+    when(samService.hasActions(eq(user), eq(SamResourceType.PROFILE), any())).thenReturn(true);
+    when(tpsApiDispatch.getOrCreatePao(any(), any(), any())).thenReturn(new TpsPaoGetResult());
+
+    var limitedResult = profileService.getProfile(limitedProfile.id(), user);
+    var nonLimitedResult = profileService.getProfile(nonLimitedProfile.id(), user);
+
+    Object limitsObject = limitedResult.organization().get().getLimits();
+    assertTrue(limitsObject instanceof Map);
+    Map<String, String> limitsMap = (Map<String, String>) limitsObject;
+    assertTrue(limitsMap.containsKey("vcpus"));
+
+    Object nonlimitedObject = nonLimitedResult.organization().get().getLimits();
+    assertNull(nonlimitedObject);
   }
 
   @Test
