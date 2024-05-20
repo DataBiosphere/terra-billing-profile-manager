@@ -241,7 +241,8 @@ class ProfileServiceUnitTest extends BaseUnitTest {
   void getProfileWithOrganizationLimits() throws InterruptedException {
     var organizationSubscription = UUID.randomUUID();
     Map<String, String> limitMap = Map.of("vcpus", "4");
-    when(limitsConfiguration.subscriptions()).thenReturn(Map.of(organizationSubscription, limitMap));
+    when(limitsConfiguration.subscriptions())
+        .thenReturn(Map.of(organizationSubscription, limitMap));
     var limitedProfile =
         ProfileFixtures.createAzureBillingProfile(
             UUID.randomUUID(), organizationSubscription, "limitedMRG");
@@ -265,7 +266,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     Object nonlimitedObject = nonLimitedResult.organization().get().getLimits();
     assertTrue(nonlimitedObject instanceof Map);
     Map<String, String> emptyMap = (Map<String, String>) nonlimitedObject;
-    assert(emptyMap.isEmpty());
+    assert (emptyMap.isEmpty());
   }
 
   @Test
