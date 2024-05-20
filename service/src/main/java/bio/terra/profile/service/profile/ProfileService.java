@@ -239,9 +239,11 @@ public class ProfileService {
                 .subscriptionId()
                 .map(enterpriseConfiguration.subscriptions()::contains)
                 .orElse(false))
-        .limits(profile.subscriptionId().map(
-                id -> limitsConfiguration.subscriptions().get(id)
-        ).orElse(Map.of()));
+        .limits(profile.subscriptionId().flatMap(
+                        id -> Optional.ofNullable(limitsConfiguration.subscriptions())
+                                .map(subscriptions -> subscriptions.get(id))
+                )
+                .orElse(Map.of()));
   }
 
   private ProfileDescription profileDescription(BillingProfile profile) {
