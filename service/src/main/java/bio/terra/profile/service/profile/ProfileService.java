@@ -29,6 +29,7 @@ import bio.terra.profile.service.profile.flight.delete.DeleteProfileFlight;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.profile.service.profile.model.ProfileDescription;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -238,7 +239,9 @@ public class ProfileService {
                 .subscriptionId()
                 .map(enterpriseConfiguration.subscriptions()::contains)
                 .orElse(false))
-        .limits(profile.subscriptionId().map(limitsConfiguration.limits()::get).orElse(null));
+        .limits(profile.subscriptionId().map(
+                id -> limitsConfiguration.subscriptions().get(id)
+        ).orElse(Map.of()));
   }
 
   private ProfileDescription profileDescription(BillingProfile profile) {
