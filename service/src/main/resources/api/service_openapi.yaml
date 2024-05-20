@@ -419,18 +419,18 @@ components:
           $ref: '#/components/schemas/CloudPlatform'
         billingAccountId:
           type: string
-          description: Unique identifier of the billing account from Google
+          description: Unique identifier of the billing account from Google; required if creating a GCP billing profile, must be omitted if not.
         tenantId:
           type: string
-          description: Unique identifier of the Azure tenant
+          description: Unique identifier of the Azure tenant; required if creating an Azure billing profile, must be omitted if not.
           format: uuid
         subscriptionId:
           type: string
-          description: Unique identifier of the Azure subscription
+          description: Unique identifier of the Azure subscription; required if creating an Azure billing profile, must be omitted if not.
           format: uuid
         managedResourceGroupId:
           type: string
-          description: ID of the Azure managed resource group, of the form mrg-terra-integration-test-20211118
+          description: ID of the Azure managed resource group, of the form mrg-terra-integration-test-20211118; required if creating an Azure billing profile, must be omitted if not.
         policies:
           $ref: '#/components/schemas/BpmApiPolicyInputs'
 

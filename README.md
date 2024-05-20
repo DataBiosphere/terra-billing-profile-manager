@@ -44,7 +44,7 @@ After the database is initialized, run unit tests:
 
 To set up service account credentials and other configuration for running locally:
 * Install yq `brew install yq`
-* Run `render-configs.sh`
+* Run `render_configs.sh`
 
 To run integration tests:
 ```sh
