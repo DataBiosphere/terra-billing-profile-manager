@@ -123,7 +123,9 @@ class ProfileServiceUnitTest extends BaseUnitTest {
             "creator");
     profileDescription =
         new ProfileDescription(
-            profile, Optional.empty(), Optional.of(new Organization().enterprise(false)));
+            profile,
+            Optional.empty(),
+            Optional.of(new Organization().enterprise(false).limits(Map.of())));
 
     userPolicy = new SamPolicyModel().name("user").members(List.of("user@unit.com"));
     ownerPolicy = new SamPolicyModel().name("owner").members(List.of("owner@unit.com"));
@@ -209,7 +211,9 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     var result = profileService.getProfile(profile.id(), user);
     assertEquals(
         new ProfileDescription(
-            profile, Optional.of(policies), Optional.of(new Organization().enterprise(false))),
+            profile,
+            Optional.of(policies),
+            Optional.of(new Organization().enterprise(false).limits(Map.of()))),
         result);
   }
 
@@ -324,11 +328,11 @@ class ProfileServiceUnitTest extends BaseUnitTest {
             new ProfileDescription(
                 protectedProfile,
                 Optional.of(policies),
-                Optional.of(new Organization().enterprise(false))),
+                Optional.of(new Organization().enterprise(false).limits(Map.of()))),
             new ProfileDescription(
                 enterpriseProfile,
                 Optional.empty(),
-                Optional.of(new Organization().enterprise(true)))));
+                Optional.of(new Organization().enterprise(true).limits(Map.of())))));
   }
 
   @Test
