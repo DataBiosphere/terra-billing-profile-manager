@@ -53,6 +53,7 @@ import bio.terra.profile.service.profile.model.ProfileDescription;
 import com.google.iam.v1.TestIamPermissionsResponse;
 import io.opentelemetry.api.OpenTelemetry;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -242,17 +243,19 @@ class ProfileServiceUnitTest extends BaseUnitTest {
   }
 
   @Test
-  void getProfileWithOrganizationLimits() throws InterruptedException {
+  void getProfileWithLimits() throws InterruptedException {
     var organizationSubscription = UUID.randomUUID();
-    Map<String, String> limitMap = Map.of("vcpus", "4");
-    when(limitsConfiguration.subscriptions())
-        .thenReturn(Map.of(organizationSubscription, limitMap));
     var limitedProfile =
         ProfileFixtures.createAzureBillingProfile(
-            UUID.randomUUID(), organizationSubscription, "limitedMRG");
+                UUID.randomUUID(), organizationSubscription, "limitedMRG");
     var nonLimitedProfile =
         ProfileFixtures.createAzureBillingProfile(
-            UUID.randomUUID(), UUID.randomUUID(), "nonLimitedMRG");
+                UUID.randomUUID(), organizationSubscription, "nonLimitedMRG");
+    Map<String, String> limitMap = Map.of("vcpus", "4");
+    when(limitsConfiguration.getLimitsForProfile(limitedProfile.id()))
+            .thenReturn(limitMap);
+    when(limitsConfiguration.getLimitsForProfile(nonLimitedProfile.id()))
+            .thenReturn(Collections.emptyMap());
 
     when(profileDao.getBillingProfileById(limitedProfile.id())).thenReturn(limitedProfile);
     when(profileDao.getBillingProfileById(nonLimitedProfile.id())).thenReturn(nonLimitedProfile);
@@ -262,15 +265,11 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     var limitedResult = profileService.getProfile(limitedProfile.id(), user);
     var nonLimitedResult = profileService.getProfile(nonLimitedProfile.id(), user);
 
-    Object limitsObject = limitedResult.organization().get().getLimits();
-    assertTrue(limitsObject instanceof Map);
-    Map<String, String> limitsMap = (Map<String, String>) limitsObject;
-    assertTrue(limitsMap.containsKey("vcpus"));
+    var limits = limitedResult.organization().get().getLimits();
+    assertTrue(limits.containsKey("vcpus"));
 
-    Object nonlimitedObject = nonLimitedResult.organization().get().getLimits();
-    assertTrue(nonlimitedObject instanceof Map);
-    Map<String, String> emptyMap = (Map<String, String>) nonlimitedObject;
-    assert (emptyMap.isEmpty());
+    var noLimits = nonLimitedResult.organization().get().getLimits();
+    assertTrue(noLimits.isEmpty());
   }
 
   @Test

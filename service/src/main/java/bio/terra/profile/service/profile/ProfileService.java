@@ -28,6 +28,8 @@ import bio.terra.profile.service.profile.flight.create.CreateProfileFlight;
 import bio.terra.profile.service.profile.flight.delete.DeleteProfileFlight;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.profile.service.profile.model.ProfileDescription;
+
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -239,14 +241,7 @@ public class ProfileService {
                 .subscriptionId()
                 .map(enterpriseConfiguration.subscriptions()::contains)
                 .orElse(false))
-        .limits(
-            profile
-                .subscriptionId()
-                .flatMap(
-                    id ->
-                        Optional.ofNullable(limitsConfiguration.subscriptions())
-                            .map(subscriptions -> subscriptions.get(id)))
-                .orElse(Map.of()));
+        .limits(limitsConfiguration.getLimitsForProfile(profile.id()));
   }
 
   private ProfileDescription profileDescription(BillingProfile profile) {
