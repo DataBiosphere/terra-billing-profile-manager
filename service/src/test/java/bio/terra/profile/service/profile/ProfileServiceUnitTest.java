@@ -247,15 +247,14 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     var organizationSubscription = UUID.randomUUID();
     var limitedProfile =
         ProfileFixtures.createAzureBillingProfile(
-                UUID.randomUUID(), organizationSubscription, "limitedMRG");
+            UUID.randomUUID(), organizationSubscription, "limitedMRG");
     var nonLimitedProfile =
         ProfileFixtures.createAzureBillingProfile(
-                UUID.randomUUID(), organizationSubscription, "nonLimitedMRG");
+            UUID.randomUUID(), organizationSubscription, "nonLimitedMRG");
     Map<String, String> limitMap = Map.of("vcpus", "4");
-    when(limitsConfiguration.getLimitsForProfile(limitedProfile.id()))
-            .thenReturn(limitMap);
+    when(limitsConfiguration.getLimitsForProfile(limitedProfile.id())).thenReturn(limitMap);
     when(limitsConfiguration.getLimitsForProfile(nonLimitedProfile.id()))
-            .thenReturn(Collections.emptyMap());
+        .thenReturn(Collections.emptyMap());
 
     when(profileDao.getBillingProfileById(limitedProfile.id())).thenReturn(limitedProfile);
     when(profileDao.getBillingProfileById(nonLimitedProfile.id())).thenReturn(nonLimitedProfile);
