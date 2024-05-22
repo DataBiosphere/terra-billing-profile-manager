@@ -8,6 +8,7 @@ import bio.terra.policy.model.TpsPaoGetResult;
 import bio.terra.policy.model.TpsPolicyInputs;
 import bio.terra.profile.app.common.MetricUtils;
 import bio.terra.profile.app.configuration.EnterpriseConfiguration;
+import bio.terra.profile.app.configuration.LimitsConfiguration;
 import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.model.Organization;
 import bio.terra.profile.model.SamPolicyModel;
@@ -48,6 +49,7 @@ public class ProfileService {
   private final TpsApiDispatch tpsApiDispatch;
   private final EnterpriseConfiguration enterpriseConfiguration;
   private final GcpService gcpService;
+  private final LimitsConfiguration limitsConfiguration;
 
   @Autowired
   public ProfileService(
@@ -56,13 +58,15 @@ public class ProfileService {
       JobService jobService,
       TpsApiDispatch tpsApiDispatch,
       GcpService gcpService,
-      EnterpriseConfiguration enterpriseConfiguration) {
+      EnterpriseConfiguration enterpriseConfiguration,
+      LimitsConfiguration limitsConfiguration) {
     this.profileDao = profileDao;
     this.samService = samService;
     this.jobService = jobService;
     this.tpsApiDispatch = tpsApiDispatch;
     this.enterpriseConfiguration = enterpriseConfiguration;
     this.gcpService = gcpService;
+    this.limitsConfiguration = limitsConfiguration;
   }
 
   /**
@@ -233,7 +237,8 @@ public class ProfileService {
             profile
                 .subscriptionId()
                 .map(enterpriseConfiguration.subscriptions()::contains)
-                .orElse(false));
+                .orElse(false))
+        .limits(limitsConfiguration.getLimitsForProfile(profile.id()));
   }
 
   private ProfileDescription profileDescription(BillingProfile profile) {

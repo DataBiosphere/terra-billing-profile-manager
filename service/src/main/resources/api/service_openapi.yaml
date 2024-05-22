@@ -704,6 +704,11 @@ components:
         enterprise:
           description: whether this is an enterprise organization i.e. they have a signed BAA
           type: boolean
+        limits:
+          description: compute or other limits imposed on workspaces in this organization
+          type: object
+          additionalProperties:
+            type: string
 
     SpendReport:
       type: object

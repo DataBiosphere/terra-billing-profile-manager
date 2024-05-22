@@ -142,6 +142,8 @@ profile:
   enterprise:
     subscriptions:
 
+  limits:
+
 terra.common:
   kubernetes:
     in-kubernetes: false

@@ -1,10 +1,7 @@
 package bio.terra.profile.service.profile;
 
 import static org.hamcrest.MatcherAssert.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -30,6 +27,7 @@ import bio.terra.policy.model.TpsPaoGetResult;
 import bio.terra.policy.model.TpsPolicyInput;
 import bio.terra.policy.model.TpsPolicyInputs;
 import bio.terra.profile.app.configuration.EnterpriseConfiguration;
+import bio.terra.profile.app.configuration.LimitsConfiguration;
 import bio.terra.profile.common.BaseUnitTest;
 import bio.terra.profile.common.ProfileFixtures;
 import bio.terra.profile.db.ProfileDao;
@@ -55,7 +53,9 @@ import bio.terra.profile.service.profile.model.ProfileDescription;
 import com.google.iam.v1.TestIamPermissionsResponse;
 import io.opentelemetry.api.OpenTelemetry;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -74,6 +74,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
   @Mock private TpsApiDispatch tpsApiDispatch;
   @Mock private GcpService gcpService;
   @Mock private EnterpriseConfiguration enterpriseConfiguration;
+  @Mock private LimitsConfiguration limitsConfiguration;
 
   private ProfileService profileService;
   private AuthenticatedUserRequest user;
@@ -99,7 +100,8 @@ class ProfileServiceUnitTest extends BaseUnitTest {
             jobService,
             tpsApiDispatch,
             gcpService,
-            enterpriseConfiguration);
+            enterpriseConfiguration,
+            limitsConfiguration);
     user =
         AuthenticatedUserRequest.builder()
             .setSubjectId("12345")
@@ -122,7 +124,9 @@ class ProfileServiceUnitTest extends BaseUnitTest {
             "creator");
     profileDescription =
         new ProfileDescription(
-            profile, Optional.empty(), Optional.of(new Organization().enterprise(false)));
+            profile,
+            Optional.empty(),
+            Optional.of(new Organization().enterprise(false).limits(Map.of())));
 
     userPolicy = new SamPolicyModel().name("user").members(List.of("user@unit.com"));
     ownerPolicy = new SamPolicyModel().name("owner").members(List.of("owner@unit.com"));
@@ -208,7 +212,9 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     var result = profileService.getProfile(profile.id(), user);
     assertEquals(
         new ProfileDescription(
-            profile, Optional.of(policies), Optional.of(new Organization().enterprise(false))),
+            profile,
+            Optional.of(policies),
+            Optional.of(new Organization().enterprise(false).limits(Map.of()))),
         result);
   }
 
@@ -234,6 +240,35 @@ class ProfileServiceUnitTest extends BaseUnitTest {
 
     assertTrue(enterpriseResult.organization().get().isEnterprise());
     assertFalse(nonEnterpriseResult.organization().get().isEnterprise());
+  }
+
+  @Test
+  void getProfileWithLimits() throws InterruptedException {
+    var organizationSubscription = UUID.randomUUID();
+    var limitedProfile =
+        ProfileFixtures.createAzureBillingProfile(
+            UUID.randomUUID(), organizationSubscription, "limitedMRG");
+    var nonLimitedProfile =
+        ProfileFixtures.createAzureBillingProfile(
+            UUID.randomUUID(), organizationSubscription, "nonLimitedMRG");
+    Map<String, String> limitMap = Map.of("vcpus", "4");
+    when(limitsConfiguration.getLimitsForProfile(limitedProfile.id())).thenReturn(limitMap);
+    when(limitsConfiguration.getLimitsForProfile(nonLimitedProfile.id()))
+        .thenReturn(Collections.emptyMap());
+
+    when(profileDao.getBillingProfileById(limitedProfile.id())).thenReturn(limitedProfile);
+    when(profileDao.getBillingProfileById(nonLimitedProfile.id())).thenReturn(nonLimitedProfile);
+    when(samService.hasActions(eq(user), eq(SamResourceType.PROFILE), any())).thenReturn(true);
+    when(tpsApiDispatch.getOrCreatePao(any(), any(), any())).thenReturn(new TpsPaoGetResult());
+
+    var limitedResult = profileService.getProfile(limitedProfile.id(), user);
+    var nonLimitedResult = profileService.getProfile(nonLimitedProfile.id(), user);
+
+    var limits = limitedResult.organization().get().getLimits();
+    assertTrue(limits.containsKey("vcpus"));
+
+    var noLimits = nonLimitedResult.organization().get().getLimits();
+    assertTrue(noLimits.isEmpty());
   }
 
   @Test
@@ -291,11 +326,11 @@ class ProfileServiceUnitTest extends BaseUnitTest {
             new ProfileDescription(
                 protectedProfile,
                 Optional.of(policies),
-                Optional.of(new Organization().enterprise(false))),
+                Optional.of(new Organization().enterprise(false).limits(Map.of()))),
             new ProfileDescription(
                 enterpriseProfile,
                 Optional.empty(),
-                Optional.of(new Organization().enterprise(true)))));
+                Optional.of(new Organization().enterprise(true).limits(Map.of())))));
   }
 
   @Test
