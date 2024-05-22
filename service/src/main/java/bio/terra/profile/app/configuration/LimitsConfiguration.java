@@ -8,7 +8,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 /** Describes what limits should be placed on resources for the given billing profile */
 @ConfigurationProperties(prefix = "profile.limits")
 public class LimitsConfiguration {
-  private Map<UUID, Map<String, String>> profiles;
+  private Map<UUID, Map<String, String>> profiles = Collections.emptyMap();
 
   public Map<UUID, Map<String, String>> getProfiles() {
     return profiles;
