@@ -69,6 +69,10 @@ env:
 
 jobs:
 
+  #################################################
+  # VERSIONING, BRANCH MANAGEMENT, INIT AND SETUP #
+  #################################################
+
   bump-check:
     runs-on: ubuntu-latest
     outputs:
@@ -97,13 +101,124 @@ jobs:
       release-branches: main
     secrets: inherit
 
+  init-github-context:
+    runs-on: ubuntu-latest
+    needs: [ bump-check ]
+    if: ${{ needs.bump-check.outputs.is-bump == 'no' }}
+    outputs:
+      repo-branch: ${{ steps.extract-branch.outputs.repo-branch }}
+
+    steps:
+      - uses: actions/checkout@v3
+      - id: extract-branch
+        run: |
+          GITHUB_EVENT_NAME=${{ github.event_name }}
+          if [[ "$GITHUB_EVENT_NAME" == "push" ]]; then
+            GITHUB_REF=${{ github.ref }}
+            GITHUB_SHA=${{ github.sha }}
+          elif [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
+            GITHUB_REF=refs/heads/${{ github.head_ref }}
+            GITHUB_SHA=${{ github.event.pull_request.head.sha }}
+          elif [[ "$GITHUB_EVENT_NAME" == "merge_group" ]]; then
+            GITHUB_REF=refs/heads/${{ github.head_ref }}
+          elif [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
+            GITHUB_REF=${{ github.ref }} # The Git Ref that this workflow runs on
+          else
+            echo "Failed to extract branch information"
+            exit 1
+          fi
+          echo "repo-branch=${GITHUB_REF/refs\/heads\//""}" >> $GITHUB_OUTPUT
+          echo "repo-version=${GITHUB_SHA}" >> $GITHUB_OUTPUT
+      - name: Echo repo and branch information
+        run: |
+          echo "repo-owner=${{ github.repository_owner }}"
+          echo "repo-name=${{ github.event.repository.name }}"
+          echo "repo-branch=${{ steps.extract-branch.outputs.repo-branch }}"
+          echo "repo-version=${{ steps.extract-branch.outputs.repo-version }}"
+
+  #################################        
+  # CONSUMER CONTRACT PUBLISHING #
+  #################################
+
+  bpm-consumer-contract-tests:
+    runs-on: ubuntu-latest
+    needs: [ bump-check, init-github-context ]
+    if: ${{ needs.bump-check.outputs.is-bump == 'no' }}
+    outputs:
+      pact-paths: ${{ steps.locate-pacts.outputs.pact-paths }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Run consumer tests
+        run: ./gradlew pactTests
+      - name: Locate pact files
+        id: locate-pacts
+        run: |
+          pactPaths=$(find "$PACTS_OUTPUT_DIR" -type f -name "*.json" | jq -cnR "[inputs]")
+          echo "pact-paths=$pactPaths" >> $GITHUB_OUTPUT
+      - name: Upload pact files to artifact
+        id: upload-pacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.PACTS_ARTIFACT }}
+          path: ${{ env.PACTS_OUTPUT_DIR }}
+          retention-days: 1
+
+  publish-contracts:
+    runs-on: ubuntu-latest
+    needs: [ bump-check, init-github-context, bpm-consumer-contract-tests, regulated-tag-job ]
+    strategy:
+      matrix:
+        pact_path: ${{ fromJson(needs.bpm-consumer-contract-tests.outputs.pact-paths) }}
+    if: ${{ needs.bump-check.outputs.is-bump == 'no' }}
+    steps:
+      - name: Download pact files from artifact
+        id: download-pacts
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.PACTS_ARTIFACT }}
+          path: ${{ env.PACTS_OUTPUT_DIR }}
+
+      - name: Encode pact as non-breaking base64 string
+        id: encode-pact
+        run: |
+          nonBreakingB64=$(cat "${{ matrix.pact_path }}" | base64 -w 0)
+          echo "pact-b64=${nonBreakingB64}" >> $GITHUB_OUTPUT  
+
+      - name: Dispatch to terra-github-workflows
+        uses: broadinstitute/workflow-dispatch@v4.0.0
+        with:
+          run-name: "${{ env.PUBLISH_CONTRACTS_RUN_NAME }}-${{ matrix.pact_path }}"
+          workflow: .github/workflows/publish-contracts.yaml
+          repo: broadinstitute/terra-github-workflows
+          ref: refs/heads/main
+          token: ${{ secrets.BROADBOT_TOKEN }} # github token for access to kick off a job in the private repo
+          inputs: '{
+            "run-name": "${{ env.PUBLISH_CONTRACTS_RUN_NAME }}-${{ matrix.pact_path }}",
+            "pact-b64": "${{ steps.encode-pact.outputs.pact-b64 }}",
+            "repo-owner": "${{ github.repository_owner }}",
+            "repo-name": "${{ github.event.repository.name }}",
+            "repo-branch": "${{ needs.init-github-context.outputs.repo-branch }}" ,
+            "release-tag": "${{ needs.regulated-tag-job.outputs.new-tag }}"
+            }'
+
+  ###############################        
+  # PROVIDER VERIFICATION STEPS #
+  ###############################
+
   verify-consumer-pact:
-    needs: [ bump-check, regulated-tag-job ]
+    needs: [ bump-check, regulated-tag-job, init-github-context ]
     if: ${{ needs.bump-check.outputs.is-bump == 'no' }}
     runs-on: ubuntu-latest
     permissions:
       contents: 'read'
       id-token: 'write'
+    environment:
+      CURRENT_BRANCH: ${{needs.init-github-context.outputs.repo-branch}}
     outputs:
       provider-version: ${{ steps.verification-test.outputs.provider-version }}
 
@@ -113,21 +228,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      # The first section section of this is all branch and versions setting, this should all get moved into init-github-context
       - name: Extract branch
-        id: extract-branch
-        run: |
-          GITHUB_EVENT_NAME=${{ github.event_name }}
-          if [[ "$GITHUB_EVENT_NAME" == "push" ]]; then
-            GITHUB_REF=${{ github.ref }}
-          elif [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
-            GITHUB_REF=refs/heads/${{ github.head_ref }}
-          elif [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
-            GITHUB_REF=${{ github.ref }} # The Git Ref that this workflow runs on
-          else
-            echo "Failed to extract branch information"
-            exit 1
-          fi
-          echo "CURRENT_BRANCH=${GITHUB_REF/refs\/heads\//""}" >> $GITHUB_ENV
+        echo "CURRENT_BRANCH=${{ needs.init-github-context.output.repo-branch }}" >> $GITHUB_ENV
 
       - name: Capture webhook event payload as envvars
         if: ${{ inputs.pb-event-type != '' }}
@@ -154,6 +257,8 @@ jobs:
           echo "CONSUMER_NAME=${{ inputs.consumer-name }}" >> $GITHUB_ENV
           echo "CONSUMER_VERSION=${{ inputs.consumer-version-number }}" >> $GITHUB_ENV
 
+      # it pb-event-type is null, then do this
+      # basically, PR flow.
       - name: Set PROVIDER_VERSION envvar
         run: |
           # The PROVIDER_VERSION envvar is used to identify the provider version
@@ -164,7 +269,11 @@ jobs:
           else
             echo "PROVIDER_VERSION=${{ env.PROVIDER_TAG }}" >> $GITHUB_ENV
           fi
-
+    
+      # if PROVIDER_TAG exists then use it, otherwise use CURRENT_BRANCH
+      # which was extracted in the last step.
+      # CURRENT_BRANCH should usualy bee pr versions, can be mainline versin on merge.
+      # PROVIDER_TAG would correspond to whatever is on dev/staging/prod something semvet
       - name: Switch to appropriate provider branch
         run: |
           echo "This workflow has been triggered by '${{ github.event_name }}' event."
@@ -185,7 +294,9 @@ jobs:
           # Echo the HEAD commit of the provider branch that has been switched to.
           echo "git rev-parse HEAD"
           git rev-parse HEAD
-
+    # everything above this line should go into init github context. ^^^^
+    
+    # Break out this into it's own job as this is the actual run
       - name: Set up JDK 17
         uses: actions/setup-java@v2
         with:
@@ -208,6 +319,7 @@ jobs:
         # pact.provider.{branch, version}
         # pactbroker.{host, scheme}
         # pactbroker.auth.{username, password}
+        # If no CONSUMER_BRANCH/VERSION given, will just verify all deployed consumer versions.
         env:
           PACT_BROKER_URL: pact-broker.dsp-eng-tools.broadinstitute.org
           PACT_PROVIDER_VERSION: ${{ env.PROVIDER_VERSION }}
@@ -222,10 +334,14 @@ jobs:
           echo "env.PROVIDER_VERSION=${{ env.PROVIDER_VERSION }} # Deprecate env.PACT_PROVIDER_COMMIT. This new envvar is used for migrating GIT hash to app versioning"
           ./gradlew --build-cache verifyPacts
 
+  ################
+  # CAN-I-DEPLOY #
+  ################
+
   can-i-deploy: # The can-i-deploy job will run as a result of a PR. It reports the pact verification statuses on all deployed environments.
     runs-on: ubuntu-latest
     if: ${{ inputs.pb-event-type == '' && needs.bump-check.outputs.is-bump == 'no' }}
-    needs: [ verify-consumer-pact, bump-check ]
+    needs: [ verify-consumer-pact, bump-check, init-github-context, publish-contracts, regulated-tag-job ]
     steps:
       - name: Dispatch to terra-github-workflows
         uses: broadinstitute/workflow-dispatch@v4.0.0
@@ -239,4 +355,4 @@ jobs:
             "run-name": "${{ env.CAN_I_DEPLOY_RUN_NAME }}",
             "pacticipant": "bpm",
             "version": "${{ needs.verify-consumer-pact.outputs.provider-version }}"
-          }'
+            }'
