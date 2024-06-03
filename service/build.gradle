@@ -26,13 +26,13 @@ dependencies {
 	implementation 'org.springframework:spring-aspects'
 	implementation group: "org.apache.commons", name: "commons-lang3"
 	implementation group: 'jakarta.ws.rs', name: 'jakarta.ws.rs-api', version: '3.1.0'
-	implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.39.1'
+	implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.39.3'
 
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'io.micrometer:micrometer-registry-prometheus'
 
 	// Google dependencies
-	implementation platform('com.google.cloud:libraries-bom:26.39.0')
+	implementation platform('com.google.cloud:libraries-bom:26.40.0')
 
 	// Cloud Resource Library
 	implementation group: "com.azure.resourcemanager", name: "azure-resourcemanager-managedapplications", version: "1.0.0-beta.3"
@@ -56,9 +56,9 @@ dependencies {
 	// Allows us to mock final classes
 	testImplementation 'org.mockito:mockito-inline:5.2.0'
 
-	testImplementation 'au.com.dius.pact.consumer:junit5:4.6.9'
-	testImplementation("au.com.dius.pact.provider:junit5:4.6.9")
-	testImplementation("au.com.dius.pact.provider:junit5spring:4.6.9")
+	testImplementation 'au.com.dius.pact.consumer:junit5:4.6.10'
+	testImplementation("au.com.dius.pact.provider:junit5:4.6.10")
+	testImplementation("au.com.dius.pact.provider:junit5spring:4.6.10")
 	testImplementation 'com.google.code.findbugs:annotations:3.0.1u2'
 }
 test {
