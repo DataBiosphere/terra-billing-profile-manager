@@ -150,7 +150,7 @@ jobs:
   run-consumer-contract-tests:
     runs-on: ubuntu-latest
     needs: [ bump-check, init-github-context ]
-    if: ${{ needs.init-github-context.outputs.verify-provider-side-contracts-only == false }}
+    if: ${{ needs.init-github-context.outputs.verify-provider-side-contracts-only == 'false' }}
     outputs:
       pact-paths: ${{ steps.locate-pacts.outputs.pact-paths }}
     steps:
