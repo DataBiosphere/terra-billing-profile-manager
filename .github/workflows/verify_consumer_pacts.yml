@@ -84,22 +84,6 @@ jobs:
         uses: ./.github/actions/bump-skip
         with:
           event-name: ${{ github.event_name }}
-  # We only need a new version tag when this workflow is triggered by opening, updating a PR or PR merge.
-  # When triggered by a Pact Broker webhook, the provider version (GIT hash or release tag)
-  # is already included in the payload, then a new version tag wouldn't be needed.
-  #
-  regulated-tag-job:
-    needs: [ bump-check ]
-    if: ${{ needs.bump-check.outputs.is-bump == 'no' }}
-    uses: ./.github/workflows/tag.yml
-    with:
-      # The 'ref' parameter ensures that the provider version is postfixed with the HEAD commit of the PR branch,
-      # facilitating cross-referencing of a pact between Pact Broker and GitHub.
-      ref: ${{ github.head_ref || '' }}
-      # The 'dry-run' parameter prevents the new tag from being dispatched.
-      dry-run: true
-      release-branches: main
-    secrets: inherit
 
   init-github-context:
     runs-on: ubuntu-latest
@@ -107,9 +91,9 @@ jobs:
     if: ${{ needs.bump-check.outputs.is-bump == 'no' }}
     outputs:
       repo-branch: ${{ steps.extract-branch.outputs.repo-branch }}
+      verify-provider-side-contracts-only: ${{ steps.set-environment.outputs.verify-provider-side-contracts-only }}
 
     steps:
-      - uses: actions/checkout@v3
       - id: extract-branch
         run: |
           GITHUB_EVENT_NAME=${{ github.event_name }}
@@ -122,13 +106,19 @@ jobs:
           elif [[ "$GITHUB_EVENT_NAME" == "merge_group" ]]; then
             GITHUB_REF=refs/heads/${{ github.head_ref }}
           elif [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
-            GITHUB_REF=${{ github.ref }} # The Git Ref that this workflow runs on
+            # GITHUB_REF=${{ github.ref }} # The Git Ref that this workflow runs on
           else
             echo "Failed to extract branch information"
             exit 1
           fi
           echo "repo-branch=${GITHUB_REF/refs\/heads\//""}" >> $GITHUB_OUTPUT
           echo "repo-version=${GITHUB_SHA}" >> $GITHUB_OUTPUT
+      - uses: actions/checkout@v3
+      - name: set various output settings
+        id: set-environment
+        run: |
+          echo "verify-provider-side-contracts-only=${{ inputs.pb-event-type != '' }}" >> $GITHUB_OUTPUT
+
       - name: Echo repo and branch information
         run: |
           echo "repo-owner=${{ github.repository_owner }}"
@@ -136,14 +126,31 @@ jobs:
           echo "repo-branch=${{ steps.extract-branch.outputs.repo-branch }}"
           echo "repo-version=${{ steps.extract-branch.outputs.repo-version }}"
 
+  # We only need a new version tag when this workflow is triggered by opening, updating a PR or PR merge.
+  # When triggered by a Pact Broker webhook, the provider version (GIT hash or release tag)
+  # is already included in the payload, then a new version tag wouldn't be needed.
+  #
+  regulated-tag-job:
+    needs: [ init-github-context ]
+    if: ${{ needs.bump-check.outputs.is-bump == 'no' }}
+    uses: ./.github/workflows/tag.yml
+    with:
+      # The 'ref' parameter ensures that the provider version is postfixed with the HEAD commit of the PR branch,
+      # facilitating cross-referencing of a pact between Pact Broker and GitHub.
+      ref: ${{ needs.init-github-context.outputs.repo-branch || '' }}
+      # The 'dry-run' parameter prevents the new tag from being dispatched.
+      dry-run: true
+      release-branches: main
+    secrets: inherit
+
   #################################        
   # CONSUMER CONTRACT PUBLISHING #
   #################################
 
-  bpm-consumer-contract-tests:
+  run-consumer-contract-tests:
     runs-on: ubuntu-latest
     needs: [ bump-check, init-github-context ]
-    if: ${{ needs.bump-check.outputs.is-bump == 'no' }}
+    if: ${{ needs.init-github-context.outputs.verify-provider-side-contracts-only == false }}
     outputs:
       pact-paths: ${{ steps.locate-pacts.outputs.pact-paths }}
     steps:
@@ -170,10 +177,10 @@ jobs:
 
   publish-contracts:
     runs-on: ubuntu-latest
-    needs: [ bump-check, init-github-context, bpm-consumer-contract-tests, regulated-tag-job ]
+    needs: [ bump-check, init-github-context, run-consumer-contract-tests, regulated-tag-job ]
     strategy:
       matrix:
-        pact_path: ${{ fromJson(needs.bpm-consumer-contract-tests.outputs.pact-paths) }}
+        pact_path: ${{ fromJson(needs.run-consumer-contract-tests.outputs.pact-paths) }}
     if: ${{ needs.bump-check.outputs.is-bump == 'no' }}
     steps:
       - name: Download pact files from artifact
@@ -228,8 +235,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      # The first section section of this is all branch and versions setting, this should all get moved into init-github-context
-      - name: Extract branch
+      - name: set local environment variables
         echo "CURRENT_BRANCH=${{ needs.init-github-context.output.repo-branch }}" >> $GITHUB_ENV
 
       - name: Capture webhook event payload as envvars
@@ -257,7 +263,7 @@ jobs:
           echo "CONSUMER_NAME=${{ inputs.consumer-name }}" >> $GITHUB_ENV
           echo "CONSUMER_VERSION=${{ inputs.consumer-version-number }}" >> $GITHUB_ENV
 
-      # it pb-event-type is null, then do this
+      # if pb-event-type is null, then do this
       # basically, PR flow.
       - name: Set PROVIDER_VERSION envvar
         run: |
