@@ -106,7 +106,7 @@ jobs:
           elif [[ "$GITHUB_EVENT_NAME" == "merge_group" ]]; then
             GITHUB_REF=refs/heads/${{ github.head_ref }}
           elif [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
-            # GITHUB_REF=${{ github.ref }} # The Git Ref that this workflow runs on
+            GITHUB_REF=${{ github.ref }} # The Git Ref that this workflow runs on
           else
             echo "Failed to extract branch information"
             exit 1
