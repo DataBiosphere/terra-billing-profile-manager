@@ -13,9 +13,6 @@ name: Consumer contract tests
 # NOTE: The publish-contracts workflow will use the latest commit of the branch that triggers this workflow to publish the unique consumer contract version to Pact Broker.
 
 on:
-  pull_request:
-    branches: [ main ]
-    paths-ignore: [ '**.md' ]
   push:
     branches: [ main ]
     paths-ignore: [ '**.md' ]
