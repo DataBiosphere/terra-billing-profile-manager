@@ -224,8 +224,8 @@ jobs:
     permissions:
       contents: 'read'
       id-token: 'write'
-    environment:
-      CURRENT_BRANCH: ${{ needs.init-github-context.outputs.repo-branch }}
+    env:
+      CURRENT_BRANCH: "${{ needs.init-github-context.outputs.repo-branch }}"
     outputs:
       provider-version: ${{ steps.verification-test.outputs.provider-version }}
 
