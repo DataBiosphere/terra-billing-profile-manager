@@ -66,6 +66,8 @@ on:
 env:
   CAN_I_DEPLOY_RUN_NAME: 'can-i-deploy-${{ github.event.repository.name }}-${{ github.run_id }}-${{ github.run_attempt }}'
   RELEASE_BRANCH: 'main'
+  PACTS_ARTIFACT: bpm-pacts-${{ github.event.repository.name }}-${{ github.run_id }}
+  PACTS_OUTPUT_DIR: service/build/pacts
 
 jobs:
 
