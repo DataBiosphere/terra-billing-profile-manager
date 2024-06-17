@@ -225,7 +225,7 @@ jobs:
       contents: 'read'
       id-token: 'write'
     environment:
-      CURRENT_BRANCH: ${{needs.init-github-context.outputs.repo-branch}}
+      CURRENT_BRANCH: ${{ needs.init-github-context.outputs.repo-branch }}
     outputs:
       provider-version: ${{ steps.verification-test.outputs.provider-version }}
 
@@ -234,9 +234,6 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-
-      - name: set local environment variables
-        echo "CURRENT_BRANCH=${{ needs.init-github-context.output.repo-branch }}" >> $GITHUB_ENV
 
       - name: Capture webhook event payload as envvars
         if: ${{ inputs.pb-event-type != '' }}
