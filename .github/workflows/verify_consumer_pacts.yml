@@ -95,6 +95,12 @@ jobs:
       repo-branch: ${{ steps.extract-branch.outputs.repo-branch }}
       verify-provider-side-contracts-only: ${{ steps.set-environment.outputs.verify-provider-side-contracts-only }}
 
+
+  # gha branch - usaully main.
+  # PR will call pr version of GHA
+  # workflowdispatch can call branch versions of GHA.
+  # code checkout branch/gitref for bpm as a consumer
+  # code checkout branch/gitref for bpm as a provider
     steps:
       - id: extract-branch
         run: |
@@ -106,7 +112,7 @@ jobs:
             GITHUB_REF=refs/heads/${{ github.head_ref }}
             GITHUB_SHA=${{ github.event.pull_request.head.sha }}
           elif [[ "$GITHUB_EVENT_NAME" == "merge_group" ]]; then
-            GITHUB_REF=refs/heads/${{ github.head_ref }}
+            GITHUB_REF=refs/heads/${{ github.head_ref }} # Merge Queue support
           elif [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
             GITHUB_REF=${{ github.ref }} # The Git Ref that this workflow runs on
           else
@@ -115,7 +121,11 @@ jobs:
           fi
           echo "repo-branch=${GITHUB_REF/refs\/heads\//""}" >> $GITHUB_OUTPUT
           echo "repo-version=${GITHUB_SHA}" >> $GITHUB_OUTPUT
-      - uses: actions/checkout@v3
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.extract-branch.outputs.repo-branch }}
+
       - name: set various output settings
         id: set-environment
         run: |
@@ -345,7 +355,10 @@ jobs:
 
   can-i-deploy: # The can-i-deploy job will run as a result of a PR. It reports the pact verification statuses on all deployed environments.
     runs-on: ubuntu-latest
-    if: ${{ inputs.pb-event-type == '' && needs.bump-check.outputs.is-bump == 'no' }}
+    if: ${{
+          needs.init-github-context.outputs.verify-provider-side-contracts-only == 'false' &&
+          needs.bump-check.outputs.is-bump == 'no'
+        }}
     needs: [ verify-consumer-pact, bump-check, init-github-context, publish-contracts, regulated-tag-job ]
     steps:
       - name: Dispatch to terra-github-workflows
