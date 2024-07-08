@@ -116,8 +116,13 @@ public class BPMProviderTest {
     // Otherwise, this is a PR, verify all consumer pacts in Pact Broker marked with a deployment
     // tag (e.g. dev, alpha).
     if (StringUtils.isBlank(CONSUMER_BRANCH)) {
+      // this should get called on BPM commits
+      // this would test against dev/staging/prod of all upstream consumers (wsm/rawls)
       return new SelectorBuilder().mainBranch().deployedOrReleased();
     } else {
+      // this get called by consumer can-i-deploys?
+      // the matrix call in can-i-deploy is being handle upstream.
+      // pact will always run against HEAD pact of a branch.
       return new SelectorBuilder().branch(CONSUMER_BRANCH);
     }
   }
