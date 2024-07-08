@@ -298,6 +298,7 @@ jobs:
           if [[ -n "${{ env.PROVIDER_TAG }}" ]]; then
             echo "git checkout tags/${{ env.PROVIDER_TAG }}"
             git checkout tags/${{ env.PROVIDER_TAG }}
+          fi
 
           # Echo the HEAD commit of the provider branch that has been switched to.
           echo "git rev-parse HEAD"
