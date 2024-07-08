@@ -237,9 +237,9 @@ jobs:
       contents: 'read'
       id-token: 'write'
     env:
-      CURRENT_BRANCH: "${{ needs.init-github-context.outputs.repo-branch }}"
+      CURRENT_BRANCH: "${{ needs.init-github-context.outputs.repo-branch }}" # This only gets used for non-webhooks calls
     outputs:
-      provider-version: ${{ steps.verification-test.outputs.provider-version }}
+      provider-version: ${{ steps.render-provider-version.outputs.provider-version }}
 
     steps:
       # For PR flow, this will checkout current PR code
@@ -253,6 +253,17 @@ jobs:
       - name: Capture webhook event payload as envvars
         if: ${{ inputs.pb-event-type != '' }}
         run: |
+          # Save webhook event parameters as envvars
+          echo "CONSUMER_BRANCH=${{ inputs.consumer-version-branch }}" >> $GITHUB_ENV
+          echo "CONSUMER_NAME=${{ inputs.consumer-name }}" >> $GITHUB_ENV
+
+          # Check out the correct version of the provider to test against for webhook flows
+          echo "git checkout tags/${{ inputs.provider-version-number }}"
+          git checkout tags/${{ inputs.provider-version-number }}
+
+
+
+          # Debug Outputs 
           echo "pb-event-type=${{ inputs.pb-event-type }}"
           echo "consumer-name=${{ inputs.consumer-name }}"
 
@@ -268,17 +279,10 @@ jobs:
           # The pact-url is included here in case future pact4s client supports it.
           echo "pact-url=${{ inputs.pact-url }}"
 
-          # Save webhook event parameters as envvars
-          echo "CONSUMER_BRANCH=${{ inputs.consumer-version-branch }}" >> $GITHUB_ENV
-          echo "CONSUMER_NAME=${{ inputs.consumer-name }}" >> $GITHUB_ENV
-
-          # Check out the correct version of the provider to test against for webhook flows
-          echo "git checkout tags/${{ inputs.provider-version-number }}"
-          git checkout tags/${{ inputs.provider-version-number }}
-
       # if pb-event-type is null, then do this
       # basically, PR flow.
       - name: Set PROVIDER_VERSION envvar
+        id: render-provider-version
         run: |
           # The PROVIDER_VERSION envvar is used to identify the provider version
           # for publishing the results of provider verification.
@@ -287,6 +291,9 @@ jobs:
           else
             echo "PROVIDER_VERSION=${{ inputs.provider-version-number }}" >> $GITHUB_ENV
           fi
+
+          # set output for can-i-deploy
+          echo "provider-version=${PACT_PROVIDER_VERSION}" >> $GITHUB_OUTPUT
     
       # Output current branch and other debug info
       - name: Current Branch Debug Outputs
@@ -294,12 +301,9 @@ jobs:
           echo "This workflow has been triggered by '${{ github.event_name }}' event."
 
           # Echo the HEAD commit of the provider branch that has been switched to.
-          echo "git rev-parse HEAD"
-          git rev-parse HEAD
-          echo "git rev-parse --abbrev-ref HEAD"
-          git rev-parse --abbrev-ref HEAD
-
-          echo "${GITHUB_REF#refs/heads/}"
+          echo "git rev-parse HEAD $(git rev-parse HEAD)"
+          echo "git rev-parse --abbrev-ref HEAD: $(git rev-parse --abbrev-ref HEAD)"
+          echo "current github ref: ${GITHUB_REF#refs/heads/}"
     
     # Break out this into it's own job as this is the actual run
       - name: Set up JDK 17
@@ -331,9 +335,6 @@ jobs:
           PACT_BROKER_USERNAME:  ${{ secrets.PACT_BROKER_USERNAME }}
           PACT_BROKER_PASSWORD:  ${{ secrets.PACT_BROKER_PASSWORD }}
         run: |
-          # set output for can-i-deploy
-          echo "provider-version=${{ env.PACT_PROVIDER_VERSION }}" >> $GITHUB_OUTPUT
-
           # debug outputs
           # see readme for info: https://github.com/pact-foundation/pact-jvm/tree/master/provider/junit5
           echo "env.CONSUMER_BRANCH=${{ env.CONSUMER_BRANCH }} # This reflects the consumer branch to test against, should only exist on webhook calls."
