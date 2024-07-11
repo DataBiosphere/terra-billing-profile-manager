@@ -189,16 +189,14 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     var result = profileService.getProfile(profile.id(), user);
     assertEquals(profileDescription, result);
     verify(samService)
-        .verifyAuthorization(
-            user, SamResourceType.PROFILE, profile.id(), SamAction.READ_PROFILE);
+        .verifyAuthorization(user, SamResourceType.PROFILE, profile.id(), SamAction.READ_PROFILE);
   }
 
   @Test
   void getProfileNoAccess() throws InterruptedException {
     doThrow(new ForbiddenException("forbidden"))
         .when(samService)
-        .verifyAuthorization(
-            user, SamResourceType.PROFILE, profile.id(), SamAction.READ_PROFILE);
+        .verifyAuthorization(user, SamResourceType.PROFILE, profile.id(), SamAction.READ_PROFILE);
     assertThrows(ForbiddenException.class, () -> profileService.getProfile(profile.id(), user));
   }
 
@@ -219,8 +217,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
             Optional.of(new Organization().enterprise(false).limits(Map.of()))),
         result);
     verify(samService)
-        .verifyAuthorization(
-            user, SamResourceType.PROFILE, profile.id(), SamAction.READ_PROFILE);
+        .verifyAuthorization(user, SamResourceType.PROFILE, profile.id(), SamAction.READ_PROFILE);
   }
 
   @Test
@@ -245,8 +242,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     assertTrue(enterpriseResult.organization().get().isEnterprise());
     assertFalse(nonEnterpriseResult.organization().get().isEnterprise());
     verify(samService)
-        .verifyAuthorization(
-            user, SamResourceType.PROFILE, profile.id(), SamAction.READ_PROFILE);
+        .verifyAuthorization(user, SamResourceType.PROFILE, profile.id(), SamAction.READ_PROFILE);
   }
 
   @Test
@@ -276,8 +272,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     var noLimits = nonLimitedResult.organization().get().getLimits();
     assertTrue(noLimits.isEmpty());
     verify(samService)
-        .verifyAuthorization(
-            user, SamResourceType.PROFILE, profile.id(), SamAction.READ_PROFILE);
+        .verifyAuthorization(user, SamResourceType.PROFILE, profile.id(), SamAction.READ_PROFILE);
   }
 
   @Test
