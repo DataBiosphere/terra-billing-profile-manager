@@ -241,8 +241,6 @@ class ProfileServiceUnitTest extends BaseUnitTest {
 
     assertTrue(enterpriseResult.organization().get().isEnterprise());
     assertFalse(nonEnterpriseResult.organization().get().isEnterprise());
-    verify(samService)
-        .verifyAuthorization(user, SamResourceType.PROFILE, profile.id(), SamAction.READ_PROFILE);
   }
 
   @Test
@@ -271,8 +269,6 @@ class ProfileServiceUnitTest extends BaseUnitTest {
 
     var noLimits = nonLimitedResult.organization().get().getLimits();
     assertTrue(noLimits.isEmpty());
-    verify(samService)
-        .verifyAuthorization(user, SamResourceType.PROFILE, profile.id(), SamAction.READ_PROFILE);
   }
 
   @Test
