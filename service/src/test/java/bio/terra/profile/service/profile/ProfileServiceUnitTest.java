@@ -185,16 +185,20 @@ class ProfileServiceUnitTest extends BaseUnitTest {
   @Test
   void getProfile() throws InterruptedException {
     when(profileDao.getBillingProfileById(profile.id())).thenReturn(profile);
-    when(samService.hasActions(eq(user), eq(SamResourceType.PROFILE), eq(profile.id())))
-        .thenReturn(true);
     when(tpsApiDispatch.getOrCreatePao(any(), any(), any())).thenReturn(new TpsPaoGetResult());
     var result = profileService.getProfile(profile.id(), user);
     assertEquals(profileDescription, result);
+    verify(samService)
+        .verifyAuthorization(
+            user, SamResourceType.PROFILE, profile.id(), SamAction.READ_PROFILE);
   }
 
   @Test
   void getProfileNoAccess() throws InterruptedException {
-    when(samService.hasActions(user, SamResourceType.PROFILE, profile.id())).thenReturn(false);
+    doThrow(new ForbiddenException("forbidden"))
+        .when(samService)
+        .verifyAuthorization(
+            user, SamResourceType.PROFILE, profile.id(), SamAction.READ_PROFILE);
     assertThrows(ForbiddenException.class, () -> profileService.getProfile(profile.id(), user));
   }
 
@@ -204,8 +208,6 @@ class ProfileServiceUnitTest extends BaseUnitTest {
         new TpsPolicyInputs()
             .addInputsItem(new TpsPolicyInput().namespace("terra").name("protected-data"));
     when(profileDao.getBillingProfileById(profile.id())).thenReturn(profile);
-    when(samService.hasActions(eq(user), eq(SamResourceType.PROFILE), eq(profile.id())))
-        .thenReturn(true);
     when(tpsApiDispatch.getOrCreatePao(
             profile.id(), TpsComponent.BPM, TpsObjectType.BILLING_PROFILE))
         .thenReturn(new TpsPaoGetResult().effectiveAttributes(policies));
@@ -216,6 +218,9 @@ class ProfileServiceUnitTest extends BaseUnitTest {
             Optional.of(policies),
             Optional.of(new Organization().enterprise(false).limits(Map.of()))),
         result);
+    verify(samService)
+        .verifyAuthorization(
+            user, SamResourceType.PROFILE, profile.id(), SamAction.READ_PROFILE);
   }
 
   @Test
@@ -232,7 +237,6 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     when(profileDao.getBillingProfileById(enterpriseProfile.id())).thenReturn(enterpriseProfile);
     when(profileDao.getBillingProfileById(nonEnterpriseProfile.id()))
         .thenReturn(nonEnterpriseProfile);
-    when(samService.hasActions(eq(user), eq(SamResourceType.PROFILE), any())).thenReturn(true);
     when(tpsApiDispatch.getOrCreatePao(any(), any(), any())).thenReturn(new TpsPaoGetResult());
 
     var enterpriseResult = profileService.getProfile(enterpriseProfile.id(), user);
@@ -240,6 +244,9 @@ class ProfileServiceUnitTest extends BaseUnitTest {
 
     assertTrue(enterpriseResult.organization().get().isEnterprise());
     assertFalse(nonEnterpriseResult.organization().get().isEnterprise());
+    verify(samService)
+        .verifyAuthorization(
+            user, SamResourceType.PROFILE, profile.id(), SamAction.READ_PROFILE);
   }
 
   @Test
@@ -258,7 +265,6 @@ class ProfileServiceUnitTest extends BaseUnitTest {
 
     when(profileDao.getBillingProfileById(limitedProfile.id())).thenReturn(limitedProfile);
     when(profileDao.getBillingProfileById(nonLimitedProfile.id())).thenReturn(nonLimitedProfile);
-    when(samService.hasActions(eq(user), eq(SamResourceType.PROFILE), any())).thenReturn(true);
     when(tpsApiDispatch.getOrCreatePao(any(), any(), any())).thenReturn(new TpsPaoGetResult());
 
     var limitedResult = profileService.getProfile(limitedProfile.id(), user);
@@ -269,6 +275,9 @@ class ProfileServiceUnitTest extends BaseUnitTest {
 
     var noLimits = nonLimitedResult.organization().get().getLimits();
     assertTrue(noLimits.isEmpty());
+    verify(samService)
+        .verifyAuthorization(
+            user, SamResourceType.PROFILE, profile.id(), SamAction.READ_PROFILE);
   }
 
   @Test

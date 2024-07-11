@@ -148,8 +148,6 @@ public class BPMProviderTest {
   Map<String, Object> gcpBillingProfileState() throws InterruptedException {
     var profile = ProviderStateData.gcpBillingProfile;
     setUpProfileDaoGets(List.of(profile));
-    when(samService.hasActions(any(), eq(SamResourceType.PROFILE), eq(profile.id())))
-        .thenReturn(true);
     when(tpsApiDispatch.getOrCreatePao(any(), any(), any()))
         .thenReturn(new TpsPaoGetResult().effectiveAttributes(new TpsPolicyInputs()));
     return Map.of(
@@ -161,8 +159,6 @@ public class BPMProviderTest {
   Map<String, Object> azureBillingProfileState() throws InterruptedException {
     var profile = ProviderStateData.azureBillingProfile;
     setUpProfileDaoGets(List.of(profile));
-    when(samService.hasActions(any(), eq(SamResourceType.PROFILE), eq(profile.id())))
-        .thenReturn(true);
     when(tpsApiDispatch.getOrCreatePao(any(), any(), any()))
         .thenReturn(new TpsPaoGetResult().effectiveAttributes(new TpsPolicyInputs()));
     return Map.of(

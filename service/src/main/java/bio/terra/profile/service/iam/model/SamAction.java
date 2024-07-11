@@ -10,7 +10,8 @@ public enum SamAction {
   UPDATE_BILLING_ACCOUNT("update_billing_account"),
   UPDATE_METADATA("update_metadata"),
   LINK("link"),
-  READ_SPEND_REPORT("read_spend_report");
+  READ_SPEND_REPORT("read_spend_report"),
+  READ_PROFILE("read_profile");
 
   private final String samActionName;
 
