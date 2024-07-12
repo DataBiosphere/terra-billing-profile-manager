@@ -289,11 +289,13 @@ jobs:
           # for publishing the results of provider verification.
           if [[ -z "${{ inputs.pb-event-type }}" ]]; then
             PROVIDER_VERSION=${{ needs.regulated-tag-job.outputs.new-tag }}
-            echo "PROVIDER_VERSION=${{ needs.regulated-tag-job.outputs.new-tag }}" >> $GITHUB_ENV
           else
             PROVIDER_VERSION=${{ inputs.provider-version-number }}
-            echo "PROVIDER_VERSION=${{ inputs.provider-version-number }}" >> $GITHUB_ENV
           fi
+
+          # set env for future steps
+          echo "PROVIDER_VERSION=${PROVIDER_VERSION}"
+          echo "PROVIDER_VERSION=${PROVIDER_VERSION}" >> $GITHUB_ENV
 
           # set output for can-i-deploy
           echo "provider-version=${PROVIDER_VERSION}"
