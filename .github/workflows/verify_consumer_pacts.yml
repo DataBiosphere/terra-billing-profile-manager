@@ -294,8 +294,8 @@ jobs:
           fi
 
           # set output for can-i-deploy
-          echo "provider-version=${PROVIDER_VERSION}"
-          echo "provider-version=${PROVIDER_VERSION}" >> $GITHUB_OUTPUT
+          echo "provider-version=${{ env.PROVIDER_VERSION }}"
+          echo "provider-version=${{ env.PROVIDER_VERSION }}" >> $GITHUB_OUTPUT
     
       # Output current branch and other debug info
       - name: Current Branch Debug Outputs
