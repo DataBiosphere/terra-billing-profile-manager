@@ -288,10 +288,10 @@ jobs:
           # The PROVIDER_VERSION envvar is used to identify the provider version
           # for publishing the results of provider verification.
           if [[ -z "${{ inputs.pb-event-type }}" ]]; then
-            PROVIDER_VERSION=${{ needs.regulated-tag-job.outputs.new-tag }}"
+            PROVIDER_VERSION=${{ needs.regulated-tag-job.outputs.new-tag }}
             echo "PROVIDER_VERSION=${{ needs.regulated-tag-job.outputs.new-tag }}" >> $GITHUB_ENV
           else
-            PROVIDER_VERSION=${{ inputs.provider-version-number }}"
+            PROVIDER_VERSION=${{ inputs.provider-version-number }}
             echo "PROVIDER_VERSION=${{ inputs.provider-version-number }}" >> $GITHUB_ENV
           fi
 
