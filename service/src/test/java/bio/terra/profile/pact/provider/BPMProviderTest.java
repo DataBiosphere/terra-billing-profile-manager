@@ -116,7 +116,7 @@ public class BPMProviderTest {
     // Otherwise, this is a PR, verify all consumer pacts in Pact Broker marked with a deployment
     // tag (e.g. dev, alpha).
     if (StringUtils.isBlank(CONSUMER_BRANCH)) {
-      return new SelectorBuilder().mainBranch().deployedOrReleased();
+      return new SelectorBuilder().mainBranch().deployedOrReleased().branch("missing_profile_state");
     } else {
       return new SelectorBuilder().branch(CONSUMER_BRANCH);
     }
