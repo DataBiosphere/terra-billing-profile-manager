@@ -172,6 +172,12 @@ public class BPMProviderTest {
         "managedResourceGroupId", profile.managedResourceGroupId().get());
   }
 
+  @State("a missing billing profile")
+  void missingBillingProfileState() throws InterruptedException {
+    when(samService.hasActions(any(), eq(SamResourceType.PROFILE), any()))
+        .thenReturn(false);
+  }
+
   @State("two billing profiles exist")
   void twoProfilesExistState() throws InterruptedException {
     var profilesIds =
