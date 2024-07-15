@@ -116,7 +116,10 @@ public class BPMProviderTest {
     // Otherwise, this is a PR, verify all consumer pacts in Pact Broker marked with a deployment
     // tag (e.g. dev, alpha).
     if (StringUtils.isBlank(CONSUMER_BRANCH)) {
-      return new SelectorBuilder().mainBranch().deployedOrReleased().branch("missing_profile_state");
+      return new SelectorBuilder()
+          .mainBranch()
+          .deployedOrReleased()
+          .branch("missing_profile_state");
     } else {
       return new SelectorBuilder().branch(CONSUMER_BRANCH);
     }
@@ -174,8 +177,7 @@ public class BPMProviderTest {
 
   @State("a missing billing profile")
   void missingBillingProfileState() throws InterruptedException {
-    when(samService.hasActions(any(), eq(SamResourceType.PROFILE), any()))
-        .thenReturn(false);
+    when(samService.hasActions(any(), eq(SamResourceType.PROFILE), any())).thenReturn(false);
   }
 
   @State("two billing profiles exist")
