@@ -111,34 +111,6 @@ public class SamService {
   }
 
   /**
-   * Checks if a user has any action on a resource.
-   *
-   * <p>If user has any action on a resource than we allow that user to list the resource, rather
-   * than have a specific action for listing. That is the Sam convention.
-   *
-   * @param userRequest authenticated user
-   * @param resourceType resource type
-   * @param resourceId resource in question
-   * @return true if the user has any actions on that resource; false otherwise.
-   */
-  public boolean hasActions(
-      AuthenticatedUserRequest userRequest, SamResourceType resourceType, UUID resourceId)
-      throws InterruptedException {
-    String accessToken = userRequest.getToken();
-    ResourcesApi resourceApi = samResourcesApi(accessToken);
-    try {
-      return SamRetry.retry(
-          () ->
-              resourceApi
-                      .resourceActionsV2(resourceType.getSamResourceName(), resourceId.toString())
-                      .size()
-                  > 0);
-    } catch (ApiException e) {
-      throw SamExceptionFactory.create("Error checking resource permission in Sam", e);
-    }
-  }
-
-  /**
    * List all profile IDs in Sam this user has access to.
    *
    * @param userRequest authenticated user

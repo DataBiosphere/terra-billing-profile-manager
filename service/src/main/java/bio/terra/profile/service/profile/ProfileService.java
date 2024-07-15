@@ -1,6 +1,5 @@
 package bio.terra.profile.service.profile;
 
-import bio.terra.common.exception.ForbiddenException;
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.policy.model.TpsComponent;
 import bio.terra.policy.model.TpsObjectType;
@@ -137,12 +136,11 @@ public class ProfileService {
    */
   public ProfileDescription getProfile(UUID id, AuthenticatedUserRequest user) {
     // Check Sam permissions before checking in database
-    var hasActions =
-        SamRethrow.onInterrupted(
-            () -> samService.hasActions(user, SamResourceType.PROFILE, id), "hasActions");
-    if (Boolean.FALSE.equals(hasActions)) {
-      throw new ForbiddenException("forbidden");
-    }
+    SamRethrow.onInterrupted(
+        () ->
+            samService.verifyAuthorization(
+                user, SamResourceType.PROFILE, id, SamAction.READ_PROFILE),
+        "verifyGetProfileAuthz");
     // Throws 404 if not found
     BillingProfile profile = profileDao.getBillingProfileById(id);
 

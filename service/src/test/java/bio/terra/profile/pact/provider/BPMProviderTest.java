@@ -12,6 +12,7 @@ import au.com.dius.pact.provider.junitsupport.loader.PactBroker;
 import au.com.dius.pact.provider.junitsupport.loader.PactBrokerConsumerVersionSelectors;
 import au.com.dius.pact.provider.junitsupport.loader.SelectorBuilder;
 import au.com.dius.pact.provider.spring.junit5.PactVerificationSpringProvider;
+import bio.terra.common.exception.ForbiddenException;
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.common.iam.AuthenticatedUserRequestFactory;
 import bio.terra.policy.model.TpsPaoGetResult;
@@ -148,8 +149,6 @@ public class BPMProviderTest {
   Map<String, Object> gcpBillingProfileState() throws InterruptedException {
     var profile = ProviderStateData.gcpBillingProfile;
     setUpProfileDaoGets(List.of(profile));
-    when(samService.hasActions(any(), eq(SamResourceType.PROFILE), eq(profile.id())))
-        .thenReturn(true);
     when(tpsApiDispatch.getOrCreatePao(any(), any(), any()))
         .thenReturn(new TpsPaoGetResult().effectiveAttributes(new TpsPolicyInputs()));
     return Map.of(
@@ -161,8 +160,6 @@ public class BPMProviderTest {
   Map<String, Object> azureBillingProfileState() throws InterruptedException {
     var profile = ProviderStateData.azureBillingProfile;
     setUpProfileDaoGets(List.of(profile));
-    when(samService.hasActions(any(), eq(SamResourceType.PROFILE), eq(profile.id())))
-        .thenReturn(true);
     when(tpsApiDispatch.getOrCreatePao(any(), any(), any()))
         .thenReturn(new TpsPaoGetResult().effectiveAttributes(new TpsPolicyInputs()));
     return Map.of(
@@ -174,7 +171,9 @@ public class BPMProviderTest {
 
   @State("a missing billing profile")
   void missingBillingProfileState() throws InterruptedException {
-    when(samService.hasActions(any(), eq(SamResourceType.PROFILE), any())).thenReturn(false);
+    doThrow(new ForbiddenException("Forbidden"))
+        .when(samService)
+        .verifyAuthorization(any(), eq(SamResourceType.PROFILE), any(), eq(SamAction.READ_PROFILE));
   }
 
   @State("two billing profiles exist")
