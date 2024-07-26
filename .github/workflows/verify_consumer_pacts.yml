@@ -354,24 +354,15 @@ jobs:
   # CAN-I-DEPLOY #
   ################
 
-  can-i-deploy: # The can-i-deploy job will run as a result of a PR. It reports the pact verification statuses on all deployed environments.
-    runs-on: ubuntu-latest
+  can-i-deploy:
+    uses: broadinstitute/dsp-reusable-workflows/.github/workflows/can-i-deploy.yaml@main
     if: ${{
           needs.init-github-context.outputs.verify-provider-side-contracts-only == 'false' &&
           needs.bump-check.outputs.is-bump == 'no'
         }}
     needs: [ verify-consumer-pact, bump-check, init-github-context, publish-contracts, regulated-tag-job ]
-    steps:
-      - name: Dispatch to terra-github-workflows
-        uses: broadinstitute/workflow-dispatch@v4.0.0
-        with:
-          run-name: "${{ env.CAN_I_DEPLOY_RUN_NAME }}"
-          workflow: .github/workflows/can-i-deploy.yaml
-          repo: broadinstitute/terra-github-workflows
-          ref: refs/heads/main
-          token: ${{ secrets.BROADBOT_TOKEN }} # github token for access to kick off a job in the private repo
-          inputs: '{
-            "run-name": "${{ env.CAN_I_DEPLOY_RUN_NAME }}",
-            "pacticipant": "bpm",
-            "version": "${{ needs.verify-consumer-pact.outputs.provider-version }}"
-            }'
+    secrets: inherit
+    with:
+      pacticipant: "bpm"
+      version: "${{ needs.verify-consumer-pact.outputs.provider-version }}"
+      environment: ""
