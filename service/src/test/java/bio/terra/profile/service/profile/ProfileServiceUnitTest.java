@@ -547,6 +547,13 @@ class ProfileServiceUnitTest extends BaseUnitTest {
   }
 
   @Test
+  void leaveProfile() throws InterruptedException {
+    assertDoesNotThrow(() -> profileService.leaveProfile(profile.id(), user));
+    verify(samService)
+        .leaveResource(user, SamResourceType.PROFILE.getSamResourceName(), profile.id());
+  }
+
+  @Test
   void getProfilePolicies() throws InterruptedException {
     when(samService.retrieveProfilePolicies(user, profile.id())).thenReturn(profilePolicies);
     var result = profileService.getProfilePolicies(profile.id(), user);

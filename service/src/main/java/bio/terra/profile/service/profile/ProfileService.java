@@ -210,6 +210,18 @@ public class ProfileService {
     profileDao.removeBillingAccount(id);
   }
 
+  /**
+   * Removes the authenticated user from the specified billing profile.
+   *
+   * @param profileId profile to leave
+   * @param user authenticated user
+   */
+  public void leaveProfile(UUID profileId, AuthenticatedUserRequest user) {
+    String spendProfileTypeName = SamResourceType.PROFILE.getSamResourceName();
+    SamRethrow.onInterrupted(
+        () -> samService.leaveResource(user, spendProfileTypeName, profileId), "leaveProfile");
+  }
+
   public List<SamPolicyModel> getProfilePolicies(UUID profileId, AuthenticatedUserRequest user) {
     return SamRethrow.onInterrupted(
         () -> samService.retrieveProfilePolicies(user, profileId), "retrieveProfilePolicies");
