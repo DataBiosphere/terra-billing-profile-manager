@@ -15,6 +15,9 @@ jobs:
   publish-job:
     needs: [ tag ]
     runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 17
@@ -22,6 +25,14 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+
+      - name: Auth to GCR
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: 'projects/1038484894585/locations/global/workloadIdentityPools/github-wi-pool/providers/github-wi-provider'
+          service_account: 'gcr-publish@broad-dsp-gcr-public.iam.gserviceaccount.com'
+      - name: Explicitly auth Docker for GCR
+        run: gcloud auth configure-docker --quiet
 
       - name: Cache Gradle packages
         uses: actions/cache@v2
@@ -39,14 +50,6 @@ jobs:
           ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
           ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
           ARTIFACTORY_REPO_KEY: libs-snapshot-local
-
-      - name: Auth to GCR
-        uses: google-github-actions/auth@v2
-        with:
-          workload_identity_provider: 'projects/1038484894585/locations/global/workloadIdentityPools/github-wi-pool/providers/github-wi-provider'
-          service_account: 'gcr-publish@broad-dsp-gcr-public.iam.gserviceaccount.com'
-      - name: Explicitly auth Docker for GCR
-        run: gcloud auth configure-docker --quiet
 
       - name: Construct docker image name and tag
         id: image-name
