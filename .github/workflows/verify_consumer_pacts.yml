@@ -355,7 +355,7 @@ jobs:
   ################
 
   can-i-deploy:
-    uses: broadinstitute/dsp-reusable-workflows/.github/workflows/can-i-deploy.yaml@main
+    uses: broadinstitute/dsp-reusable-workflows/.github/workflows/can-i-deploy.yaml@DDO-3782-workflow-call-can-i-deploy-2-fix
     if: ${{
           needs.init-github-context.outputs.verify-provider-side-contracts-only == 'false' &&
           needs.bump-check.outputs.is-bump == 'no'
