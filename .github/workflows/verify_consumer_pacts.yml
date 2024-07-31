@@ -361,7 +361,9 @@ jobs:
           needs.bump-check.outputs.is-bump == 'no'
         }}
     needs: [ verify-consumer-pact, bump-check, init-github-context, publish-contracts, regulated-tag-job ]
-    secrets: inherit
+    secrets:
+      PACT_BROKER_USERNAME: ${{ secrets.PACT_BROKER_USERNAME }}
+      PACT_BROKER_PASSWORD: ${{ secrets.PACT_BROKER_PASSWORD }}
     with:
       pacticipant: "bpm"
       version: "${{ needs.verify-consumer-pact.outputs.provider-version }}"
