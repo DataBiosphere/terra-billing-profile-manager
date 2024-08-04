@@ -135,12 +135,6 @@ public class ProfileService {
    * @throws ProfileNotFoundException when the profile is not found
    */
   public ProfileDescription getProfile(UUID id, AuthenticatedUserRequest user) {
-    // Check Sam permissions before checking in database
-    SamRethrow.onInterrupted(
-        () ->
-            samService.verifyAuthorization(
-                user, SamResourceType.PROFILE, id, SamAction.READ_PROFILE),
-        "verifyGetProfileAuthz");
     // Throws 404 if not found
     BillingProfile profile = profileDao.getBillingProfileById(id);
 
