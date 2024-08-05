@@ -253,7 +253,7 @@ public class SamService {
     try {
       SamRetry.retry(() -> leaveResourceInner(userRequest, samResourceTypeName, resourceId));
     } catch (ApiException e) {
-      throw SamExceptionFactory.create("Error deleting profile member in Sam", e);
+      throw SamExceptionFactory.create("Error leaving resource in Sam", e);
     }
   }
 
