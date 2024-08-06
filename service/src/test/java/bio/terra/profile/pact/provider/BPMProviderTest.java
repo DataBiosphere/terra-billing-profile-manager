@@ -243,6 +243,13 @@ public class BPMProviderTest {
         .thenReturn(jobBuilder);
   }
 
+  @State("a Sam service that supports leaving resources")
+  void leaveResourceExistsState() throws InterruptedException {
+    var resourceType = SamResourceType.PROFILE.getSamResourceName();
+    var profile = ProviderStateData.azureBillingProfile;
+    doNothing().when(samService).leaveResource(any(), eq(resourceType), eq(profile.id()));
+  }
+
   @State("a Sam service that supports profile policy member addition")
   Map<String, Object> userPolicyAdditionState() throws InterruptedException {
     var profile = ProviderStateData.azureBillingProfile;
