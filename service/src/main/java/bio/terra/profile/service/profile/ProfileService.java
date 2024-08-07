@@ -21,6 +21,7 @@ import bio.terra.profile.service.job.JobMapKeys;
 import bio.terra.profile.service.job.JobService;
 import bio.terra.profile.service.policy.TpsApiDispatch;
 import bio.terra.profile.service.policy.exception.PolicyServiceAPIException;
+import bio.terra.profile.service.profile.exception.InvalidFieldException;
 import bio.terra.profile.service.profile.exception.ProfileNotFoundException;
 import bio.terra.profile.service.profile.flight.ProfileMapKeys;
 import bio.terra.profile.service.profile.flight.create.CreateProfileFlight;
@@ -236,6 +237,10 @@ public class ProfileService {
 
   public SamPolicyModel deleteProfilePolicyMember(
       UUID profileId, String policyName, String memberEmail, AuthenticatedUserRequest user) {
+    if (user.getEmail().equals(memberEmail)) {
+      throw new InvalidFieldException(
+          "Use leaveProfile to remove the current user from a billing profile.");
+    }
     return SamRethrow.onInterrupted(
         () -> samService.deleteProfilePolicyMember(user, profileId, policyName, memberEmail),
         "deletePolicyMember");
