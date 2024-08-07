@@ -237,7 +237,7 @@ public class ProfileService {
 
   public SamPolicyModel deleteProfilePolicyMember(
       UUID profileId, String policyName, String memberEmail, AuthenticatedUserRequest user) {
-    if (user.getEmail().equals(memberEmail)) {
+    if (memberEmail.equals(user.getEmail())) {
       throw new InvalidFieldException(
           "Use leaveProfile to remove the current user from a billing profile.");
     }
