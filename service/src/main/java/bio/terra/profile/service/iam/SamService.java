@@ -240,6 +240,31 @@ public class SamService {
   }
 
   /**
+   * Removes the authenticated user from the specified resource.
+   *
+   * @param userRequest authenticated user
+   * @param samResourceTypeName the type of resource being left
+   * @param resourceId resourceId of the profile in question
+   * @throws InterruptedException
+   */
+  public void leaveResource(
+      AuthenticatedUserRequest userRequest, String samResourceTypeName, UUID resourceId)
+      throws InterruptedException {
+    try {
+      SamRetry.retry(() -> leaveResourceInner(userRequest, samResourceTypeName, resourceId));
+    } catch (ApiException e) {
+      throw SamExceptionFactory.create("Error leaving resource in Sam", e);
+    }
+  }
+
+  private void leaveResourceInner(
+      AuthenticatedUserRequest userRequest, String samResourceTypeName, UUID resourceId)
+      throws ApiException {
+    ResourcesApi samResourceApi = samResourcesApi(userRequest.getToken());
+    samResourceApi.leaveResourceV2(samResourceTypeName, resourceId.toString());
+  }
+
+  /**
    * Fetch the user status (email and subjectId) from Sam.
    *
    * @param userToken user token

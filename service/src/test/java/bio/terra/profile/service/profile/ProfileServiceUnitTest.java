@@ -17,6 +17,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import bio.terra.cloudres.google.billing.CloudBillingClientCow;
+import bio.terra.common.exception.BadRequestException;
 import bio.terra.common.exception.ForbiddenException;
 import bio.terra.common.exception.NotFoundException;
 import bio.terra.common.iam.AuthenticatedUserRequest;
@@ -547,6 +548,13 @@ class ProfileServiceUnitTest extends BaseUnitTest {
   }
 
   @Test
+  void leaveProfile() throws InterruptedException {
+    assertDoesNotThrow(() -> profileService.leaveProfile(profile.id(), user));
+    verify(samService)
+        .leaveResource(user, SamResourceType.PROFILE.getSamResourceName(), profile.id());
+  }
+
+  @Test
   void getProfilePolicies() throws InterruptedException {
     when(samService.retrieveProfilePolicies(user, profile.id())).thenReturn(profilePolicies);
     var result = profileService.getProfilePolicies(profile.id(), user);
@@ -602,6 +610,14 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     var result =
         profileService.deleteProfilePolicyMember(profile.id(), "owner", "leaving@unit.com", user);
     assertEquals(ownerPolicy, result);
+  }
+
+  @Test
+  void deleteProfilePolicyMember400() throws InterruptedException {
+    assertThrows(
+        BadRequestException.class,
+        () ->
+            profileService.deleteProfilePolicyMember(profile.id(), "user", user.getEmail(), user));
   }
 
   @Test

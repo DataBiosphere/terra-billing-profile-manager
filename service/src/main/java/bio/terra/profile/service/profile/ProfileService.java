@@ -21,6 +21,7 @@ import bio.terra.profile.service.job.JobMapKeys;
 import bio.terra.profile.service.job.JobService;
 import bio.terra.profile.service.policy.TpsApiDispatch;
 import bio.terra.profile.service.policy.exception.PolicyServiceAPIException;
+import bio.terra.profile.service.profile.exception.InvalidFieldException;
 import bio.terra.profile.service.profile.exception.ProfileNotFoundException;
 import bio.terra.profile.service.profile.flight.ProfileMapKeys;
 import bio.terra.profile.service.profile.flight.create.CreateProfileFlight;
@@ -210,6 +211,18 @@ public class ProfileService {
     profileDao.removeBillingAccount(id);
   }
 
+  /**
+   * Removes the authenticated user from the specified billing profile.
+   *
+   * @param profileId profile to leave
+   * @param user authenticated user
+   */
+  public void leaveProfile(UUID profileId, AuthenticatedUserRequest user) {
+    String spendProfileTypeName = SamResourceType.PROFILE.getSamResourceName();
+    SamRethrow.onInterrupted(
+        () -> samService.leaveResource(user, spendProfileTypeName, profileId), "leaveProfile");
+  }
+
   public List<SamPolicyModel> getProfilePolicies(UUID profileId, AuthenticatedUserRequest user) {
     return SamRethrow.onInterrupted(
         () -> samService.retrieveProfilePolicies(user, profileId), "retrieveProfilePolicies");
@@ -224,6 +237,10 @@ public class ProfileService {
 
   public SamPolicyModel deleteProfilePolicyMember(
       UUID profileId, String policyName, String memberEmail, AuthenticatedUserRequest user) {
+    if (memberEmail.equals(user.getEmail())) {
+      throw new InvalidFieldException(
+          "Use leaveProfile to remove the current user from a billing profile.");
+    }
     return SamRethrow.onInterrupted(
         () -> samService.deleteProfilePolicyMember(user, profileId, policyName, memberEmail),
         "deletePolicyMember");
