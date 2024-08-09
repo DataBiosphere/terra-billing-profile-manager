@@ -367,4 +367,3 @@ jobs:
     with:
       pacticipant: "bpm"
       version: "${{ needs.verify-consumer-pact.outputs.provider-version }}"
-      environment: ""
