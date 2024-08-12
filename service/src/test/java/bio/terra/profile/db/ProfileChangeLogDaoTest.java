@@ -1,31 +1,51 @@
 package bio.terra.profile.db;
 
-import bio.terra.profile.common.BaseSpringUnitTest;
-import bio.terra.profile.model.ChangeLogEntry;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import java.util.Map;
-import java.util.UUID;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import bio.terra.profile.common.BaseSpringUnitTest;
+import bio.terra.profile.model.ChangeLogEntry;
+import bio.terra.profile.model.CloudPlatform;
+import bio.terra.profile.service.profile.model.BillingProfile;
+import java.sql.Date;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class ProfileChangeLogDaoTest extends BaseSpringUnitTest {
 
   @Autowired ProfileChangeLogDao dao;
 
   @Test
-  void changeLogCreatesEntryForDelete() {
-    var profileId = UUID.randomUUID();
+  void changeLogCreatesEntryForCreate() {
     var user = "user@test.com";
-    var recordId = dao.recordProfileDelete(profileId, user);
-    var records = dao.getChangesByProfile(profileId);
+    var profileCreateTime = Instant.now().minus(10, ChronoUnit.SECONDS);
+    var profile =
+        new BillingProfile(
+            UUID.randomUUID(),
+            "profile name",
+            "profile description",
+            "direct",
+            CloudPlatform.AZURE,
+            Optional.empty(),
+            Optional.of(UUID.randomUUID()),
+            Optional.of(UUID.randomUUID()),
+            Optional.of("mrg_id"),
+            profileCreateTime,
+            profileCreateTime,
+            user);
+    var recordId = dao.recordProfileCreate(profile, user);
+    var records = dao.getChangesByProfile(profile.id());
     assertEquals(1, records.size());
     var record = records.get(0);
     assertEquals(recordId.get(), record.getId());
-    assertEquals(profileId, record.getProfileId());
-    assertEquals(ChangeLogEntry.ChangeTypeEnum.DELETE, record.getChangeType());
+    assertEquals(profile.id(), record.getProfileId());
+    assertEquals(ChangeLogEntry.ChangeTypeEnum.CREATE, record.getChangeType());
     assertEquals(user, record.getChangeBy());
+    assertEquals(Date.from(profileCreateTime), record.getChangeDate());
   }
 
   @Test
@@ -47,4 +67,17 @@ public class ProfileChangeLogDaoTest extends BaseSpringUnitTest {
     assertEquals(changes, record.getChanges());
   }
 
+  @Test
+  void changeLogCreatesEntryForDelete() {
+    var profileId = UUID.randomUUID();
+    var user = "user@test.com";
+    var recordId = dao.recordProfileDelete(profileId, user);
+    var records = dao.getChangesByProfile(profileId);
+    assertEquals(1, records.size());
+    var record = records.get(0);
+    assertEquals(recordId.get(), record.getId());
+    assertEquals(profileId, record.getProfileId());
+    assertEquals(ChangeLogEntry.ChangeTypeEnum.DELETE, record.getChangeType());
+    assertEquals(user, record.getChangeBy());
+  }
 }
