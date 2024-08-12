@@ -2,9 +2,18 @@ package bio.terra.profile.db;
 
 import bio.terra.common.db.ReadTransaction;
 import bio.terra.common.db.WriteTransaction;
+import bio.terra.common.exception.SerializationException;
 import bio.terra.profile.model.ChangeLogEntry;
+import bio.terra.profile.service.profile.model.BillingProfile;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.ZoneOffset;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,13 +21,6 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
 
 @Repository
 public class ProfileChangeLogDao {
@@ -36,12 +38,14 @@ public class ProfileChangeLogDao {
   public static final String CHANGE_BY = "change_by";
   public static final String CHANGE_TYPE = "change_type";
 
-  private static final List<String> COLUMNS =  List.of(ID, PROFILE_ID, CHANGE_DATE,CHANGE_TYPE, CHANGE_BY, CHANGES);
+  private static final List<String> COLUMNS =
+      List.of(ID, PROFILE_ID, CHANGE_DATE, CHANGE_TYPE, CHANGE_BY, CHANGES);
   private static final String SQL_SELECT_LIST = String.join(", ", COLUMNS);
 
+  private static final String INSERT_INTO_TABLE = "INSERT INTO " + CHANGELOG_TABLE;
   private static final String SQL_GET_BY_PROFILE_ID =
-      "SELECT %s FROM %s WHERE %s = :%s".formatted(SQL_SELECT_LIST, CHANGELOG_TABLE, PROFILE_ID, PROFILE_ID);
-
+      "SELECT %s FROM %s WHERE %s = :%s"
+          .formatted(SQL_SELECT_LIST, CHANGELOG_TABLE, PROFILE_ID, PROFILE_ID);
 
   @Autowired
   public ProfileChangeLogDao(NamedParameterJdbcTemplate jdbcTemplate, ObjectMapper objectMapper) {
@@ -49,42 +53,48 @@ public class ProfileChangeLogDao {
     this.jdbcTemplate = jdbcTemplate;
   }
 
-
   @ReadTransaction
   public List<ChangeLogEntry> getChangesByProfile(UUID profileId) {
-     var params =
-        new MapSqlParameterSource().addValue(PROFILE_ID, profileId);
+    var params = new MapSqlParameterSource().addValue(PROFILE_ID, profileId);
     return jdbcTemplate.query(SQL_GET_BY_PROFILE_ID, params, new ChangeLogMapper(objectMapper));
   }
 
-
   @WriteTransaction
-  public Optional<UUID> recordProfileDelete(UUID profileId, String userEmail) {
-    var sql = "INSERT INTO "  + CHANGELOG_TABLE
-        + " (profile_id, change_type, change_by) VALUES (:profile_id, :change_type, :change_by)";
-    MapSqlParameterSource params = new MapSqlParameterSource()
-            .addValue(PROFILE_ID, profileId)
-            .addValue(CHANGE_TYPE, ChangeLogEntry.ChangeTypeEnum.DELETE.name())
+  public Optional<UUID> recordProfileCreate(BillingProfile profile, String userEmail) {
+    var sql =
+        INSERT_INTO_TABLE
+            + " (profile_id, change_type, change_by, change_date) VALUES (:profile_id, :change_type, :change_by, :change_date)";
+    MapSqlParameterSource params =
+        new MapSqlParameterSource()
+            .addValue(PROFILE_ID, profile.id())
+            .addValue(CHANGE_TYPE, ChangeLogEntry.ChangeTypeEnum.CREATE.name())
+            .addValue(CHANGE_DATE, profile.createdTime().atOffset(ZoneOffset.UTC))
             .addValue(CHANGE_BY, userEmail);
+
     var keyHolder = new DaoKeyHolder();
     jdbcTemplate.update(sql, params, keyHolder);
     return keyHolder.getField(ID, UUID.class);
   }
 
-
   @WriteTransaction
   public Optional<UUID> recordProfileUpdate(UUID profileId, String userEmail, Map<?, ?> changes) {
-    var sql = "INSERT INTO " + CHANGELOG_TABLE
-        + " (profile_id, change_type, change_by, changes) VALUES "
-        + " (:profile_id, :change_type, :change_by, :changes::jsonb)";
+    var sql =
+        INSERT_INTO_TABLE
+            + " (profile_id, change_type, change_by, changes) VALUES "
+            + "(:profile_id, :change_type, :change_by, :changes::jsonb)";
 
     String serializedChanges = null;
     try {
       serializedChanges = objectMapper.writeValueAsString(changes);
     } catch (JsonProcessingException e) {
-      logger.error("Unable to serialize billing profile changelog entry for {} update: {}", profileId, changes, e);
+      logger.error(
+          "Unable to serialize billing profile changelog entry for {} update: {}",
+          profileId,
+          changes,
+          e);
     }
-    MapSqlParameterSource params = new MapSqlParameterSource()
+    MapSqlParameterSource params =
+        new MapSqlParameterSource()
             .addValue(PROFILE_ID, profileId)
             .addValue(CHANGE_TYPE, ChangeLogEntry.ChangeTypeEnum.UPDATE.name())
             .addValue(CHANGE_BY, userEmail)
@@ -94,6 +104,20 @@ public class ProfileChangeLogDao {
     return keyHolder.getField(ID, UUID.class);
   }
 
+  @WriteTransaction
+  public Optional<UUID> recordProfileDelete(UUID profileId, String userEmail) {
+    var sql =
+        INSERT_INTO_TABLE
+            + " (profile_id, change_type, change_by) VALUES (:profile_id, :change_type, :change_by)";
+    MapSqlParameterSource params =
+        new MapSqlParameterSource()
+            .addValue(PROFILE_ID, profileId)
+            .addValue(CHANGE_TYPE, ChangeLogEntry.ChangeTypeEnum.DELETE.name())
+            .addValue(CHANGE_BY, userEmail);
+    var keyHolder = new DaoKeyHolder();
+    jdbcTemplate.update(sql, params, keyHolder);
+    return keyHolder.getField(ID, UUID.class);
+  }
 
   static class ChangeLogMapper implements RowMapper<ChangeLogEntry> {
 
@@ -103,14 +127,13 @@ public class ProfileChangeLogDao {
       this.objectMapper = objectMapper;
     }
 
-    Map<?,?> getChanges(ResultSet rs) throws SQLException {
+    Map<Object, Object> getChanges(ResultSet rs) throws SQLException {
       String rawChanges = rs.getString(CHANGES);
       if (rawChanges != null) {
         try {
           return objectMapper.readValue(rawChanges, Map.class);
         } catch (JsonProcessingException e) {
-          // TODO: improve exception
-          throw new RuntimeException(e);
+          throw new SerializationException("Unable to deserialize changes in changelog entry", e);
         }
       } else {
         return Map.of();
@@ -128,5 +151,4 @@ public class ProfileChangeLogDao {
           .changes(getChanges(rs));
     }
   }
-
 }
