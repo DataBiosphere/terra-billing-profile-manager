@@ -60,7 +60,7 @@ public class ProfileChangeLogDao {
   }
 
   @WriteTransaction
-  public Optional<UUID> recordProfileCreate(BillingProfile profile, String userEmail) {
+  public Optional<UUID> recordProfileCreate(BillingProfile profile) {
     var sql =
         INSERT_INTO_TABLE
             + " (profile_id, change_type, change_by, change_date) VALUES (:profile_id, :change_type, :change_by, :change_date)";
@@ -69,7 +69,7 @@ public class ProfileChangeLogDao {
             .addValue(PROFILE_ID, profile.id())
             .addValue(CHANGE_TYPE, ChangeLogEntry.ChangeTypeEnum.CREATE.name())
             .addValue(CHANGE_DATE, profile.createdTime().atOffset(ZoneOffset.UTC))
-            .addValue(CHANGE_BY, userEmail);
+            .addValue(CHANGE_BY, profile.createdBy());
 
     var keyHolder = new DaoKeyHolder();
     jdbcTemplate.update(sql, params, keyHolder);
@@ -77,7 +77,7 @@ public class ProfileChangeLogDao {
   }
 
   @WriteTransaction
-  public Optional<UUID> recordProfileUpdate(UUID profileId, String userEmail, Map<?, ?> changes) {
+  public Optional<UUID> recordProfileUpdate(UUID profileId, String user, Map<?, ?> changes) {
     var sql =
         INSERT_INTO_TABLE
             + " (profile_id, change_type, change_by, changes) VALUES "
@@ -97,7 +97,7 @@ public class ProfileChangeLogDao {
         new MapSqlParameterSource()
             .addValue(PROFILE_ID, profileId)
             .addValue(CHANGE_TYPE, ChangeLogEntry.ChangeTypeEnum.UPDATE.name())
-            .addValue(CHANGE_BY, userEmail)
+            .addValue(CHANGE_BY, user)
             .addValue(CHANGES, serializedChanges);
     var keyHolder = new DaoKeyHolder();
     jdbcTemplate.update(sql, params, keyHolder);
@@ -105,7 +105,7 @@ public class ProfileChangeLogDao {
   }
 
   @WriteTransaction
-  public Optional<UUID> recordProfileDelete(UUID profileId, String userEmail) {
+  public Optional<UUID> recordProfileDelete(UUID profileId, String user) {
     var sql =
         INSERT_INTO_TABLE
             + " (profile_id, change_type, change_by) VALUES (:profile_id, :change_type, :change_by)";
@@ -113,7 +113,7 @@ public class ProfileChangeLogDao {
         new MapSqlParameterSource()
             .addValue(PROFILE_ID, profileId)
             .addValue(CHANGE_TYPE, ChangeLogEntry.ChangeTypeEnum.DELETE.name())
-            .addValue(CHANGE_BY, userEmail);
+            .addValue(CHANGE_BY, user);
     var keyHolder = new DaoKeyHolder();
     jdbcTemplate.update(sql, params, keyHolder);
     return keyHolder.getField(ID, UUID.class);
