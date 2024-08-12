@@ -7,6 +7,7 @@ import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.app.configuration.AzureConfiguration;
 import bio.terra.profile.common.BaseUnitTest;
 import bio.terra.profile.common.ProfileFixtures;
+import bio.terra.profile.db.ProfileChangeLogDao;
 import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.service.azure.AzureService;
 import bio.terra.profile.service.crl.GcpCrlService;
@@ -42,7 +43,7 @@ class CreateProfileFlightUnitTest extends BaseUnitTest {
     var azureConfig = mock(AzureConfiguration.class);
 
     var context =
-        setUpMockContext(List.of(profileDao, crlService, samService, azureService, azureConfig));
+        setUpMockContext(List.of(profileDao, crlService, samService, azureService, azureConfig, mock(ProfileChangeLogDao.class)));
 
     var profile = ProfileFixtures.createGcpBillingProfileDescription("ABCD1234");
 
@@ -52,13 +53,14 @@ class CreateProfileFlightUnitTest extends BaseUnitTest {
 
     var flight = new CreateProfileFlight(inputParameters, context);
     var steps = flight.getSteps();
-    assertEquals(6, steps.size());
+    assertEquals(7, steps.size());
     assertEquals(GetProfileStep.class, steps.get(0).getClass());
     assertEquals(steps.get(1).getClass(), CreateProfileStep.class);
     assertEquals(steps.get(2).getClass(), CreateProfileVerifyAccountStep.class);
     assertEquals(steps.get(3).getClass(), CreateProfileAuthzIamStep.class);
     assertEquals(steps.get(4).getClass(), CreateProfilePoliciesStep.class);
-    assertEquals(steps.get(5).getClass(), CreateProfileFinishStep.class);
+    assertEquals(steps.get(5).getClass(), RecordProfileCreationStep.class);
+    assertEquals(steps.get(6).getClass(), CreateProfileFinishStep.class);
   }
 
   @Test
@@ -70,7 +72,7 @@ class CreateProfileFlightUnitTest extends BaseUnitTest {
     var azureConfig = mock(AzureConfiguration.class);
 
     var context =
-        setUpMockContext(List.of(profileDao, crlService, samService, azureService, azureConfig));
+        setUpMockContext(List.of(profileDao, crlService, samService, azureService, azureConfig, mock(ProfileChangeLogDao.class)));
 
     var tenantId = UUID.randomUUID();
     var subId = UUID.randomUUID();
@@ -83,13 +85,14 @@ class CreateProfileFlightUnitTest extends BaseUnitTest {
 
     var flight = new CreateProfileFlight(inputParameters, context);
     var steps = flight.getSteps();
-    assertEquals(7, steps.size());
+    assertEquals(8, steps.size());
     assertEquals(steps.get(0).getClass(), GetProfileStep.class);
     assertEquals(steps.get(1).getClass(), CreateProfileStep.class);
     assertEquals(steps.get(2).getClass(), CreateProfileVerifyDeployedApplicationStep.class);
     assertEquals(steps.get(3).getClass(), CreateProfileAuthzIamStep.class);
     assertEquals(steps.get(4).getClass(), CreateProfilePoliciesStep.class);
     assertEquals(steps.get(5).getClass(), LinkBillingProfileIdToMrgStep.class);
-    assertEquals(steps.get(6).getClass(), CreateProfileFinishStep.class);
+    assertEquals(steps.get(6).getClass(), RecordProfileCreationStep.class);
+    assertEquals(steps.get(7).getClass(), CreateProfileFinishStep.class);
   }
 }
