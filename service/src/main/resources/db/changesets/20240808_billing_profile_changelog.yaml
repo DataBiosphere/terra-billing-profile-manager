@@ -1,0 +1,55 @@
+databaseChangeLog:
+  - changeSet:
+      id: billing_profile_changelog_table
+      author: bgeno
+      changes:
+        - createTable:
+            tableName: billing_profile_changelog
+            remarks: |
+              A table for logging change activities for the profile
+            columns:
+              - column:
+                  name: id
+                  type: ${uuid_type}
+                  defaultValueComputed: ${uuid_function}
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: profile_id
+                  type: ${uuid_type}
+                  constraints:
+                    nullable: false
+                  remarks: |
+                    The id of the profile that was updated.
+              - column:
+                  name: change_date
+                  type: timestamptz
+                  defaultValueComputed: now()
+                  remarks: |
+                    Date the profile was updated.
+              - column:
+                  name: change_by
+                  type: text
+                  remarks: |
+                    Identity of the user who originally made the update.
+              - column:
+                  name: changes
+                  type: jsonb
+                  remarks: |
+                    The fields that were updated and their values.
+              - column:
+                  name: change_type
+                  type: text
+                  constraints:
+                    nullable: false
+                  remarks: |
+                    Type of changes at the given timestamp. e.g. CREATE, UPDATE, 
+                    DELETE    
+
+        - createIndex:
+            indexName: profile_id_idx
+            tableName: billing_profile_changelog
+            columns:
+              - column:
+                  name: profile_id

@@ -15,4 +15,6 @@
     <include file="changesets/20220713_billing_profiles_last_modified.yaml" relativeToChangelogFile="true"/>
     <include file="changesets/20220803_billing_profiles_managed_resource_group_id.yaml" relativeToChangelogFile="true"/>
     <include file="changesets/20221011_unique_managed_application.yaml" relativeToChangelogFile="true"/>
+
+    <include file="changesets/20240808_billing_profile_changelog.yaml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

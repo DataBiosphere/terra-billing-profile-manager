@@ -598,6 +598,32 @@ components:
         organization:
           $ref: '#/components/schemas/Organization'
 
+    ChangeLogEntry:
+      type: object
+      properties:
+        id:
+          description: The ID of the individual change
+          type: string
+          format: uuid
+        profile_id:
+          description: The ID of the billing profile for the change
+          type: string
+          format: uuid
+        change_type:
+          description: The type of change
+          enum: ['CREATE', 'UPDATE', 'DELETE']
+          type: string
+        change_by:
+          description: The user who made the change
+          type: string
+        changes:
+          type: object
+          description: An arbitrary map of the changes
+        change_date:
+          type: string
+          format: date-time
+
+
     SystemStatus:
       type: object
       properties:
