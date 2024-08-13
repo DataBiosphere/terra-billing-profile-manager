@@ -1,4 +1,4 @@
-package bio.terra.profile.service.db;
+package bio.terra.profile.db;
 
 import static java.util.function.Function.identity;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -9,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.common.BaseSpringUnitTest;
-import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.service.profile.exception.DuplicateManagedApplicationException;
 import bio.terra.profile.service.profile.exception.MissingRequiredFieldsException;
