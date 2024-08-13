@@ -31,6 +31,7 @@ import bio.terra.profile.app.configuration.EnterpriseConfiguration;
 import bio.terra.profile.app.configuration.LimitsConfiguration;
 import bio.terra.profile.common.BaseUnitTest;
 import bio.terra.profile.common.ProfileFixtures;
+import bio.terra.profile.db.ProfileChangeLogDao;
 import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.model.Organization;
@@ -54,12 +55,7 @@ import bio.terra.profile.service.profile.model.ProfileDescription;
 import com.google.iam.v1.TestIamPermissionsResponse;
 import io.opentelemetry.api.OpenTelemetry;
 import java.time.Instant;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -76,6 +72,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
   @Mock private GcpService gcpService;
   @Mock private EnterpriseConfiguration enterpriseConfiguration;
   @Mock private LimitsConfiguration limitsConfiguration;
+  @Mock private ProfileChangeLogDao changeLogDao;
 
   private ProfileService profileService;
   private AuthenticatedUserRequest user;
@@ -97,6 +94,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     profileService =
         new ProfileService(
             profileDao,
+            changeLogDao,
             samService,
             jobService,
             tpsApiDispatch,
@@ -359,6 +357,10 @@ class ProfileServiceUnitTest extends BaseUnitTest {
         .thenReturn(true);
     when(profileDao.getBillingProfileById(profile.id())).thenReturn(updatedProfile);
     when(tpsApiDispatch.getOrCreatePao(any(), any(), any())).thenReturn(new TpsPaoGetResult());
+    var expectedChanges =
+        Map.of("description", newDescription, "billing_account_id", newBillingAccount);
+    when(changeLogDao.recordProfileUpdate(profile.id(), user.getEmail(), expectedChanges))
+        .thenReturn(Optional.of(UUID.randomUUID()));
 
     var res = profileService.updateProfile(profile.id(), updateRequest, user);
     assertEquals(newBillingAccount, res.billingProfile().billingAccountId().get());
@@ -370,6 +372,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
         .verifyAuthorization(
             user, SamResourceType.PROFILE, profile.id(), SamAction.UPDATE_BILLING_ACCOUNT);
     verify(gcpService).verifyUserBillingAccountAccess(Optional.of(newBillingAccount), user);
+    verify(changeLogDao).recordProfileUpdate(profile.id(), user.getEmail(), expectedChanges);
   }
 
   @Test
@@ -394,6 +397,9 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     when(profileDao.updateProfile(profile.id(), null, newBillingAccount)).thenReturn(true);
     when(profileDao.getBillingProfileById(profile.id())).thenReturn(updatedProfile);
     when(tpsApiDispatch.getOrCreatePao(any(), any(), any())).thenReturn(new TpsPaoGetResult());
+    var expectedChanges = Map.of("billing_account_id", newBillingAccount);
+    when(changeLogDao.recordProfileUpdate(profile.id(), user.getEmail(), expectedChanges))
+        .thenReturn(Optional.of(UUID.randomUUID()));
 
     var res = profileService.updateProfile(profile.id(), updateRequest, user);
     assertEquals(newBillingAccount, res.billingProfile().billingAccountId().get());
@@ -405,6 +411,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
         .verifyAuthorization(
             user, SamResourceType.PROFILE, profile.id(), SamAction.UPDATE_BILLING_ACCOUNT);
     verify(gcpService).verifyUserBillingAccountAccess(Optional.of(newBillingAccount), user);
+    verify(changeLogDao).recordProfileUpdate(profile.id(), user.getEmail(), expectedChanges);
   }
 
   @Test
@@ -429,6 +436,9 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     when(profileDao.updateProfile(profile.id(), newDescription, null)).thenReturn(true);
     when(profileDao.getBillingProfileById(profile.id())).thenReturn(updatedProfile);
     when(tpsApiDispatch.getOrCreatePao(any(), any(), any())).thenReturn(new TpsPaoGetResult());
+    var expectedChanges = Map.of("description", newDescription);
+    when(changeLogDao.recordProfileUpdate(profile.id(), user.getEmail(), expectedChanges))
+        .thenReturn(Optional.of(UUID.randomUUID()));
 
     var res = profileService.updateProfile(profile.id(), updateRequest, user);
     assertEquals(
@@ -441,6 +451,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
         .verifyAuthorization(
             user, SamResourceType.PROFILE, profile.id(), SamAction.UPDATE_BILLING_ACCOUNT);
     verifyNoInteractions(gcpService);
+    verify(changeLogDao).recordProfileUpdate(profile.id(), user.getEmail(), expectedChanges);
   }
 
   @Test
@@ -528,10 +539,16 @@ class ProfileServiceUnitTest extends BaseUnitTest {
 
   @Test
   void removeBillingAccount() {
+    var expectedChanges = new HashMap<String, String>();
+    expectedChanges.put("billing_account_id", null);
+    when(changeLogDao.recordProfileUpdate(profile.id(), user.getEmail(), expectedChanges))
+        .thenReturn(Optional.of(UUID.randomUUID()));
+
     when(profileDao.removeBillingAccount(profile.id())).thenReturn(true);
     profileService.removeBillingAccount(profile.id(), user);
 
     verify(profileDao).removeBillingAccount(profile.id());
+    verify(changeLogDao).recordProfileUpdate(profile.id(), user.getEmail(), expectedChanges);
   }
 
   @Test
