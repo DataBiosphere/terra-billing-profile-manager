@@ -18,6 +18,7 @@ import bio.terra.common.iam.AuthenticatedUserRequestFactory;
 import bio.terra.policy.model.TpsPaoGetResult;
 import bio.terra.policy.model.TpsPolicyInputs;
 import bio.terra.profile.app.Main;
+import bio.terra.profile.db.ProfileChangeLogDao;
 import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.model.AzureManagedAppModel;
 import bio.terra.profile.model.CloudPlatform;
@@ -48,6 +49,7 @@ import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -90,6 +92,7 @@ public class BPMProviderTest {
   @LocalServerPort int port;
 
   @MockBean ProfileDao profileDao;
+  @MockBean ProfileChangeLogDao changeLogDao;
   @MockBean SamService samService;
   @MockBean TpsApiDispatch tpsApiDispatch;
 
@@ -125,6 +128,8 @@ public class BPMProviderTest {
 
   @BeforeEach
   void setUp(PactVerificationContext context) {
+    // For creation and deletion, the changes are recorded in the stairway flights
+    when(changeLogDao.recordProfileUpdate(any(), any(), any())).thenReturn(Optional.empty());
     when(authenticatedUserRequestFactory.from(any())).thenReturn(userRequest);
     context.setTarget(new HttpTestTarget("localhost", port, "/"));
   }

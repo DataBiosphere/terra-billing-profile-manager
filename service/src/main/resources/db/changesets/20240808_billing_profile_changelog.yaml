@@ -37,7 +37,7 @@ databaseChangeLog:
                   name: changes
                   type: jsonb
                   remarks: |
-                    The fields that were updated and their values.
+                    Arbitrary json describing the changes.
               - column:
                   name: change_type
                   type: text
