@@ -10,7 +10,7 @@ import bio.terra.stairway.Step;
 import bio.terra.stairway.StepResult;
 import bio.terra.stairway.exception.RetryException;
 
-public record RecordProfileCreationStep (ProfileChangeLogDao changeLogDao) implements Step {
+public record RecordProfileCreationStep(ProfileChangeLogDao changeLogDao) implements Step {
 
   @Override
   public StepResult doStep(FlightContext context) throws InterruptedException, RetryException {

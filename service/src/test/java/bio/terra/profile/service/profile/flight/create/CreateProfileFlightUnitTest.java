@@ -43,7 +43,14 @@ class CreateProfileFlightUnitTest extends BaseUnitTest {
     var azureConfig = mock(AzureConfiguration.class);
 
     var context =
-        setUpMockContext(List.of(profileDao, crlService, samService, azureService, azureConfig, mock(ProfileChangeLogDao.class)));
+        setUpMockContext(
+            List.of(
+                profileDao,
+                crlService,
+                samService,
+                azureService,
+                azureConfig,
+                mock(ProfileChangeLogDao.class)));
 
     var profile = ProfileFixtures.createGcpBillingProfileDescription("ABCD1234");
 
@@ -72,7 +79,14 @@ class CreateProfileFlightUnitTest extends BaseUnitTest {
     var azureConfig = mock(AzureConfiguration.class);
 
     var context =
-        setUpMockContext(List.of(profileDao, crlService, samService, azureService, azureConfig, mock(ProfileChangeLogDao.class)));
+        setUpMockContext(
+            List.of(
+                profileDao,
+                crlService,
+                samService,
+                azureService,
+                azureConfig,
+                mock(ProfileChangeLogDao.class)));
 
     var tenantId = UUID.randomUUID();
     var subId = UUID.randomUUID();
