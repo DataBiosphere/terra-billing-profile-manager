@@ -359,7 +359,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     when(tpsApiDispatch.getOrCreatePao(any(), any(), any())).thenReturn(new TpsPaoGetResult());
     var expectedChanges =
         Map.of("description", newDescription, "billing_account_id", newBillingAccount);
-    when(changeLogDao.recordProfileUpdate(profile.id(), user.getEmail(), expectedChanges))
+    when(changeLogDao.recordProfileUpdate(profile.id(), user.getSubjectId(), expectedChanges))
         .thenReturn(Optional.of(UUID.randomUUID()));
 
     var res = profileService.updateProfile(profile.id(), updateRequest, user);
@@ -372,7 +372,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
         .verifyAuthorization(
             user, SamResourceType.PROFILE, profile.id(), SamAction.UPDATE_BILLING_ACCOUNT);
     verify(gcpService).verifyUserBillingAccountAccess(Optional.of(newBillingAccount), user);
-    verify(changeLogDao).recordProfileUpdate(profile.id(), user.getEmail(), expectedChanges);
+    verify(changeLogDao).recordProfileUpdate(profile.id(), user.getSubjectId(), expectedChanges);
   }
 
   @Test
@@ -398,7 +398,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     when(profileDao.getBillingProfileById(profile.id())).thenReturn(updatedProfile);
     when(tpsApiDispatch.getOrCreatePao(any(), any(), any())).thenReturn(new TpsPaoGetResult());
     var expectedChanges = Map.of("billing_account_id", newBillingAccount);
-    when(changeLogDao.recordProfileUpdate(profile.id(), user.getEmail(), expectedChanges))
+    when(changeLogDao.recordProfileUpdate(profile.id(), user.getSubjectId(), expectedChanges))
         .thenReturn(Optional.of(UUID.randomUUID()));
 
     var res = profileService.updateProfile(profile.id(), updateRequest, user);
@@ -411,7 +411,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
         .verifyAuthorization(
             user, SamResourceType.PROFILE, profile.id(), SamAction.UPDATE_BILLING_ACCOUNT);
     verify(gcpService).verifyUserBillingAccountAccess(Optional.of(newBillingAccount), user);
-    verify(changeLogDao).recordProfileUpdate(profile.id(), user.getEmail(), expectedChanges);
+    verify(changeLogDao).recordProfileUpdate(profile.id(), user.getSubjectId(), expectedChanges);
   }
 
   @Test
@@ -437,7 +437,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     when(profileDao.getBillingProfileById(profile.id())).thenReturn(updatedProfile);
     when(tpsApiDispatch.getOrCreatePao(any(), any(), any())).thenReturn(new TpsPaoGetResult());
     var expectedChanges = Map.of("description", newDescription);
-    when(changeLogDao.recordProfileUpdate(profile.id(), user.getEmail(), expectedChanges))
+    when(changeLogDao.recordProfileUpdate(profile.id(), user.getSubjectId(), expectedChanges))
         .thenReturn(Optional.of(UUID.randomUUID()));
 
     var res = profileService.updateProfile(profile.id(), updateRequest, user);
@@ -451,7 +451,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
         .verifyAuthorization(
             user, SamResourceType.PROFILE, profile.id(), SamAction.UPDATE_BILLING_ACCOUNT);
     verifyNoInteractions(gcpService);
-    verify(changeLogDao).recordProfileUpdate(profile.id(), user.getEmail(), expectedChanges);
+    verify(changeLogDao).recordProfileUpdate(profile.id(), user.getSubjectId(), expectedChanges);
   }
 
   @Test
@@ -541,14 +541,14 @@ class ProfileServiceUnitTest extends BaseUnitTest {
   void removeBillingAccount() {
     var expectedChanges = new HashMap<String, String>();
     expectedChanges.put("billing_account_id", null);
-    when(changeLogDao.recordProfileUpdate(profile.id(), user.getEmail(), expectedChanges))
+    when(changeLogDao.recordProfileUpdate(profile.id(), user.getSubjectId(), expectedChanges))
         .thenReturn(Optional.of(UUID.randomUUID()));
 
     when(profileDao.removeBillingAccount(profile.id())).thenReturn(true);
     profileService.removeBillingAccount(profile.id(), user);
 
     verify(profileDao).removeBillingAccount(profile.id());
-    verify(changeLogDao).recordProfileUpdate(profile.id(), user.getEmail(), expectedChanges);
+    verify(changeLogDao).recordProfileUpdate(profile.id(), user.getSubjectId(), expectedChanges);
   }
 
   @Test

@@ -14,7 +14,7 @@ public record RecordProfileDeleteStep(
 
   @Override
   public StepResult doStep(FlightContext context) throws InterruptedException, RetryException {
-    changeLogDao.recordProfileDelete(profileId, userRequest.getEmail());
+    changeLogDao.recordProfileDelete(profileId, userRequest.getSubjectId());
     return StepResult.getStepResultSuccess();
   }
 

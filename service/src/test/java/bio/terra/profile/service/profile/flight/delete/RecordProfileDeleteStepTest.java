@@ -15,17 +15,17 @@ public class RecordProfileDeleteStepTest extends BaseUnitTest {
 
   @Test
   void recordsTheBillingProfileDeletionInTheChangelog() throws Exception {
-    var userEmail = "some_user_email";
+    var userId = UUID.randomUUID().toString();
     var userRequest = mock(AuthenticatedUserRequest.class);
-    when(userRequest.getEmail()).thenReturn(userEmail);
+    when(userRequest.getSubjectId()).thenReturn(userId);
     var profileId = UUID.randomUUID();
     var changeLogDao = mock(ProfileChangeLogDao.class);
-    when(changeLogDao.recordProfileDelete(profileId, userEmail))
+    when(changeLogDao.recordProfileDelete(profileId, userId))
         .thenReturn(Optional.of(UUID.randomUUID()));
     var step = new RecordProfileDeleteStep(changeLogDao, profileId, userRequest);
     var result = step.doStep(mock());
 
     assertEquals(StepResult.getStepResultSuccess(), result);
-    verify(changeLogDao).recordProfileDelete(profileId, userEmail);
+    verify(changeLogDao).recordProfileDelete(profileId, userId);
   }
 }

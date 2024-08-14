@@ -77,7 +77,7 @@ public class ProfileChangeLogDao {
   }
 
   @WriteTransaction
-  public Optional<UUID> recordProfileUpdate(UUID profileId, String user, Map<?, ?> changes) {
+  public Optional<UUID> recordProfileUpdate(UUID profileId, String userId, Map<?, ?> changes) {
     var sql =
         INSERT_INTO_TABLE
             + " (profile_id, change_type, change_by, changes) VALUES "
@@ -97,7 +97,7 @@ public class ProfileChangeLogDao {
         new MapSqlParameterSource()
             .addValue(PROFILE_ID, profileId)
             .addValue(CHANGE_TYPE, ChangeLogEntry.ChangeTypeEnum.UPDATE.name())
-            .addValue(CHANGE_BY, user)
+            .addValue(CHANGE_BY, userId)
             .addValue(CHANGES, serializedChanges);
     var keyHolder = new DaoKeyHolder();
     jdbcTemplate.update(sql, params, keyHolder);
@@ -105,7 +105,7 @@ public class ProfileChangeLogDao {
   }
 
   @WriteTransaction
-  public Optional<UUID> recordProfileDelete(UUID profileId, String user) {
+  public Optional<UUID> recordProfileDelete(UUID profileId, String userId) {
     var sql =
         INSERT_INTO_TABLE
             + " (profile_id, change_type, change_by) VALUES (:profile_id, :change_type, :change_by)";
@@ -113,7 +113,7 @@ public class ProfileChangeLogDao {
         new MapSqlParameterSource()
             .addValue(PROFILE_ID, profileId)
             .addValue(CHANGE_TYPE, ChangeLogEntry.ChangeTypeEnum.DELETE.name())
-            .addValue(CHANGE_BY, user);
+            .addValue(CHANGE_BY, userId);
     var keyHolder = new DaoKeyHolder();
     jdbcTemplate.update(sql, params, keyHolder);
     return keyHolder.getField(ID, UUID.class);

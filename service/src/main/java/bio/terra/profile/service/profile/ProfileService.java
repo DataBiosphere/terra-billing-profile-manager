@@ -217,7 +217,7 @@ public class ProfileService {
     if (request.getBillingAccountId() != null) {
       update.put("billing_account_id", request.getBillingAccountId());
     }
-    changeLogDao.recordProfileUpdate(id, user.getEmail(), update);
+    changeLogDao.recordProfileUpdate(id, user.getSubjectId(), update);
   }
 
   public void removeBillingAccount(UUID id, AuthenticatedUserRequest user) {
@@ -230,7 +230,7 @@ public class ProfileService {
     profileDao.removeBillingAccount(id);
     var changes = new HashMap<String, String>();
     changes.put("billing_account_id", null);
-    changeLogDao.recordProfileUpdate(id, user.getEmail(), changes);
+    changeLogDao.recordProfileUpdate(id, user.getSubjectId(), changes);
   }
 
   /**
