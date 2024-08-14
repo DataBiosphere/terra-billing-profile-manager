@@ -21,7 +21,7 @@ public class ProfileChangeLogDaoTest extends BaseSpringUnitTest {
 
   @Test
   void changeLogCreatesEntryForCreate() {
-    var user = "user@test.com";
+    var userId = UUID.randomUUID().toString();
     var profileCreateTime = Instant.now().minus(10, ChronoUnit.SECONDS);
     var profile =
         new BillingProfile(
@@ -36,7 +36,7 @@ public class ProfileChangeLogDaoTest extends BaseSpringUnitTest {
             Optional.of("mrg_id"),
             profileCreateTime,
             profileCreateTime,
-            user);
+            userId);
     var recordId = dao.recordProfileCreate(profile);
     var records = dao.getChangesByProfile(profile.id());
     assertEquals(1, records.size());
@@ -44,7 +44,7 @@ public class ProfileChangeLogDaoTest extends BaseSpringUnitTest {
     assertEquals(recordId.get(), record.getId());
     assertEquals(profile.id(), record.getProfileId());
     assertEquals(ChangeLogEntry.ChangeTypeEnum.CREATE, record.getChangeType());
-    assertEquals(user, record.getChangeBy());
+    assertEquals(userId, record.getChangeBy());
     assertEquals(Date.from(profileCreateTime), record.getChangeDate());
   }
 
@@ -52,17 +52,17 @@ public class ProfileChangeLogDaoTest extends BaseSpringUnitTest {
   void changeLogCreatesUpdateEntryWithChanges() {
     var descriptionChange = Map.of("oldValue", "old description", "newValue", "new description");
     var profileId = UUID.randomUUID();
-    var user = "user@test.com";
+    var userId = UUID.randomUUID().toString();
     var changes = Map.of("description", descriptionChange);
 
-    var recordId = dao.recordProfileUpdate(profileId, user, changes);
+    var recordId = dao.recordProfileUpdate(profileId, userId, changes);
 
     var records = dao.getChangesByProfile(profileId);
     assertEquals(1, records.size());
     var record = records.get(0);
     assertEquals(recordId.get(), record.getId());
     assertEquals(profileId, record.getProfileId());
-    assertEquals(user, record.getChangeBy());
+    assertEquals(userId, record.getChangeBy());
     assertEquals(ChangeLogEntry.ChangeTypeEnum.UPDATE, record.getChangeType());
     assertEquals(changes, record.getChanges());
   }
@@ -70,14 +70,14 @@ public class ProfileChangeLogDaoTest extends BaseSpringUnitTest {
   @Test
   void changeLogCreatesEntryForDelete() {
     var profileId = UUID.randomUUID();
-    var user = "user@test.com";
-    var recordId = dao.recordProfileDelete(profileId, user);
+    var userId = UUID.randomUUID().toString();
+    var recordId = dao.recordProfileDelete(profileId, userId);
     var records = dao.getChangesByProfile(profileId);
     assertEquals(1, records.size());
     var record = records.get(0);
     assertEquals(recordId.get(), record.getId());
     assertEquals(profileId, record.getProfileId());
     assertEquals(ChangeLogEntry.ChangeTypeEnum.DELETE, record.getChangeType());
-    assertEquals(user, record.getChangeBy());
+    assertEquals(userId, record.getChangeBy());
   }
 }
