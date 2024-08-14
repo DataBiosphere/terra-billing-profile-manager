@@ -213,7 +213,7 @@ jobs:
         id: publish-contracts
         uses: broadinstitute/dsp-reusable-workflows/.github/actions/run-publish-contracts@DDO-3840-move-publish-contracts
         with:
-          PACT_B64: ${{ needs.encode-pact.outputs.pact-b64 }}
+          PACT_B64: ${{ steps.encode-pact.outputs.pact-b64 }}
           REPO_OWNER: ${{ github.repository_owner }}
           REPO_NAME: ${{ github.event.repository.name }}
           REPO_BRANCH: ${{ needs.init-github-context.outputs.repo-branch }}
