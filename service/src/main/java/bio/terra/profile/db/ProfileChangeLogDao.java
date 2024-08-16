@@ -22,6 +22,11 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+/**
+ * Provides data access layer to record changes to billing profiles. Records creations, deletions
+ * and updates. In the case of updates, also records a map that is serialized to json, describing
+ * the changes
+ */
 @Repository
 public class ProfileChangeLogDao {
   private static final Logger logger = LoggerFactory.getLogger(ProfileChangeLogDao.class);
@@ -44,8 +49,8 @@ public class ProfileChangeLogDao {
 
   private static final String INSERT_INTO_TABLE = "INSERT INTO " + CHANGELOG_TABLE;
   private static final String SQL_GET_BY_PROFILE_ID =
-      "SELECT %s FROM %s WHERE %s = :%s"
-          .formatted(SQL_SELECT_LIST, CHANGELOG_TABLE, PROFILE_ID, PROFILE_ID);
+      "SELECT %s FROM %s WHERE %s = :%s ORDER BY %s"
+          .formatted(SQL_SELECT_LIST, CHANGELOG_TABLE, PROFILE_ID, PROFILE_ID, CHANGE_DATE);
 
   @Autowired
   public ProfileChangeLogDao(NamedParameterJdbcTemplate jdbcTemplate, ObjectMapper objectMapper) {
