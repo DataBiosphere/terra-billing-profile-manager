@@ -24,7 +24,7 @@ public class RecordProfileCreationStepTest extends BaseUnitTest {
     var context = mock(FlightContext.class);
     when(context.getWorkingMap()).thenReturn(workingMap);
     var changeLogDao = mock(ProfileChangeLogDao.class);
-    var step = new RecordProfileCreationStep(changeLogDao);
+    var step = new RecordProfileCreationStep(changeLogDao, UUID.randomUUID().toString());
     assertThrows(MissingRequiredFieldsException.class, () -> step.doStep(context));
   }
 
@@ -38,11 +38,13 @@ public class RecordProfileCreationStepTest extends BaseUnitTest {
 
     var changeLogDao = mock(ProfileChangeLogDao.class);
 
-    when(changeLogDao.recordProfileCreate(profile)).thenReturn(Optional.of(UUID.randomUUID()));
+    var userId = UUID.randomUUID().toString();
+    when(changeLogDao.recordProfileCreate(profile, userId))
+        .thenReturn(Optional.of(UUID.randomUUID()));
 
-    var step = new RecordProfileCreationStep(changeLogDao);
+    var step = new RecordProfileCreationStep(changeLogDao, userId);
     var result = step.doStep(context);
     assertEquals(StepResult.getStepResultSuccess(), result);
-    verify(changeLogDao).recordProfileCreate(profile);
+    verify(changeLogDao).recordProfileCreate(profile, userId);
   }
 }

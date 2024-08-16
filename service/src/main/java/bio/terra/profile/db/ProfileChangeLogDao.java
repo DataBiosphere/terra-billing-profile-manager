@@ -60,7 +60,7 @@ public class ProfileChangeLogDao {
   }
 
   @WriteTransaction
-  public Optional<UUID> recordProfileCreate(BillingProfile profile) {
+  public Optional<UUID> recordProfileCreate(BillingProfile profile, String userId) {
     var sql =
         INSERT_INTO_TABLE
             + " (profile_id, change_type, change_by, change_date) VALUES (:profile_id, :change_type, :change_by, :change_date)";
@@ -69,7 +69,7 @@ public class ProfileChangeLogDao {
             .addValue(PROFILE_ID, profile.id())
             .addValue(CHANGE_TYPE, ChangeLogEntry.ChangeTypeEnum.CREATE.name())
             .addValue(CHANGE_DATE, profile.createdTime().atOffset(ZoneOffset.UTC))
-            .addValue(CHANGE_BY, profile.createdBy());
+            .addValue(CHANGE_BY, userId);
 
     var keyHolder = new DaoKeyHolder();
     jdbcTemplate.update(sql, params, keyHolder);

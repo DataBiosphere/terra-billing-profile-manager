@@ -58,7 +58,8 @@ public class CreateProfileFlight extends Flight {
       // we can link the profile to the MRG only after the Sam resource has been created
       addStep(new LinkBillingProfileIdToMrgStep(samService, billingProfile, user));
     }
-    addStep(new RecordProfileCreationStep(changeLogDao));
+    var initiatingUser = inputParameters.get(JobMapKeys.INITIATING_USER.getKeyName(), String.class);
+    addStep(new RecordProfileCreationStep(changeLogDao, initiatingUser));
     addStep(new CreateProfileFinishStep(changeLogDao));
   }
 }

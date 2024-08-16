@@ -10,7 +10,7 @@ public enum JobMapKeys {
   SUBJECT_ID("subjectId"),
   RESULT_PATH("resultPath"),
   CLOUD_PLATFORM("cloudPlatform"),
-
+  INITIATING_USER("initiatingUser"),
   // parameter for the job
   FLIGHT_CLASS("flight_class");
 

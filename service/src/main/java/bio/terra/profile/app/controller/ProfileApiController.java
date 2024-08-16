@@ -38,7 +38,8 @@ public class ProfileApiController implements ProfileApi {
   public ResponseEntity<ProfileModel> createProfile(CreateProfileRequest body) {
     AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
     ProfileDescription profile = ProfileDescription.fromApiCreateProfileRequest(body);
-    ProfileDescription result = profileService.createProfile(profile, user);
+    ProfileDescription result =
+        profileService.createProfile(profile, user, body.getInitiatingUser());
     return new ResponseEntity<>(result.toApiProfileModel(), HttpStatus.CREATED);
   }
 
@@ -68,16 +69,16 @@ public class ProfileApiController implements ProfileApi {
   }
 
   @Override
-  public ResponseEntity<Void> deleteProfile(UUID id) {
+  public ResponseEntity<Void> deleteProfile(UUID id, String initiatingUser) {
     AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
-    profileService.deleteProfile(id, user);
+    profileService.deleteProfile(id, user, initiatingUser);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
   @Override
-  public ResponseEntity<Void> removeBillingAccount(UUID id) {
+  public ResponseEntity<Void> removeBillingAccount(UUID id, String initiatingUser) {
     AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
-    profileService.removeBillingAccount(id, user);
+    profileService.removeBillingAccount(id, user, initiatingUser);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 

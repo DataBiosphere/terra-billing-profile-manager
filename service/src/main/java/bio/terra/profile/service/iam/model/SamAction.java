@@ -11,7 +11,8 @@ public enum SamAction {
   UPDATE_METADATA("update_metadata"),
   LINK("link"),
   READ_SPEND_REPORT("read_spend_report"),
-  READ_PROFILE("read_profile");
+  READ_PROFILE("read_profile"),
+  SPECIFY_ACTING_USER("admin_specify_acting_user");
 
   private final String samActionName;
 

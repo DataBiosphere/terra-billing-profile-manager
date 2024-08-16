@@ -1,6 +1,5 @@
 package bio.terra.profile.service.profile.flight.delete;
 
-import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.db.ProfileChangeLogDao;
 import bio.terra.stairway.FlightContext;
 import bio.terra.stairway.Step;
@@ -9,12 +8,11 @@ import bio.terra.stairway.exception.RetryException;
 import java.util.UUID;
 
 public record RecordProfileDeleteStep(
-    ProfileChangeLogDao changeLogDao, UUID profileId, AuthenticatedUserRequest userRequest)
-    implements Step {
+    ProfileChangeLogDao changeLogDao, UUID profileId, String initiatingUser) implements Step {
 
   @Override
   public StepResult doStep(FlightContext context) throws InterruptedException, RetryException {
-    changeLogDao.recordProfileDelete(profileId, userRequest.getSubjectId());
+    changeLogDao.recordProfileDelete(profileId, initiatingUser);
     return StepResult.getStepResultSuccess();
   }
 
