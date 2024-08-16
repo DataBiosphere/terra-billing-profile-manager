@@ -68,7 +68,7 @@ class DeleteProfileFlightTest extends BaseSpringUnitTest {
     var profile = ProfileFixtures.createAzureBillingProfile(tenantId, subscriptionId, mrgId);
     when(profileDao.getBillingProfileById(profile.id())).thenReturn(profile);
 
-    profileService.deleteProfile(profile.id(), userRequest);
+    profileService.deleteProfile(profile.id(), userRequest, null);
     verify(samService).deleteManagedResourceGroup(profile.id(), userRequest);
   }
 
@@ -77,7 +77,7 @@ class DeleteProfileFlightTest extends BaseSpringUnitTest {
     var profile = ProfileFixtures.createGcpBillingProfile("fake-gcp-id");
     when(profileDao.getBillingProfileById(profile.id())).thenReturn(profile);
 
-    profileService.deleteProfile(profile.id(), userRequest);
+    profileService.deleteProfile(profile.id(), userRequest, null);
     verify(samService, never()).deleteManagedResourceGroup(any(), any());
   }
 
@@ -92,9 +92,9 @@ class DeleteProfileFlightTest extends BaseSpringUnitTest {
     var gcpBillingProfile = ProfileFixtures.createGcpBillingProfile("fake-gcp-id");
     when(profileDao.getBillingProfileById(gcpBillingProfile.id())).thenReturn(gcpBillingProfile);
 
-    profileService.deleteProfile(azureBillingProfile.id(), userRequest);
-    profileService.deleteProfile(gcpBillingProfile.id(), userRequest);
-    profileService.deleteProfile(gcpBillingProfile.id(), userRequest);
+    profileService.deleteProfile(azureBillingProfile.id(), userRequest, null);
+    profileService.deleteProfile(gcpBillingProfile.id(), userRequest, null);
+    profileService.deleteProfile(gcpBillingProfile.id(), userRequest, null);
 
     var azureCounter =
         meterRegistry
@@ -122,7 +122,7 @@ class DeleteProfileFlightTest extends BaseSpringUnitTest {
     var profile = ProfileFixtures.createAzureBillingProfile(tenantId, subscriptionId, mrgId);
     when(profileDao.getBillingProfileById(profile.id())).thenReturn(profile);
 
-    profileService.deleteProfile(profile.id(), userRequest);
+    profileService.deleteProfile(profile.id(), userRequest, null);
     verify(tpsApiDispatch).deletePao(profile.id());
   }
 }

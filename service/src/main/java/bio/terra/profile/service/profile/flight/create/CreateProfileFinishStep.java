@@ -26,8 +26,6 @@ public record CreateProfileFinishStep(ProfileChangeLogDao changeLogDao) implemen
           "Missing required flight map key: " + ProfileMapKeys.PROFILE);
     }
 
-    changeLogDao.recordProfileCreate(createdProfile);
-
     Optional<TpsPolicyInputs> policies =
         Optional.ofNullable(workingMap.get(ProfileMapKeys.POLICIES, TpsPolicyInputs.class));
     Optional<Organization> organization =

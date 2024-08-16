@@ -35,6 +35,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,13 +83,16 @@ public class ProfileService {
    * @return jobId of the submitted Stairway job
    */
   public ProfileDescription createProfile(
-      ProfileDescription profileDescription, AuthenticatedUserRequest user) {
+      ProfileDescription profileDescription,
+      AuthenticatedUserRequest user,
+      String specifiedInitiatingUser) {
     String description =
         String.format(
             "Create billing profile id [%s] on cloud platform [%s]",
             profileDescription.billingProfile().id(),
             profileDescription.billingProfile().cloudPlatform());
     logger.info(description);
+    var initiatingUser = getInitiatingUserId(user, specifiedInitiatingUser);
     var createJob =
         jobService
             .newJob()
@@ -98,7 +102,8 @@ public class ProfileService {
             .userRequest(user)
             .addParameter(
                 ProfileMapKeys.ORGANIZATION,
-                getProfileOrganization(profileDescription.billingProfile()));
+                getProfileOrganization(profileDescription.billingProfile()))
+            .addParameter(JobMapKeys.INITIATING_USER.getKeyName(), initiatingUser);
     Callable<ProfileDescription> executeProfileCreation =
         () -> createJob.submitAndWait(ProfileDescription.class);
     return MetricUtils.recordProfileCreation(
@@ -111,7 +116,7 @@ public class ProfileService {
    * @param id unique ID of the billing profile to delete
    * @param user authenticated user
    */
-  public void deleteProfile(UUID id, AuthenticatedUserRequest user) {
+  public void deleteProfile(UUID id, AuthenticatedUserRequest user, String initiatingUser) {
     SamRethrow.onInterrupted(
         () -> samService.verifyAuthorization(user, SamResourceType.PROFILE, id, SamAction.DELETE),
         "verifyAuthorization");
@@ -127,6 +132,8 @@ public class ProfileService {
             .flightClass(DeleteProfileFlight.class)
             .userRequest(user)
             .addParameter(ProfileMapKeys.PROFILE, billingProfile)
+            .addParameter(
+                JobMapKeys.INITIATING_USER.getKeyName(), getInitiatingUserId(user, initiatingUser))
             .addParameter(JobMapKeys.CLOUD_PLATFORM.getKeyName(), platform.name());
     deleteJob.submitAndWait(null);
     MetricUtils.incrementProfileDeletion(platform);
@@ -199,17 +206,19 @@ public class ProfileService {
           Optional.of(requestBody.getBillingAccountId()), user);
     }
 
+    var initiatingUser = getInitiatingUserId(user, requestBody.getInitiatingUser());
+
     if (!profileDao.updateProfile(
         id, requestBody.getDescription(), requestBody.getBillingAccountId())) {
       throw new ProfileNotFoundException(String.format("Profile %s not found, update failed.", id));
     }
 
-    recordUpdate(id, requestBody, user);
+    recordUpdate(id, requestBody, initiatingUser);
 
     return profileDescription(profileDao.getBillingProfileById(id));
   }
 
-  private void recordUpdate(UUID id, UpdateProfileRequest request, AuthenticatedUserRequest user) {
+  private void recordUpdate(UUID id, UpdateProfileRequest request, String initiatingUser) {
     var update = new HashMap<>();
     if (request.getDescription() != null) {
       update.put("description", request.getDescription());
@@ -217,10 +226,28 @@ public class ProfileService {
     if (request.getBillingAccountId() != null) {
       update.put("billing_account_id", request.getBillingAccountId());
     }
-    changeLogDao.recordProfileUpdate(id, user.getSubjectId(), update);
+    changeLogDao.recordProfileUpdate(id, initiatingUser, update);
   }
 
-  public void removeBillingAccount(UUID id, AuthenticatedUserRequest user) {
+  /**
+   * Return the subjectId of the user that should be specified as initiating the request. If the
+   * requestingUser is not specified, returns the subjectId from the AuthenticatedUserRequest If the
+   * requestingUser is specified, verifies that the authenticated user has the
+   * admin_specify_acting_user action for the resource_type_admin resource.
+   */
+  private String getInitiatingUserId(
+      AuthenticatedUserRequest user, @Nullable String requestingUser) {
+    if (requestingUser == null) {
+      return user.getSubjectId();
+    } else {
+      SamRethrow.onInterrupted(
+          () -> samService.verifyResourceAdmin(user, SamAction.SPECIFY_ACTING_USER),
+          "isResourceAdmin");
+      return requestingUser;
+    }
+  }
+
+  public void removeBillingAccount(UUID id, AuthenticatedUserRequest user, String initiatingUser) {
     SamRethrow.onInterrupted(
         () ->
             samService.verifyAuthorization(
@@ -230,7 +257,7 @@ public class ProfileService {
     profileDao.removeBillingAccount(id);
     var changes = new HashMap<String, String>();
     changes.put("billing_account_id", null);
-    changeLogDao.recordProfileUpdate(id, user.getSubjectId(), changes);
+    changeLogDao.recordProfileUpdate(id, getInitiatingUserId(user, initiatingUser), changes);
   }
 
   /**

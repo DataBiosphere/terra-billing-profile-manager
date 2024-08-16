@@ -138,6 +138,8 @@ paths:
     delete:
       summary: Delete a billing profile.
       operationId: deleteProfile
+      parameters:
+        - $ref: '#/components/parameters/InitiatingUser'
       tags:
         - Profile
       responses:
@@ -155,6 +157,7 @@ paths:
   /api/profiles/v1/{profileId}/billingAccount:
     parameters:
       - $ref: '#/components/parameters/ProfileId'
+      - $ref: '#/components/parameters/InitiatingUser'
     delete:
       summary: Remove billing account from billing profile
       operationId: removeBillingAccount
@@ -349,6 +352,17 @@ components:
         type: string
         format: uuid
 
+    InitiatingUser:
+      name: initiatingUser
+      in: query
+      schema:
+        type: string
+      description: |
+        The subject id of the user that initiated the request.
+        Intended for async operations by service users, in order to record the correct user in the changelog.
+        Can only be specified of the user has the admin_specify_acting_user action on resource_type_admin.
+    
+
     ProfilePolicyName:
       name: policyName
       in: path
@@ -454,6 +468,13 @@ components:
           description: ID of the Azure managed resource group, of the form mrg-terra-integration-test-20211118; required if creating an Azure billing profile, must be omitted if not.
         policies:
           $ref: '#/components/schemas/BpmApiPolicyInputs'
+        initiatingUser:
+          type: string
+          description: |
+            The subject id of the user that initiated the request.
+            Intended for async operations by service users, in order to record the correct user in the changelog.
+            Can only be specified of the user has the admin_specify_acting_user action on resource_type_admin.
+    
 
     UpdateProfileRequest:
       type: object
@@ -464,6 +485,12 @@ components:
         description:
           type: string
           description: Free text that describes the profile
+        initiatingUser:
+          type: string
+          description: |
+            The subject id of the user that initiated the request.
+            Intended for async operations by service users, in order to record the correct user in the changelog.
+            Can only be specified of the user has the admin_specify_acting_user action on resource_type_admin.
 
     ProfileModelList:
       type: object

@@ -37,7 +37,7 @@ public class ProfileChangeLogDaoTest extends BaseSpringUnitTest {
             profileCreateTime,
             profileCreateTime,
             userId);
-    var recordId = dao.recordProfileCreate(profile);
+    var recordId = dao.recordProfileCreate(profile, userId);
     var records = dao.getChangesByProfile(profile.id());
     assertEquals(1, records.size());
     var record = records.get(0);
