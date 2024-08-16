@@ -1,7 +1,6 @@
 package bio.terra.profile.service.profile.flight.create;
 
 import bio.terra.policy.model.TpsPolicyInputs;
-import bio.terra.profile.db.ProfileChangeLogDao;
 import bio.terra.profile.model.Organization;
 import bio.terra.profile.service.job.JobMapKeys;
 import bio.terra.profile.service.profile.exception.MissingRequiredFieldsException;
@@ -15,7 +14,7 @@ import bio.terra.stairway.StepResult;
 import java.util.Optional;
 import org.springframework.http.HttpStatus;
 
-public record CreateProfileFinishStep(ProfileChangeLogDao changeLogDao) implements Step {
+public class CreateProfileFinishStep implements Step {
 
   @Override
   public StepResult doStep(FlightContext context) throws InterruptedException {

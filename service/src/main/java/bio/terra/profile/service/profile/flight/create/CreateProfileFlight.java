@@ -60,6 +60,6 @@ public class CreateProfileFlight extends Flight {
     }
     var initiatingUser = inputParameters.get(JobMapKeys.INITIATING_USER.getKeyName(), String.class);
     addStep(new RecordProfileCreationStep(changeLogDao, initiatingUser));
-    addStep(new CreateProfileFinishStep(changeLogDao));
+    addStep(new CreateProfileFinishStep());
   }
 }
