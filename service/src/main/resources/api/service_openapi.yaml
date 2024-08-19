@@ -630,7 +630,7 @@ components:
       description: Enum representing the type of change represented in the change log
       enum: ['CREATE', 'UPDATE', 'DELETE']
 
-    ChangeLogEntry:
+    ChangeLogModel:
       type: object
       properties:
         id:

@@ -45,11 +45,11 @@ public class ProfileChangeLogDaoTest extends BaseSpringUnitTest {
 
     assertEquals(1, records.size());
     var record = records.get(0);
-    assertEquals(recordId.get(), record.getId());
-    assertEquals(profile.id(), record.getProfileId());
-    assertEquals(ChangeType.CREATE, record.getChangeType());
-    assertEquals(userId, record.getChangeBy());
-    assertEquals(Date.from(profileCreateTime), record.getChangeDate());
+    assertEquals(recordId.get(), record.id());
+    assertEquals(profile.id(), record.profileId());
+    assertEquals(ChangeType.CREATE, record.changeType());
+    assertEquals(userId, record.changeBy());
+    assertEquals(Date.from(profileCreateTime), record.changeDate());
   }
 
   @Test
@@ -64,11 +64,11 @@ public class ProfileChangeLogDaoTest extends BaseSpringUnitTest {
 
     assertEquals(1, records.size());
     var record = records.get(0);
-    assertEquals(recordId.get(), record.getId());
-    assertEquals(profileId, record.getProfileId());
-    assertEquals(userId, record.getChangeBy());
-    assertEquals(ChangeType.UPDATE, record.getChangeType());
-    assertEquals(changes, record.getChanges());
+    assertEquals(recordId.get(), record.id());
+    assertEquals(profileId, record.profileId());
+    assertEquals(userId, record.changeBy());
+    assertEquals(ChangeType.UPDATE, record.changeType());
+    assertEquals(changes, record.changes());
   }
 
   @Test
@@ -81,10 +81,10 @@ public class ProfileChangeLogDaoTest extends BaseSpringUnitTest {
 
     assertEquals(1, records.size());
     var record = records.get(0);
-    assertEquals(recordId.get(), record.getId());
-    assertEquals(profileId, record.getProfileId());
-    assertEquals(ChangeType.DELETE, record.getChangeType());
-    assertEquals(userId, record.getChangeBy());
+    assertEquals(recordId.get(), record.id());
+    assertEquals(profileId, record.profileId());
+    assertEquals(ChangeType.DELETE, record.changeType());
+    assertEquals(userId, record.changeBy());
   }
 
   @Test
@@ -113,7 +113,7 @@ public class ProfileChangeLogDaoTest extends BaseSpringUnitTest {
 
     var records = dao.getChangesByProfile(profile.id());
     assertEquals(2, records.size());
-    assertEquals(createRecordId.get(), records.get(0).getId());
-    assertEquals(updateRecordId.get(), records.get(1).getId());
+    assertEquals(createRecordId.get(), records.get(0).id());
+    assertEquals(updateRecordId.get(), records.get(1).id());
   }
 }

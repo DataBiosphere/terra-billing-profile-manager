@@ -3,9 +3,9 @@ package bio.terra.profile.db;
 import bio.terra.common.db.ReadTransaction;
 import bio.terra.common.db.WriteTransaction;
 import bio.terra.common.exception.SerializationException;
-import bio.terra.profile.model.ChangeLogEntry;
 import bio.terra.profile.model.ChangeType;
 import bio.terra.profile.service.profile.model.BillingProfile;
+import bio.terra.profile.service.profile.model.ChangeLogEntry;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.sql.ResultSet;
@@ -148,13 +148,13 @@ public class ProfileChangeLogDao {
 
     @Override
     public ChangeLogEntry mapRow(ResultSet rs, int rowNum) throws SQLException {
-      return new ChangeLogEntry()
-          .id(rs.getObject(ID, UUID.class))
-          .profileId(rs.getObject(PROFILE_ID, UUID.class))
-          .changeBy(rs.getString(CHANGE_BY))
-          .changeType(ChangeType.fromValue(rs.getString(CHANGE_TYPE)))
-          .changeDate(rs.getTimestamp(CHANGE_DATE))
-          .changes(getChanges(rs));
+      return new ChangeLogEntry(
+          rs.getObject(ID, UUID.class),
+          rs.getObject(PROFILE_ID, UUID.class),
+          ChangeType.fromValue(rs.getString(CHANGE_TYPE)),
+          rs.getString(CHANGE_BY),
+          rs.getTimestamp(CHANGE_DATE),
+          getChanges(rs));
     }
   }
 }
