@@ -209,22 +209,18 @@ jobs:
           nonBreakingB64=$(cat "${{ matrix.pact_path }}" | base64 -w 0)
           echo "pact-b64=${nonBreakingB64}" >> $GITHUB_OUTPUT  
 
-      - name: Dispatch to terra-github-workflows
-        uses: broadinstitute/workflow-dispatch@v4.0.0
+      - name: Publish contracts
+        id: publish-contracts
+        uses: broadinstitute/dsp-reusable-workflows/.github/actions/run-publish-contracts@main
         with:
-          run-name: "${{ env.PUBLISH_CONTRACTS_RUN_NAME }}-${{ matrix.pact_path }}"
-          workflow: .github/workflows/publish-contracts.yaml
-          repo: broadinstitute/terra-github-workflows
-          ref: refs/heads/main
-          token: ${{ secrets.BROADBOT_TOKEN }} # github token for access to kick off a job in the private repo
-          inputs: '{
-            "run-name": "${{ env.PUBLISH_CONTRACTS_RUN_NAME }}-${{ matrix.pact_path }}",
-            "pact-b64": "${{ steps.encode-pact.outputs.pact-b64 }}",
-            "repo-owner": "${{ github.repository_owner }}",
-            "repo-name": "${{ github.event.repository.name }}",
-            "repo-branch": "${{ needs.init-github-context.outputs.repo-branch }}",
-            "release-tag": "${{ needs.regulated-tag-job.outputs.new-tag }}"
-            }'
+          PACT_B64: ${{ steps.encode-pact.outputs.pact-b64 }}
+          REPO_OWNER: ${{ github.repository_owner }}
+          REPO_NAME: ${{ github.event.repository.name }}
+          REPO_BRANCH: ${{ needs.init-github-context.outputs.repo-branch }}
+          BROADBOT_TOKEN: ${{ secrets.BROADBOT_TOKEN }}
+          PACT_BROKER_USERNAME: ${{ secrets.PACT_BROKER_USERNAME }}
+          PACT_BROKER_PASSWORD: ${{ secrets.PACT_BROKER_PASSWORD }}
+          RELEASE_TAG: ${{ needs.regulated-tag-job.outputs.new-tag }}
 
   ###############################        
   # PROVIDER VERIFICATION STEPS #
