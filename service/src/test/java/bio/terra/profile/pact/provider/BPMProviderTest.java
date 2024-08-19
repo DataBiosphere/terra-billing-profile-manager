@@ -243,6 +243,8 @@ public class BPMProviderTest {
     when(jobBuilder.flightClass(DeleteProfileFlight.class)).thenReturn(jobBuilder);
     when(jobBuilder.userRequest(any())).thenReturn(jobBuilder);
     when(jobBuilder.addParameter(ProfileMapKeys.PROFILE, profile)).thenReturn(jobBuilder);
+    when(jobBuilder.addParameter(eq(JobMapKeys.INITIATING_USER.getKeyName()), any()))
+        .thenReturn(jobBuilder);
     when(jobBuilder.addParameter(
             eq(JobMapKeys.CLOUD_PLATFORM.getKeyName()), eq(CloudPlatform.AZURE.name())))
         .thenReturn(jobBuilder);
