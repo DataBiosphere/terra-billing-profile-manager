@@ -4,6 +4,7 @@ import bio.terra.common.db.ReadTransaction;
 import bio.terra.common.db.WriteTransaction;
 import bio.terra.common.exception.SerializationException;
 import bio.terra.profile.model.ChangeLogEntry;
+import bio.terra.profile.model.ChangeType;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -72,7 +73,7 @@ public class ProfileChangeLogDao {
     MapSqlParameterSource params =
         new MapSqlParameterSource()
             .addValue(PROFILE_ID, profile.id())
-            .addValue(CHANGE_TYPE, ChangeLogEntry.ChangeTypeEnum.CREATE.name())
+            .addValue(CHANGE_TYPE, ChangeType.CREATE.name())
             .addValue(CHANGE_DATE, profile.createdTime().atOffset(ZoneOffset.UTC))
             .addValue(CHANGE_BY, userId);
 
@@ -101,7 +102,7 @@ public class ProfileChangeLogDao {
     MapSqlParameterSource params =
         new MapSqlParameterSource()
             .addValue(PROFILE_ID, profileId)
-            .addValue(CHANGE_TYPE, ChangeLogEntry.ChangeTypeEnum.UPDATE.name())
+            .addValue(CHANGE_TYPE, ChangeType.UPDATE.name())
             .addValue(CHANGE_BY, userId)
             .addValue(CHANGES, serializedChanges);
     var keyHolder = new DaoKeyHolder();
@@ -117,7 +118,7 @@ public class ProfileChangeLogDao {
     MapSqlParameterSource params =
         new MapSqlParameterSource()
             .addValue(PROFILE_ID, profileId)
-            .addValue(CHANGE_TYPE, ChangeLogEntry.ChangeTypeEnum.DELETE.name())
+            .addValue(CHANGE_TYPE, ChangeType.DELETE.name())
             .addValue(CHANGE_BY, userId);
     var keyHolder = new DaoKeyHolder();
     jdbcTemplate.update(sql, params, keyHolder);
@@ -151,7 +152,7 @@ public class ProfileChangeLogDao {
           .id(rs.getObject(ID, UUID.class))
           .profileId(rs.getObject(PROFILE_ID, UUID.class))
           .changeBy(rs.getString(CHANGE_BY))
-          .changeType(ChangeLogEntry.ChangeTypeEnum.fromValue(rs.getString(CHANGE_TYPE)))
+          .changeType(ChangeType.fromValue(rs.getString(CHANGE_TYPE)))
           .changeDate(rs.getTimestamp(CHANGE_DATE))
           .changes(getChanges(rs));
     }

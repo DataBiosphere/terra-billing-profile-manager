@@ -625,6 +625,11 @@ components:
         organization:
           $ref: '#/components/schemas/Organization'
 
+    ChangeType:
+      type: string
+      description: Enum representing the type of change represented in the change log
+      enum: ['CREATE', 'UPDATE', 'DELETE']
+
     ChangeLogEntry:
       type: object
       properties:
@@ -638,7 +643,7 @@ components:
           format: uuid
         change_type:
           description: The type of change
-          enum: ['CREATE', 'UPDATE', 'DELETE']
+          $ref: '#/components/schemas/ChangeType'
           type: string
         change_by:
           description: The user who made the change

@@ -3,7 +3,7 @@ package bio.terra.profile.db;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import bio.terra.profile.common.BaseSpringUnitTest;
-import bio.terra.profile.model.ChangeLogEntry;
+import bio.terra.profile.model.ChangeType;
 import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import java.sql.Date;
@@ -47,7 +47,7 @@ public class ProfileChangeLogDaoTest extends BaseSpringUnitTest {
     var record = records.get(0);
     assertEquals(recordId.get(), record.getId());
     assertEquals(profile.id(), record.getProfileId());
-    assertEquals(ChangeLogEntry.ChangeTypeEnum.CREATE, record.getChangeType());
+    assertEquals(ChangeType.CREATE, record.getChangeType());
     assertEquals(userId, record.getChangeBy());
     assertEquals(Date.from(profileCreateTime), record.getChangeDate());
   }
@@ -67,7 +67,7 @@ public class ProfileChangeLogDaoTest extends BaseSpringUnitTest {
     assertEquals(recordId.get(), record.getId());
     assertEquals(profileId, record.getProfileId());
     assertEquals(userId, record.getChangeBy());
-    assertEquals(ChangeLogEntry.ChangeTypeEnum.UPDATE, record.getChangeType());
+    assertEquals(ChangeType.UPDATE, record.getChangeType());
     assertEquals(changes, record.getChanges());
   }
 
@@ -83,7 +83,7 @@ public class ProfileChangeLogDaoTest extends BaseSpringUnitTest {
     var record = records.get(0);
     assertEquals(recordId.get(), record.getId());
     assertEquals(profileId, record.getProfileId());
-    assertEquals(ChangeLogEntry.ChangeTypeEnum.DELETE, record.getChangeType());
+    assertEquals(ChangeType.DELETE, record.getChangeType());
     assertEquals(userId, record.getChangeBy());
   }
 
