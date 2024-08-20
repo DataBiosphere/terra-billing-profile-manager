@@ -241,7 +241,9 @@ public class ProfileService {
       return user.getSubjectId();
     } else {
       SamRethrow.onInterrupted(
-          () -> samService.verifyResourceAdmin(user, SamAction.SPECIFY_ACTING_USER),
+          () ->
+              samService.verifyResourceAdmin(
+                  user, SamResourceType.PROFILE, SamAction.SPECIFY_ACTING_USER),
           "isResourceAdmin");
       return requestingUser;
     }

@@ -157,13 +157,14 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     var specifiedUser = UUID.randomUUID().toString();
     doThrow(new ForbiddenException(""))
         .when(samService)
-        .verifyResourceAdmin(user, SamAction.SPECIFY_ACTING_USER);
+        .verifyResourceAdmin(user, SamResourceType.PROFILE, SamAction.SPECIFY_ACTING_USER);
 
     assertThrows(
         ForbiddenException.class,
         () -> profileService.createProfile(profileDescription, user, specifiedUser));
 
-    verify(samService).verifyResourceAdmin(user, SamAction.SPECIFY_ACTING_USER);
+    verify(samService)
+        .verifyResourceAdmin(user, SamResourceType.PROFILE, SamAction.SPECIFY_ACTING_USER);
     verifyNoInteractions(profileDao);
     verifyNoInteractions(tpsApiDispatch);
     verifyNoInteractions(gcpService);
@@ -187,7 +188,8 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     profileService.createProfile(profileDescription, user, specifiedUser);
 
     verify(jobBuilder).addParameter(JobMapKeys.INITIATING_USER.getKeyName(), specifiedUser);
-    verify(samService).verifyResourceAdmin(user, SamAction.SPECIFY_ACTING_USER);
+    verify(samService)
+        .verifyResourceAdmin(user, SamResourceType.PROFILE, SamAction.SPECIFY_ACTING_USER);
   }
 
   @Test
@@ -541,7 +543,8 @@ class ProfileServiceUnitTest extends BaseUnitTest {
         .verifyAuthorization(
             user, SamResourceType.PROFILE, profile.id(), SamAction.UPDATE_BILLING_ACCOUNT);
     verifyNoInteractions(gcpService);
-    verify(samService).verifyResourceAdmin(user, SamAction.SPECIFY_ACTING_USER);
+    verify(samService)
+        .verifyResourceAdmin(user, SamResourceType.PROFILE, SamAction.SPECIFY_ACTING_USER);
     verify(changeLogDao).recordProfileUpdate(profile.id(), specifiedUser, expectedChanges);
   }
 
@@ -553,7 +556,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
         new UpdateProfileRequest().description(newDescription).initiatingUser(specifiedUser);
     doThrow(new ForbiddenException(""))
         .when(samService)
-        .verifyResourceAdmin(user, SamAction.SPECIFY_ACTING_USER);
+        .verifyResourceAdmin(user, SamResourceType.PROFILE, SamAction.SPECIFY_ACTING_USER);
 
     assertThrows(
         ForbiddenException.class,
@@ -563,7 +566,8 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     verifyNoInteractions(tpsApiDispatch);
     verifyNoInteractions(gcpService);
     verifyNoInteractions(changeLogDao);
-    verify(samService).verifyResourceAdmin(user, SamAction.SPECIFY_ACTING_USER);
+    verify(samService)
+        .verifyResourceAdmin(user, SamResourceType.PROFILE, SamAction.SPECIFY_ACTING_USER);
   }
 
   @Test
@@ -676,7 +680,8 @@ class ProfileServiceUnitTest extends BaseUnitTest {
 
     verify(profileDao).removeBillingAccount(profile.id());
     verify(changeLogDao).recordProfileUpdate(profile.id(), specifiedUserId, expectedChanges);
-    verify(samService).verifyResourceAdmin(user, SamAction.SPECIFY_ACTING_USER);
+    verify(samService)
+        .verifyResourceAdmin(user, SamResourceType.PROFILE, SamAction.SPECIFY_ACTING_USER);
   }
 
   @Test

@@ -107,7 +107,8 @@ public class SamService {
     }
   }
 
-  public void verifyResourceAdmin(AuthenticatedUserRequest user, SamAction action)
+  public void verifyResourceAdmin(
+      AuthenticatedUserRequest user, SamResourceType resourceType, SamAction action)
       throws InterruptedException {
     String accessToken = user.getToken();
     var adminApi = samAdminApi(accessToken);
@@ -116,8 +117,7 @@ public class SamService {
           SamRetry.retry(
               () ->
                   adminApi.resourceTypeAdminPermission(
-                      SamResourceType.RESOURCE_ADMIN.getSamResourceName(),
-                      action.getSamActionName()));
+                      resourceType.getSamResourceName(), action.getSamActionName()));
       if (!isAuthorized) {
         throw new ForbiddenException(
             String.format(

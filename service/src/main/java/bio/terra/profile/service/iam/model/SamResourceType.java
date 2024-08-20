@@ -5,8 +5,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import org.apache.commons.lang3.StringUtils;
 
 public enum SamResourceType {
-  PROFILE("spend-profile"),
-  RESOURCE_ADMIN("resource_type_admin");
+  PROFILE("spend-profile");
 
   private final String samResourceName;
 
