@@ -2,6 +2,7 @@ package bio.terra.profile.service.profile.flight.create;
 
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.app.configuration.AzureConfiguration;
+import bio.terra.profile.db.ProfileChangeLogDao;
 import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.service.azure.AzureService;
@@ -22,6 +23,7 @@ public class CreateProfileFlight extends Flight {
 
     ApplicationContext appContext = (ApplicationContext) applicationContext;
     ProfileDao profileDao = appContext.getBean(ProfileDao.class);
+    ProfileChangeLogDao changeLogDao = appContext.getBean(ProfileChangeLogDao.class);
     GcpService gcpService = appContext.getBean(GcpService.class);
     SamService samService = appContext.getBean(SamService.class);
     AzureService azureService = appContext.getBean(AzureService.class);
@@ -56,6 +58,8 @@ public class CreateProfileFlight extends Flight {
       // we can link the profile to the MRG only after the Sam resource has been created
       addStep(new LinkBillingProfileIdToMrgStep(samService, billingProfile, user));
     }
+    var initiatingUser = inputParameters.get(JobMapKeys.INITIATING_USER.getKeyName(), String.class);
+    addStep(new RecordProfileCreationStep(changeLogDao, initiatingUser));
     addStep(new CreateProfileFinishStep());
   }
 }

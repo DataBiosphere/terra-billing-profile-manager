@@ -1,6 +1,7 @@
 package bio.terra.profile.service.profile.flight.delete;
 
 import bio.terra.common.iam.AuthenticatedUserRequest;
+import bio.terra.profile.db.ProfileChangeLogDao;
 import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.service.iam.SamService;
@@ -21,6 +22,7 @@ public class DeleteProfileFlight extends Flight {
     ProfileDao profileDao = appContext.getBean(ProfileDao.class);
     SamService samService = appContext.getBean(SamService.class);
     TpsApiDispatch tpsApiDispatch = appContext.getBean(TpsApiDispatch.class);
+    ProfileChangeLogDao changeLogDao = appContext.getBean(ProfileChangeLogDao.class);
 
     var profile = inputParameters.get(ProfileMapKeys.PROFILE, BillingProfile.class);
     var profileId = profile.id();
@@ -36,6 +38,8 @@ public class DeleteProfileFlight extends Flight {
     if (CloudPlatform.AZURE == platform) {
       addStep(new UnlinkBillingProfileIdFromMrgStep(samService, profile, user));
     }
+    var initiatingUser = inputParameters.get(JobMapKeys.INITIATING_USER.getKeyName(), String.class);
+    addStep(new RecordProfileDeleteStep(changeLogDao, profileId, initiatingUser));
     addStep(new DeleteProfileAuthzIamStep(samService, profileId, user));
   }
 }

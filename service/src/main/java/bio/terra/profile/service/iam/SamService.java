@@ -24,10 +24,7 @@ import java.util.stream.Stream;
 import okhttp3.OkHttpClient;
 import org.broadinstitute.dsde.workbench.client.sam.ApiClient;
 import org.broadinstitute.dsde.workbench.client.sam.ApiException;
-import org.broadinstitute.dsde.workbench.client.sam.api.AzureApi;
-import org.broadinstitute.dsde.workbench.client.sam.api.ResourcesApi;
-import org.broadinstitute.dsde.workbench.client.sam.api.StatusApi;
-import org.broadinstitute.dsde.workbench.client.sam.api.UsersApi;
+import org.broadinstitute.dsde.workbench.client.sam.api.*;
 import org.broadinstitute.dsde.workbench.client.sam.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -107,6 +104,28 @@ public class SamService {
                   action.getSamActionName()));
     } catch (ApiException e) {
       throw SamExceptionFactory.create("Error checking resource permission in Sam", e);
+    }
+  }
+
+  public void verifyResourceAdmin(
+      AuthenticatedUserRequest user, SamResourceType resourceType, SamAction action)
+      throws InterruptedException {
+    String accessToken = user.getToken();
+    var adminApi = samAdminApi(accessToken);
+    try {
+      var isAuthorized =
+          SamRetry.retry(
+              () ->
+                  adminApi.resourceTypeAdminPermission(
+                      resourceType.getSamResourceName(), action.getSamActionName()));
+      if (!isAuthorized) {
+        throw new ForbiddenException(
+            String.format(
+                "User %s is not authorized to %s as a resource admin",
+                user.getSubjectId(), action));
+      }
+    } catch (ApiException e) {
+      throw SamExceptionFactory.create("Error checking resource admin permission in Sam", e);
     }
   }
 
@@ -444,6 +463,11 @@ public class SamService {
   @VisibleForTesting
   ResourcesApi samResourcesApi(String accessToken) {
     return new ResourcesApi(getApiClient(accessToken));
+  }
+
+  @VisibleForTesting
+  AdminApi samAdminApi(String accessToken) {
+    return new AdminApi(getApiClient(accessToken));
   }
 
   AzureApi samAzureApi(String accessToken) {

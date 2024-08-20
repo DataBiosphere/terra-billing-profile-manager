@@ -31,6 +31,7 @@ import bio.terra.profile.app.configuration.EnterpriseConfiguration;
 import bio.terra.profile.app.configuration.LimitsConfiguration;
 import bio.terra.profile.common.BaseUnitTest;
 import bio.terra.profile.common.ProfileFixtures;
+import bio.terra.profile.db.ProfileChangeLogDao;
 import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.model.Organization;
@@ -54,12 +55,7 @@ import bio.terra.profile.service.profile.model.ProfileDescription;
 import com.google.iam.v1.TestIamPermissionsResponse;
 import io.opentelemetry.api.OpenTelemetry;
 import java.time.Instant;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -76,6 +72,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
   @Mock private GcpService gcpService;
   @Mock private EnterpriseConfiguration enterpriseConfiguration;
   @Mock private LimitsConfiguration limitsConfiguration;
+  @Mock private ProfileChangeLogDao changeLogDao;
 
   private ProfileService profileService;
   private AuthenticatedUserRequest user;
@@ -97,6 +94,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     profileService =
         new ProfileService(
             profileDao,
+            changeLogDao,
             samService,
             jobService,
             tpsApiDispatch,
@@ -144,31 +142,75 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     when(jobBuilder.request(profileDescription)).thenReturn(jobBuilder);
     when(jobBuilder.userRequest(user)).thenReturn(jobBuilder);
     when(jobBuilder.addParameter(eq(ProfileMapKeys.ORGANIZATION), any())).thenReturn(jobBuilder);
+    when(jobBuilder.addParameter(eq(JobMapKeys.INITIATING_USER.getKeyName()), any()))
+        .thenReturn(jobBuilder);
     when(jobBuilder.submitAndWait(ProfileDescription.class)).thenReturn(profileDescription);
 
-    ProfileDescription result = profileService.createProfile(profileDescription, user);
+    ProfileDescription result = profileService.createProfile(profileDescription, user, null);
 
     verify(jobBuilder).submitAndWait(any());
     assertEquals(profileDescription, result);
   }
 
   @Test
+  void createProfileSpecifyingUserThrowsForNonAdmin() throws InterruptedException {
+    var specifiedUser = UUID.randomUUID().toString();
+    doThrow(new ForbiddenException(""))
+        .when(samService)
+        .verifyResourceAdmin(user, SamResourceType.PROFILE, SamAction.SPECIFY_ACTING_USER);
+
+    assertThrows(
+        ForbiddenException.class,
+        () -> profileService.createProfile(profileDescription, user, specifiedUser));
+
+    verify(samService)
+        .verifyResourceAdmin(user, SamResourceType.PROFILE, SamAction.SPECIFY_ACTING_USER);
+    verifyNoInteractions(profileDao);
+    verifyNoInteractions(tpsApiDispatch);
+    verifyNoInteractions(gcpService);
+    verifyNoInteractions(changeLogDao);
+  }
+
+  @Test
+  void createProfileUsesSpecifiedUserWhenAdmin() throws Exception {
+    var specifiedUser = UUID.randomUUID().toString();
+    var jobBuilder = mock(JobBuilder.class);
+    when(jobService.newJob()).thenReturn(jobBuilder);
+    when(jobBuilder.description(anyString())).thenReturn(jobBuilder);
+    when(jobBuilder.flightClass(CreateProfileFlight.class)).thenReturn(jobBuilder);
+    when(jobBuilder.request(profileDescription)).thenReturn(jobBuilder);
+    when(jobBuilder.userRequest(user)).thenReturn(jobBuilder);
+    when(jobBuilder.addParameter(eq(ProfileMapKeys.ORGANIZATION), any())).thenReturn(jobBuilder);
+    when(jobBuilder.addParameter(eq(JobMapKeys.INITIATING_USER.getKeyName()), any()))
+        .thenReturn(jobBuilder);
+    when(jobBuilder.submitAndWait(ProfileDescription.class)).thenReturn(profileDescription);
+
+    profileService.createProfile(profileDescription, user, specifiedUser);
+
+    verify(jobBuilder).addParameter(JobMapKeys.INITIATING_USER.getKeyName(), specifiedUser);
+    verify(samService)
+        .verifyResourceAdmin(user, SamResourceType.PROFILE, SamAction.SPECIFY_ACTING_USER);
+  }
+
+  @Test
   void deleteProfile() throws InterruptedException {
     var jobBuilder = mock(JobBuilder.class);
     String jobId = "jobId";
-
     when(jobService.newJob()).thenReturn(jobBuilder);
     when(jobBuilder.submit()).thenReturn(jobId);
     when(jobBuilder.description(anyString())).thenReturn(jobBuilder);
     when(jobBuilder.flightClass(DeleteProfileFlight.class)).thenReturn(jobBuilder);
     when(jobBuilder.userRequest(user)).thenReturn(jobBuilder);
     when(jobBuilder.addParameter(ProfileMapKeys.PROFILE, profile)).thenReturn(jobBuilder);
+    when(jobBuilder.addParameter(eq(JobMapKeys.INITIATING_USER.getKeyName()), any()))
+        .thenReturn(jobBuilder);
     when(jobBuilder.addParameter(
             eq(JobMapKeys.CLOUD_PLATFORM.getKeyName()), eq(CloudPlatform.GCP.name())))
         .thenReturn(jobBuilder);
     when(profileDao.getBillingProfileById(profile.id())).thenReturn(profile);
 
-    profileService.deleteProfile(profile.id(), user);
+    profileService.deleteProfile(profile.id(), user, null);
+
     verify(samService)
         .verifyAuthorization(user, SamResourceType.PROFILE, profile.id(), SamAction.DELETE.DELETE);
     verify(jobBuilder).submitAndWait(any());
@@ -180,7 +222,8 @@ class ProfileServiceUnitTest extends BaseUnitTest {
         .when(samService)
         .verifyAuthorization(eq(user), eq(SamResourceType.PROFILE), any(), eq(SamAction.DELETE));
     assertThrows(
-        ForbiddenException.class, () -> profileService.deleteProfile(UUID.randomUUID(), user));
+        ForbiddenException.class,
+        () -> profileService.deleteProfile(UUID.randomUUID(), user, null));
   }
 
   @Test
@@ -267,7 +310,6 @@ class ProfileServiceUnitTest extends BaseUnitTest {
 
     var limits = limitedResult.organization().get().getLimits();
     assertTrue(limits.containsKey("vcpus"));
-
     var noLimits = nonLimitedResult.organization().get().getLimits();
     assertTrue(noLimits.isEmpty());
   }
@@ -278,7 +320,9 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     when(profileDao.listBillingProfiles(anyInt(), anyInt(), eq(List.of(profile.id()))))
         .thenReturn(List.of(profile));
     when(tpsApiDispatch.getOrCreatePao(any(), any(), any())).thenReturn(new TpsPaoGetResult());
+
     var result = profileService.listProfiles(user, 0, 0);
+
     assertEquals(List.of(profileDescription), result);
   }
 
@@ -319,7 +363,9 @@ class ProfileServiceUnitTest extends BaseUnitTest {
                 new TpsPaoGetResult()
                     .effectiveAttributes(policies)
                     .objectId(protectedProfile.id())));
+
     var result = profileService.listProfiles(user, 0, 0);
+
     assertThat(
         result,
         Matchers.containsInAnyOrder(
@@ -354,13 +400,17 @@ class ProfileServiceUnitTest extends BaseUnitTest {
             profile.createdTime(),
             profile.lastModified(),
             profile.createdBy());
-
     when(profileDao.updateProfile(profile.id(), newDescription, newBillingAccount))
         .thenReturn(true);
     when(profileDao.getBillingProfileById(profile.id())).thenReturn(updatedProfile);
     when(tpsApiDispatch.getOrCreatePao(any(), any(), any())).thenReturn(new TpsPaoGetResult());
+    var expectedChanges =
+        Map.of("description", newDescription, "billing_account_id", newBillingAccount);
+    when(changeLogDao.recordProfileUpdate(profile.id(), user.getSubjectId(), expectedChanges))
+        .thenReturn(Optional.of(UUID.randomUUID()));
 
     var res = profileService.updateProfile(profile.id(), updateRequest, user);
+
     assertEquals(newBillingAccount, res.billingProfile().billingAccountId().get());
     assertEquals(newDescription, res.billingProfile().description());
     verify(samService)
@@ -370,6 +420,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
         .verifyAuthorization(
             user, SamResourceType.PROFILE, profile.id(), SamAction.UPDATE_BILLING_ACCOUNT);
     verify(gcpService).verifyUserBillingAccountAccess(Optional.of(newBillingAccount), user);
+    verify(changeLogDao).recordProfileUpdate(profile.id(), user.getSubjectId(), expectedChanges);
   }
 
   @Test
@@ -394,8 +445,12 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     when(profileDao.updateProfile(profile.id(), null, newBillingAccount)).thenReturn(true);
     when(profileDao.getBillingProfileById(profile.id())).thenReturn(updatedProfile);
     when(tpsApiDispatch.getOrCreatePao(any(), any(), any())).thenReturn(new TpsPaoGetResult());
+    var expectedChanges = Map.of("billing_account_id", newBillingAccount);
+    when(changeLogDao.recordProfileUpdate(profile.id(), user.getSubjectId(), expectedChanges))
+        .thenReturn(Optional.of(UUID.randomUUID()));
 
     var res = profileService.updateProfile(profile.id(), updateRequest, user);
+
     assertEquals(newBillingAccount, res.billingProfile().billingAccountId().get());
     assertEquals(profile.description(), res.billingProfile().description());
     verify(samService, times(0))
@@ -405,6 +460,7 @@ class ProfileServiceUnitTest extends BaseUnitTest {
         .verifyAuthorization(
             user, SamResourceType.PROFILE, profile.id(), SamAction.UPDATE_BILLING_ACCOUNT);
     verify(gcpService).verifyUserBillingAccountAccess(Optional.of(newBillingAccount), user);
+    verify(changeLogDao).recordProfileUpdate(profile.id(), user.getSubjectId(), expectedChanges);
   }
 
   @Test
@@ -429,8 +485,12 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     when(profileDao.updateProfile(profile.id(), newDescription, null)).thenReturn(true);
     when(profileDao.getBillingProfileById(profile.id())).thenReturn(updatedProfile);
     when(tpsApiDispatch.getOrCreatePao(any(), any(), any())).thenReturn(new TpsPaoGetResult());
+    var expectedChanges = Map.of("description", newDescription);
+    when(changeLogDao.recordProfileUpdate(profile.id(), user.getSubjectId(), expectedChanges))
+        .thenReturn(Optional.of(UUID.randomUUID()));
 
     var res = profileService.updateProfile(profile.id(), updateRequest, user);
+
     assertEquals(
         profile.getRequiredBillingAccountId(), res.billingProfile().billingAccountId().get());
     assertEquals(newDescription, res.billingProfile().description());
@@ -441,6 +501,73 @@ class ProfileServiceUnitTest extends BaseUnitTest {
         .verifyAuthorization(
             user, SamResourceType.PROFILE, profile.id(), SamAction.UPDATE_BILLING_ACCOUNT);
     verifyNoInteractions(gcpService);
+    verify(changeLogDao).recordProfileUpdate(profile.id(), user.getSubjectId(), expectedChanges);
+  }
+
+  @Test
+  void updateProfileRecordsChangesAsInitiatingUserWhenSpecified() throws InterruptedException {
+    var newDescription = "newDescription";
+    var specifiedUser = UUID.randomUUID().toString();
+    var updateRequest =
+        new UpdateProfileRequest().description(newDescription).initiatingUser(specifiedUser);
+    var updatedProfile =
+        new BillingProfile(
+            profile.id(),
+            profile.displayName(),
+            newDescription,
+            profile.biller(),
+            profile.cloudPlatform(),
+            profile.billingAccountId(),
+            profile.tenantId(),
+            profile.subscriptionId(),
+            profile.managedResourceGroupId(),
+            profile.createdTime(),
+            profile.lastModified(),
+            profile.createdBy());
+    when(profileDao.updateProfile(profile.id(), newDescription, null)).thenReturn(true);
+    when(profileDao.getBillingProfileById(profile.id())).thenReturn(updatedProfile);
+    when(tpsApiDispatch.getOrCreatePao(any(), any(), any())).thenReturn(new TpsPaoGetResult());
+    var expectedChanges = Map.of("description", newDescription);
+    when(changeLogDao.recordProfileUpdate(profile.id(), specifiedUser, expectedChanges))
+        .thenReturn(Optional.of(UUID.randomUUID()));
+
+    var res = profileService.updateProfile(profile.id(), updateRequest, user);
+
+    assertEquals(
+        profile.getRequiredBillingAccountId(), res.billingProfile().billingAccountId().get());
+    assertEquals(newDescription, res.billingProfile().description());
+    verify(samService)
+        .verifyAuthorization(
+            user, SamResourceType.PROFILE, profile.id(), SamAction.UPDATE_METADATA);
+    verify(samService, times(0))
+        .verifyAuthorization(
+            user, SamResourceType.PROFILE, profile.id(), SamAction.UPDATE_BILLING_ACCOUNT);
+    verifyNoInteractions(gcpService);
+    verify(samService)
+        .verifyResourceAdmin(user, SamResourceType.PROFILE, SamAction.SPECIFY_ACTING_USER);
+    verify(changeLogDao).recordProfileUpdate(profile.id(), specifiedUser, expectedChanges);
+  }
+
+  @Test
+  void updateProfileSpecifyingUserThrowsForNonAdmin() throws InterruptedException {
+    var newDescription = "newDescription";
+    var specifiedUser = UUID.randomUUID().toString();
+    var updateRequest =
+        new UpdateProfileRequest().description(newDescription).initiatingUser(specifiedUser);
+    doThrow(new ForbiddenException(""))
+        .when(samService)
+        .verifyResourceAdmin(user, SamResourceType.PROFILE, SamAction.SPECIFY_ACTING_USER);
+
+    assertThrows(
+        ForbiddenException.class,
+        () -> profileService.updateProfile(profile.id(), updateRequest, user));
+
+    verifyNoInteractions(profileDao);
+    verifyNoInteractions(tpsApiDispatch);
+    verifyNoInteractions(gcpService);
+    verifyNoInteractions(changeLogDao);
+    verify(samService)
+        .verifyResourceAdmin(user, SamResourceType.PROFILE, SamAction.SPECIFY_ACTING_USER);
   }
 
   @Test
@@ -528,10 +655,33 @@ class ProfileServiceUnitTest extends BaseUnitTest {
 
   @Test
   void removeBillingAccount() {
+    var expectedChanges = new HashMap<String, String>();
+    expectedChanges.put("billing_account_id", null);
+    when(changeLogDao.recordProfileUpdate(profile.id(), user.getSubjectId(), expectedChanges))
+        .thenReturn(Optional.of(UUID.randomUUID()));
+
     when(profileDao.removeBillingAccount(profile.id())).thenReturn(true);
-    profileService.removeBillingAccount(profile.id(), user);
+    profileService.removeBillingAccount(profile.id(), user, null);
 
     verify(profileDao).removeBillingAccount(profile.id());
+    verify(changeLogDao).recordProfileUpdate(profile.id(), user.getSubjectId(), expectedChanges);
+  }
+
+  @Test
+  void removeBillingAccountUsesRequestingUserIdWhenSpecified() throws Exception {
+    var expectedChanges = new HashMap<String, String>();
+    expectedChanges.put("billing_account_id", null);
+    var specifiedUserId = UUID.randomUUID().toString();
+    when(changeLogDao.recordProfileUpdate(profile.id(), specifiedUserId, expectedChanges))
+        .thenReturn(Optional.of(UUID.randomUUID()));
+
+    when(profileDao.removeBillingAccount(profile.id())).thenReturn(true);
+    profileService.removeBillingAccount(profile.id(), user, specifiedUserId);
+
+    verify(profileDao).removeBillingAccount(profile.id());
+    verify(changeLogDao).recordProfileUpdate(profile.id(), specifiedUserId, expectedChanges);
+    verify(samService)
+        .verifyResourceAdmin(user, SamResourceType.PROFILE, SamAction.SPECIFY_ACTING_USER);
   }
 
   @Test
@@ -542,7 +692,8 @@ class ProfileServiceUnitTest extends BaseUnitTest {
             user, SamResourceType.PROFILE, profile.id(), SamAction.UPDATE_BILLING_ACCOUNT);
     when(profileDao.removeBillingAccount(profile.id())).thenReturn(true);
     assertThrows(
-        ForbiddenException.class, () -> profileService.removeBillingAccount(profile.id(), user));
+        ForbiddenException.class,
+        () -> profileService.removeBillingAccount(profile.id(), user, null));
 
     verifyNoInteractions(profileDao);
   }
@@ -659,7 +810,8 @@ class ProfileServiceUnitTest extends BaseUnitTest {
     var profile = profileDescription.billingProfile();
     doReturn(profileDescription).when(builder).submitAndWait(eq(ProfileDescription.class));
 
-    var createdProfileDescription = profileService.createProfile(profileDescription, userRequest);
+    var createdProfileDescription =
+        profileService.createProfile(profileDescription, userRequest, null);
     var createdProfile = createdProfileDescription.billingProfile();
 
     assertEquals(createdProfile.id(), profile.id());
