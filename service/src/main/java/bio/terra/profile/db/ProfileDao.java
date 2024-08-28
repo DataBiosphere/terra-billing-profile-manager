@@ -2,7 +2,6 @@ package bio.terra.profile.db;
 
 import bio.terra.common.db.ReadTransaction;
 import bio.terra.common.db.WriteTransaction;
-import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.service.profile.exception.DuplicateManagedApplicationException;
 import bio.terra.profile.service.profile.exception.MissingRequiredFieldsException;
@@ -54,8 +53,7 @@ public class ProfileDao {
   }
 
   @WriteTransaction
-  public BillingProfile createBillingProfile(
-      BillingProfile profile, AuthenticatedUserRequest user) {
+  public BillingProfile createBillingProfile(BillingProfile profile, String initiatingUser) {
     String sql =
         "INSERT INTO billing_profile"
             + " (id, display_name, biller, billing_account_id, description, cloud_platform, "
@@ -79,7 +77,7 @@ public class ProfileDao {
             .addValue("tenant_id", tenantId)
             .addValue("subscription_id", subscriptionId)
             .addValue("managed_resource_group_id", managedResourceGroupId)
-            .addValue("created_by", user.getEmail());
+            .addValue("created_by", initiatingUser);
 
     var keyHolder = new DaoKeyHolder();
     try {
