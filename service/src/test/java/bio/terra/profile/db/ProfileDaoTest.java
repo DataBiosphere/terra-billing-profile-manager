@@ -53,7 +53,7 @@ class ProfileDaoTest extends BaseSpringUnitTest {
   @Test
   void createAndGetProfile() {
     var profile = makeGCPProfile();
-    var createResult = profileDao.createBillingProfile(profile, user);
+    var createResult = profileDao.createBillingProfile(profile, user.getSubjectId());
     assertProfileEquals(profile, createResult);
     var getResult = profileDao.getBillingProfileById(profile.id());
     assertProfileEquals(profile, getResult);
@@ -62,9 +62,11 @@ class ProfileDaoTest extends BaseSpringUnitTest {
   @Test
   void createProfile_alreadyExists() {
     var profile = makeGCPProfile();
-    var createResult = profileDao.createBillingProfile(profile, user);
+    var createResult = profileDao.createBillingProfile(profile, user.getSubjectId());
     assertProfileEquals(profile, createResult);
-    assertThrows(DuplicateKeyException.class, () -> profileDao.createBillingProfile(profile, user));
+    assertThrows(
+        DuplicateKeyException.class,
+        () -> profileDao.createBillingProfile(profile, user.getSubjectId()));
   }
 
   @Test
@@ -77,7 +79,7 @@ class ProfileDaoTest extends BaseSpringUnitTest {
     profileIds.add(profileId);
     var profile = makeAzureProfile(tenantId, subscriptionId, managedResourceGroupId);
 
-    var createResult = profileDao.createBillingProfile(profile, user);
+    var createResult = profileDao.createBillingProfile(profile, user.getSubjectId());
     assertProfileEquals(profile, createResult);
 
     UUID duplicatedProfileId = UUID.randomUUID();
@@ -99,21 +101,25 @@ class ProfileDaoTest extends BaseSpringUnitTest {
 
     assertThrows(
         DuplicateManagedApplicationException.class,
-        () -> profileDao.createBillingProfile(duplicatedManagedAppCoordsProfile, user));
+        () ->
+            profileDao.createBillingProfile(
+                duplicatedManagedAppCoordsProfile, user.getSubjectId()));
 
     var differentMRGProfile =
         makeAzureProfile(tenantId, subscriptionId, "new_managed_resource_group");
-    assertDoesNotThrow(() -> profileDao.createBillingProfile(differentMRGProfile, user));
+    assertDoesNotThrow(
+        () -> profileDao.createBillingProfile(differentMRGProfile, user.getSubjectId()));
 
     var differentSubscriptionProfile =
         makeAzureProfile(tenantId, UUID.randomUUID(), managedResourceGroupId);
-    assertDoesNotThrow(() -> profileDao.createBillingProfile(differentSubscriptionProfile, user));
+    assertDoesNotThrow(
+        () -> profileDao.createBillingProfile(differentSubscriptionProfile, user.getSubjectId()));
   }
 
   @Test
   void createAndDeleteProfile() {
     var profile = makeGCPProfile();
-    var createResult = profileDao.createBillingProfile(profile, user);
+    var createResult = profileDao.createBillingProfile(profile, user.getSubjectId());
     assertProfileEquals(profile, createResult);
     var deleteResult = profileDao.deleteBillingProfileById(profile.id());
     assertTrue(deleteResult);
@@ -124,7 +130,8 @@ class ProfileDaoTest extends BaseSpringUnitTest {
   @Test
   void listProfiles() {
     var profiles =
-        Stream.generate(() -> profileDao.createBillingProfile(makeGCPProfile(), user))
+        Stream.generate(
+                () -> profileDao.createBillingProfile(makeGCPProfile(), user.getSubjectId()))
             .limit(10)
             .collect(Collectors.toList());
     var keys = profiles.stream().map(BillingProfile::id).collect(Collectors.toList());
@@ -135,7 +142,8 @@ class ProfileDaoTest extends BaseSpringUnitTest {
   @Test
   void listProfiles_subset() {
     var profiles =
-        Stream.generate(() -> profileDao.createBillingProfile(makeGCPProfile(), user))
+        Stream.generate(
+                () -> profileDao.createBillingProfile(makeGCPProfile(), user.getSubjectId()))
             .limit(10)
             .collect(Collectors.toList());
     var keys = profiles.stream().limit(3).map(BillingProfile::id).collect(Collectors.toList());
@@ -146,7 +154,8 @@ class ProfileDaoTest extends BaseSpringUnitTest {
   @Test
   void listProfiles_offset() {
     var profiles =
-        Stream.generate(() -> profileDao.createBillingProfile(makeGCPProfile(), user))
+        Stream.generate(
+                () -> profileDao.createBillingProfile(makeGCPProfile(), user.getSubjectId()))
             .limit(10)
             .collect(Collectors.toList());
     var keys = profiles.stream().map(BillingProfile::id).collect(Collectors.toList());
@@ -157,7 +166,8 @@ class ProfileDaoTest extends BaseSpringUnitTest {
   @Test
   void listProfiles_limit() {
     var profiles =
-        Stream.generate(() -> profileDao.createBillingProfile(makeGCPProfile(), user))
+        Stream.generate(
+                () -> profileDao.createBillingProfile(makeGCPProfile(), user.getSubjectId()))
             .limit(10)
             .collect(Collectors.toList());
     var keys = profiles.stream().map(BillingProfile::id).collect(Collectors.toList());
@@ -173,11 +183,11 @@ class ProfileDaoTest extends BaseSpringUnitTest {
     String differentSubscriptionMRGId = "differentSubscriptionMRGId";
 
     var profile = makeAzureProfile(tenantId, subscriptionId, managedResourceGroupId);
-    profileDao.createBillingProfile(profile, user);
+    profileDao.createBillingProfile(profile, user.getSubjectId());
 
     var differentSubscriptionProfile =
         makeAzureProfile(tenantId, UUID.randomUUID(), differentSubscriptionMRGId);
-    profileDao.createBillingProfile(differentSubscriptionProfile, user);
+    profileDao.createBillingProfile(differentSubscriptionProfile, user.getSubjectId());
 
     var result = profileDao.listManagedResourceGroupsInSubscription(subscriptionId);
     assertEquals(List.of(managedResourceGroupId), result);
@@ -186,7 +196,7 @@ class ProfileDaoTest extends BaseSpringUnitTest {
   @Test
   void updateProfile_descriptionOnly() {
     var profile = makeGCPProfile();
-    profileDao.createBillingProfile(profile, user);
+    profileDao.createBillingProfile(profile, user.getSubjectId());
 
     assert profileDao.updateProfile(profile.id(), "new description", null);
     var result = profileDao.getBillingProfileById(profile.id());
@@ -197,7 +207,7 @@ class ProfileDaoTest extends BaseSpringUnitTest {
   @Test
   void updateProfile_billingAccountOnly() {
     var profile = makeGCPProfile();
-    profileDao.createBillingProfile(profile, user);
+    profileDao.createBillingProfile(profile, user.getSubjectId());
 
     assert profileDao.updateProfile(profile.id(), null, "newBillingAccountId");
     var result = profileDao.getBillingProfileById(profile.id());
@@ -208,7 +218,7 @@ class ProfileDaoTest extends BaseSpringUnitTest {
   @Test
   void updateProfile_descriptionAndBillingAccount() {
     var profile = makeGCPProfile();
-    profileDao.createBillingProfile(profile, user);
+    profileDao.createBillingProfile(profile, user.getSubjectId());
 
     assert profileDao.updateProfile(profile.id(), "new description", "newBillingAccountId");
     var result = profileDao.getBillingProfileById(profile.id());
@@ -219,7 +229,7 @@ class ProfileDaoTest extends BaseSpringUnitTest {
   @Test
   void updateProfile_throwNoFields() {
     var profile = makeGCPProfile();
-    profileDao.createBillingProfile(profile, user);
+    profileDao.createBillingProfile(profile, user.getSubjectId());
 
     assertThrows(
         MissingRequiredFieldsException.class,
@@ -238,7 +248,7 @@ class ProfileDaoTest extends BaseSpringUnitTest {
   @Test
   void removeBillingAccount() {
     var profile = makeGCPProfile();
-    profileDao.createBillingProfile(profile, user);
+    profileDao.createBillingProfile(profile, user.getSubjectId());
     assert profileDao.removeBillingAccount(profile.id());
     assertEquals(
         Optional.empty(), profileDao.getBillingProfileById(profile.id()).billingAccountId());
@@ -295,7 +305,7 @@ class ProfileDaoTest extends BaseSpringUnitTest {
     assertEquals(expected.managedResourceGroupId(), actual.managedResourceGroupId());
     assertNotNull(actual.createdTime());
     assertNotNull(actual.lastModified());
-    assertEquals(user.getEmail(), actual.createdBy());
+    assertEquals(user.getSubjectId(), actual.createdBy());
   }
 
   private void assertProfileListEquals(List<BillingProfile> expected, List<BillingProfile> actual) {

@@ -81,7 +81,7 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
     assertEquals(createdProfile.displayName(), profile.displayName());
     assertNotNull(createdProfile.createdTime());
     assertNotNull(createdProfile.lastModified());
-    assertEquals(createdProfile.createdBy(), userRequest.getEmail());
+    assertEquals(createdProfile.createdBy(), userRequest.getSubjectId());
   }
 
   @Test
