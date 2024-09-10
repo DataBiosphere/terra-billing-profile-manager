@@ -18,6 +18,7 @@ public record CreateProfileVerifyAccountStep(
   public StepResult doStep(FlightContext context) throws InterruptedException {
     try {
       gcpService.verifyUserBillingAccountAccess(billingAccountId, user);
+      gcpService.verifySABillingAccountAccess(billingAccountId);
     } catch (InaccessibleBillingAccountException e) {
       throw e;
     } catch (Exception e) {

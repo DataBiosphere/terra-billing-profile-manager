@@ -26,8 +26,12 @@ public class GcpCrlService {
 
   /** Returns a GCP {@link CloudBillingClientCow} which wraps Google Billing API. */
   public CloudBillingClientCow getBillingClientCow(AuthenticatedUserRequest user) {
+    return getBillingClientCow(getUserCredentials(user.getToken()));
+  }
+
+  public CloudBillingClientCow getBillingClientCow(GoogleCredentials credentials) {
     try {
-      return new CloudBillingClientCow(clientConfig, getUserCredentials(user.getToken()));
+      return new CloudBillingClientCow(clientConfig, credentials);
     } catch (IOException e) {
       throw new CrlInternalException("Error creating billing client wrapper", e);
     }
