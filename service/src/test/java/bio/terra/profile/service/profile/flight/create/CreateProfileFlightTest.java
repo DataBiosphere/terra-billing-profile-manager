@@ -15,6 +15,7 @@ import bio.terra.policy.model.TpsPolicyInputs;
 import bio.terra.profile.app.common.MetricUtils;
 import bio.terra.profile.app.configuration.AzureConfiguration;
 import bio.terra.profile.app.configuration.EnterpriseConfiguration;
+import bio.terra.profile.app.configuration.GcpConfiguration;
 import bio.terra.profile.common.BaseSpringUnitTest;
 import bio.terra.profile.common.ProfileFixtures;
 import bio.terra.profile.model.AzureManagedAppModel;
@@ -46,6 +47,7 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
   @Autowired ProfileService profileService;
   @Autowired AzureConfiguration azureConfiguration;
   @MockBean GcpCrlService crlService;
+  @MockBean GcpConfiguration gcpConfiguration;
 
   @MockBean SamService samService;
   @MockBean AzureService azureService;
