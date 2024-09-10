@@ -31,6 +31,7 @@ import bio.terra.profile.service.profile.exception.InaccessibleApplicationDeploy
 import bio.terra.profile.service.profile.exception.MissingRequiredFieldsException;
 import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.profile.service.profile.model.ProfileDescription;
+import com.google.auth.oauth2.GoogleCredentials;
 import com.google.iam.v1.TestIamPermissionsResponse;
 import java.util.Collections;
 import java.util.List;
@@ -61,7 +62,8 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
   @Test
   void createGcpProfileSuccess() {
     var billingCow = mock(CloudBillingClientCow.class);
-    when(crlService.getBillingClientCow(any())).thenReturn(billingCow);
+    when(crlService.getBillingClientCow((AuthenticatedUserRequest) any())).thenReturn(billingCow);
+    when(crlService.getBillingClientCow((GoogleCredentials) any())).thenReturn(billingCow);
     var iamPermissionsResponse =
         TestIamPermissionsResponse.newBuilder()
             .addAllPermissions(GcpService.BILLING_ACCOUNT_PERMISSIONS_TO_TEST)
@@ -87,7 +89,9 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
   @Test
   void createGcpProfileMissingBillingAccount() {
     var billingCow = mock(CloudBillingClientCow.class);
-    when(crlService.getBillingClientCow(any())).thenReturn(billingCow);
+    when(crlService.getBillingClientCow((AuthenticatedUserRequest) any())).thenReturn(billingCow);
+    when(crlService.getBillingClientCow((GoogleCredentials) any())).thenReturn(billingCow);
+
     var iamPermissionsResponse =
         TestIamPermissionsResponse.newBuilder()
             .addAllPermissions(GcpService.BILLING_ACCOUNT_PERMISSIONS_TO_TEST)
@@ -116,7 +120,8 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
   @Test
   void createGcpProfileInvalidPermissions() {
     var billingCow = mock(CloudBillingClientCow.class);
-    when(crlService.getBillingClientCow(any())).thenReturn(billingCow);
+    when(crlService.getBillingClientCow((AuthenticatedUserRequest) any())).thenReturn(billingCow);
+    when(crlService.getBillingClientCow((GoogleCredentials) any())).thenReturn(billingCow);
     var iamPermissionsResponse =
         TestIamPermissionsResponse.newBuilder()
             .addAllPermissions(List.of("billing:wrong", "billing:fake"))
@@ -132,7 +137,8 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
   @Test
   void createGcpProfile_withPolicy() throws InterruptedException {
     var billingCow = mock(CloudBillingClientCow.class);
-    when(crlService.getBillingClientCow(any())).thenReturn(billingCow);
+    when(crlService.getBillingClientCow((AuthenticatedUserRequest) any())).thenReturn(billingCow);
+    when(crlService.getBillingClientCow((GoogleCredentials) any())).thenReturn(billingCow);
     var iamPermissionsResponse =
         TestIamPermissionsResponse.newBuilder()
             .addAllPermissions(GcpService.BILLING_ACCOUNT_PERMISSIONS_TO_TEST)
@@ -156,7 +162,8 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
   @Test
   void createGcpProfile_deletePolicyOnFailure() throws InterruptedException {
     var billingCow = mock(CloudBillingClientCow.class);
-    when(crlService.getBillingClientCow(any())).thenReturn(billingCow);
+    when(crlService.getBillingClientCow((AuthenticatedUserRequest) any())).thenReturn(billingCow);
+    when(crlService.getBillingClientCow((GoogleCredentials) any())).thenReturn(billingCow);
     var iamPermissionsResponse =
         TestIamPermissionsResponse.newBuilder()
             .addAllPermissions(GcpService.BILLING_ACCOUNT_PERMISSIONS_TO_TEST)
