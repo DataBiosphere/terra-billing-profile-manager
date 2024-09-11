@@ -29,6 +29,7 @@ public class GcpCrlService {
     return getBillingClientCow(getUserCredentials(user.getToken()));
   }
 
+  /** Returns a GCP {@link CloudBillingClientCow} which wraps Google Billing API. */
   public CloudBillingClientCow getBillingClientCow(GoogleCredentials credentials) {
     try {
       return new CloudBillingClientCow(clientConfig, credentials);

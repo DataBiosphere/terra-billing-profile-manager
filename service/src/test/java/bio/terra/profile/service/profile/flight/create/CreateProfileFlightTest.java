@@ -34,6 +34,7 @@ import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.profile.service.profile.model.ProfileDescription;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.iam.v1.TestIamPermissionsResponse;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -120,20 +121,73 @@ class CreateProfileFlightTest extends BaseSpringUnitTest {
   }
 
   @Test
-  void createGcpProfileInvalidPermissions() {
-    var billingCow = mock(CloudBillingClientCow.class);
-    when(crlService.getBillingClientCow((AuthenticatedUserRequest) any())).thenReturn(billingCow);
-    when(crlService.getBillingClientCow((GoogleCredentials) any())).thenReturn(billingCow);
-    var iamPermissionsResponse =
+  void createGcpProfileInvalidUserPermissions() {
+    var userBillingCow = mock(CloudBillingClientCow.class);
+    var saBillingCow = mock(CloudBillingClientCow.class);
+    when(crlService.getBillingClientCow((AuthenticatedUserRequest) any()))
+        .thenReturn(userBillingCow);
+    when(crlService.getBillingClientCow((GoogleCredentials) any())).thenReturn(saBillingCow);
+    var badIamPermissionsResponse =
         TestIamPermissionsResponse.newBuilder()
             .addAllPermissions(List.of("billing:wrong", "billing:fake"))
             .build();
-    when(billingCow.testIamPermissions(any())).thenReturn(iamPermissionsResponse);
+    when(userBillingCow.testIamPermissions(any())).thenReturn(badIamPermissionsResponse);
+    var iamPermissionsResponse =
+        TestIamPermissionsResponse.newBuilder()
+            .addAllPermissions(GcpService.BILLING_ACCOUNT_PERMISSIONS_TO_TEST)
+            .build();
+    when(saBillingCow.testIamPermissions(any())).thenReturn(iamPermissionsResponse);
+
     var profile = ProfileFixtures.createGcpBillingProfileDescription("ABCDEF-1234");
 
     assertThrows(
         InaccessibleBillingAccountException.class,
         () -> profileService.createProfile(profile, userRequest, null));
+  }
+
+  @Test
+  void createGcpProfileInvalidSAPermissions() {
+    var userBillingCow = mock(CloudBillingClientCow.class);
+    var saBillingCow = mock(CloudBillingClientCow.class);
+    when(crlService.getBillingClientCow((AuthenticatedUserRequest) any()))
+        .thenReturn(userBillingCow);
+    when(crlService.getBillingClientCow((GoogleCredentials) any())).thenReturn(saBillingCow);
+    var badIamPermissionsResponse =
+        TestIamPermissionsResponse.newBuilder()
+            .addAllPermissions(List.of("billing:wrong", "billing:fake"))
+            .build();
+    when(saBillingCow.testIamPermissions(any())).thenReturn(badIamPermissionsResponse);
+    var iamPermissionsResponse =
+        TestIamPermissionsResponse.newBuilder()
+            .addAllPermissions(GcpService.BILLING_ACCOUNT_PERMISSIONS_TO_TEST)
+            .build();
+    when(userBillingCow.testIamPermissions(any())).thenReturn(iamPermissionsResponse);
+
+    var profile = ProfileFixtures.createGcpBillingProfileDescription("ABCDEF-1234");
+
+    assertThrows(
+        InaccessibleBillingAccountException.class,
+        () -> profileService.createProfile(profile, userRequest, null));
+  }
+
+  @Test
+  void createGcpProfileSACredentialsMissing() throws IOException {
+    var billingCow = mock(CloudBillingClientCow.class);
+    when(crlService.getBillingClientCow((AuthenticatedUserRequest) any())).thenReturn(billingCow);
+    var iamPermissionsResponse =
+        TestIamPermissionsResponse.newBuilder()
+            .addAllPermissions(GcpService.BILLING_ACCOUNT_PERMISSIONS_TO_TEST)
+            .build();
+    when(billingCow.testIamPermissions(any())).thenReturn(iamPermissionsResponse);
+
+    when(gcpConfiguration.getSaCredentials()).thenThrow(new IOException("test exception"));
+
+    var profile = ProfileFixtures.createGcpBillingProfileDescription("ABCDEF-1234");
+
+    var exception =
+        assertThrows(
+            RuntimeException.class, () -> profileService.createProfile(profile, userRequest, null));
+    assertEquals("Failed to get service account credentials", exception.getMessage());
   }
 
   @Test

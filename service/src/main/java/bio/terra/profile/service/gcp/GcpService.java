@@ -36,8 +36,10 @@ public class GcpService {
     this.configuration = configuration;
   }
 
-  public void verifySABillingAccountAccess(Optional<String> billingAccountIdOpt) {
+  public void verifyTerraBillingAccountAccess(Optional<String> billingAccountIdOpt) {
     try {
+      // The BPM SA is a member of the Google group terra-billing@firecloud.org, so we can use it to
+      // verify that we have the necessary permissions to access a billing account.
       var billingCow = crlService.getBillingClientCow(configuration.getSaCredentials());
       verifyBillingAccountAccess(billingAccountIdOpt, billingCow, "BPM service account");
     } catch (IOException ex) {
@@ -73,7 +75,8 @@ public class GcpService {
     testPermissionsResponse = billingCow.testIamPermissions(testPermissionsRequest);
 
     var actualPermissions = testPermissionsResponse.getPermissionsList();
-    if (!actualPermissions.equals(BILLING_ACCOUNT_PERMISSIONS_TO_TEST)) {
+    if (actualPermissions == null
+        || !actualPermissions.equals(BILLING_ACCOUNT_PERMISSIONS_TO_TEST)) {
       var message =
           String.format(
               "The user [%s] needs access to the billing account [%s] to perform the requested operation",
