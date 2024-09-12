@@ -41,7 +41,7 @@ public class GcpService {
       // The BPM SA is a member of the Google group terra-billing@firecloud.org, so we can use it to
       // verify that we have the necessary permissions to access a billing account.
       var billingCow = crlService.getBillingClientCow(configuration.getSaCredentials());
-      verifyBillingAccountAccess(billingAccountIdOpt, billingCow, "BPM service account");
+      verifyBillingAccountAccess(billingAccountIdOpt, billingCow, "terra-billing@firecloud.org");
     } catch (IOException ex) {
       throw new RuntimeException("Failed to get service account credentials", ex);
     }
