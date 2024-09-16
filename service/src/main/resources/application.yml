@@ -90,9 +90,6 @@ profile:
     client-credential-file-path: build/resources/main/generated/bpm-client-sa.json
     base-path: ${env.tps.basePath}
 
-  gcp:
-    sa-credential-file-path: build/resources/main/generated/bpm-client-sa.json
-
   stairway-database:
     password: ${env.db.stairway.pass}
     uri: ${env.db.host}/${env.db.stairway.name}
