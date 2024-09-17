@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 
 import bio.terra.cloudres.google.billing.CloudBillingClientCow;
 import bio.terra.common.iam.AuthenticatedUserRequest;
+import bio.terra.profile.app.configuration.GcpConfiguration;
 import bio.terra.profile.common.BaseSpringUnitTest;
 import bio.terra.profile.model.CloudPlatform;
 import bio.terra.profile.service.crl.GcpCrlService;
@@ -55,7 +56,7 @@ public class GcpServiceUnitTest extends BaseSpringUnitTest {
             "creator");
 
     when(crlService.getBillingClientCow(eq(user))).thenReturn(billingClientCow);
-    gcpService = new GcpService(crlService);
+    gcpService = new GcpService(new GcpConfiguration(), crlService);
   }
 
   @Test

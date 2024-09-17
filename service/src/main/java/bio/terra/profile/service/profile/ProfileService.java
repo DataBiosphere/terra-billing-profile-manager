@@ -204,6 +204,7 @@ public class ProfileService {
           "verifyBillingAccountUpdateAuthz");
       gcpService.verifyUserBillingAccountAccess(
           Optional.of(requestBody.getBillingAccountId()), user);
+      gcpService.verifyTerraBillingAccountAccess(Optional.of(requestBody.getBillingAccountId()));
     }
 
     var initiatingUser = getInitiatingUserId(user, requestBody.getInitiatingUser());
