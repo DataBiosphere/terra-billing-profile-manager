@@ -19,12 +19,12 @@ updates:
       timezone: "America/New_York"
     target-branch: "main"
     reviewers:
-      - "@DataBiosphere/broadworkspaces"
+      - "@DataBiosphere/broad-core-services"
     labels:
       - "dependency"
       - "gradle"
     commit-message:
-      prefix: "[WOR-1448]"
+      prefix: "[CORE-69]"
     ignore:
       - dependency-name: "au.com.dius.pact*"
         update-types: [ "version-update:semver-major", "version-update:semver-minor" ]
