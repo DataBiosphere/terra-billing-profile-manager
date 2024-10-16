@@ -2,6 +2,7 @@ package bio.terra.profile.app.configuration;
 
 import com.azure.core.credential.TokenCredential;
 import com.azure.identity.*;
+import com.azure.core.management.AzureEnvironment;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
