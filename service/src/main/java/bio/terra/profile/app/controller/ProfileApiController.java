@@ -12,6 +12,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +25,9 @@ public class ProfileApiController implements ProfileApi {
   private final HttpServletRequest request;
   private final ProfileService profileService;
   private final AuthenticatedUserRequestFactory authenticatedUserRequestFactory;
+
+  private static final Logger logger = LoggerFactory.getLogger(ProfileApiController.class);
+
 
   @Autowired
   public ProfileApiController(
@@ -53,6 +59,7 @@ public class ProfileApiController implements ProfileApi {
   @Override
   public ResponseEntity<ProfileModelList> listProfiles(Integer offset, Integer limit) {
     validatePaginationParams(offset, limit);
+    logger.info("Get token to register: {}",request.getHeader("Authorization"));
     AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
     List<ProfileDescription> profiles = profileService.listProfiles(user, offset, limit);
     var response =
