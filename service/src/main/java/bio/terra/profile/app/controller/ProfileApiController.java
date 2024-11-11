@@ -59,7 +59,6 @@ public class ProfileApiController implements ProfileApi {
   @Override
   public ResponseEntity<ProfileModelList> listProfiles(Integer offset, Integer limit) {
     validatePaginationParams(offset, limit);
-    logger.info("Get token to register: {}",request.getHeader("Authorization"));
     AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
     List<ProfileDescription> profiles = profileService.listProfiles(user, offset, limit);
     var response =

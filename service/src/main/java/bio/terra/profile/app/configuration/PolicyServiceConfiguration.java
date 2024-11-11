@@ -67,8 +67,6 @@ public class PolicyServiceConfiguration {
           credential
               .getToken(new TokenRequestContext().addScopes(azureConfiguration.authTokenScope()))
               .block();
-      logger.info("Get token to register: {}",token.getToken());
-
       return token.getToken();
     } else {
       try (FileInputStream fileInputStream = new FileInputStream(clientCredentialFilePath)) {
