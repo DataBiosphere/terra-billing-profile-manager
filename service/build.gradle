@@ -13,7 +13,7 @@ apply from: 'generators.gradle'
 apply from: 'publishing.gradle'
 
 dependencies {
-	implementation 'io.sentry:sentry:7.16.0'
+	implementation 'io.sentry:sentry:7.17.0'
 
 	implementation 'bio.terra:terra-common-lib:1.1.11-SNAPSHOT'
 
@@ -26,7 +26,7 @@ dependencies {
 	implementation 'org.springframework:spring-aspects'
 	implementation group: "org.apache.commons", name: "commons-lang3"
 	implementation group: 'jakarta.ws.rs', name: 'jakarta.ws.rs-api', version: '3.1.0'
-	implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.46'
+	implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.47'
 
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'io.micrometer:micrometer-registry-prometheus'
