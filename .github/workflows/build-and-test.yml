@@ -118,7 +118,7 @@ jobs:
         run: ./gradlew --build-cache test jacocoTestReport --scan
 
       - name: SonarQube scan
-        run: ./gradlew --build-cache sonar
+        run: ./gradlew --build-cache sonar --scan
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
