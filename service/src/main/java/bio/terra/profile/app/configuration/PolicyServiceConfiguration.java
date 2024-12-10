@@ -9,6 +9,7 @@ import com.google.auth.oauth2.ServiceAccountCredentials;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -50,7 +51,11 @@ public class PolicyServiceConfiguration {
 
   public String getAccessToken() throws IOException {
     if (azureConfiguration.controlPlaneEnabled()) {
-      TokenCredential credential = new DefaultAzureCredentialBuilder().build();
+
+      TokenCredential credential = new DefaultAzureCredentialBuilder()
+              .authorityHost(azureConfiguration.getAzureEnvironment().getActiveDirectoryEndpoint())
+              .build();
+
       // The Microsoft Authentication Library (MSAL) currently specifies offline_access, openid,
       // profile, and email by default in authorization and token requests.
       com.azure.core.credential.AccessToken token =
