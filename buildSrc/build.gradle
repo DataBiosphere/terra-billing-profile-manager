@@ -24,8 +24,8 @@ dependencies {
     // transitive dependencies.
     constraints {
         implementation('org.graalvm.sdk:graal-sdk:24.1.1')
-        implementation('org.apache.commons:commons-compress:1.26.1')
-        implementation('commons-io:commons-io:2.15.1')
+        implementation('org.apache.commons:commons-compress:1.27.1')
+        implementation('commons-io:commons-io:2.18.0')
     }
 }
 
