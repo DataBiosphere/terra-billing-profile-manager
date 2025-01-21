@@ -1,6 +1,7 @@
 package bio.terra.profile.app.configuration;
 
 import com.azure.core.credential.TokenCredential;
+import com.azure.core.management.AzureEnvironment;
 import com.azure.identity.*;
 import java.util.Set;
 import org.slf4j.Logger;
@@ -9,6 +10,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "profile.azure")
 public record AzureConfiguration(
+    String azureEnvironment,
     String managedAppClientId,
     String managedAppClientSecret,
     String managedAppTenantId,
@@ -71,6 +73,7 @@ public record AzureConfiguration(
 
     ClientSecretCredential servicePrincipalCredential =
         new ClientSecretCredentialBuilder()
+            .authorityHost(getAzureEnvironment().getActiveDirectoryEndpoint())
             .clientId(managedAppClientId)
             .clientSecret(managedAppClientSecret)
             .tenantId(managedAppTenantId)
@@ -108,5 +111,17 @@ public record AzureConfiguration(
 
   public Boolean getControlPlaneEnabled() {
     return controlPlaneEnabled;
+  }
+
+  public AzureEnvironment getAzureEnvironment() {
+    switch (azureEnvironment) {
+      case "AZURE":
+        return AzureEnvironment.AZURE;
+      case "AZURE_GOV":
+        return AzureEnvironment.AZURE_US_GOVERNMENT;
+      default:
+        throw new IllegalArgumentException(
+            String.format("Unknown Azure environment: %s", azureEnvironment));
+    }
   }
 }

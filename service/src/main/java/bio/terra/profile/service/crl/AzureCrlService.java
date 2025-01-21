@@ -2,7 +2,6 @@ package bio.terra.profile.service.crl;
 
 import bio.terra.cloudres.common.ClientConfig;
 import bio.terra.profile.app.configuration.AzureConfiguration;
-import com.azure.core.management.AzureEnvironment;
 import com.azure.core.management.profile.AzureProfile;
 import com.azure.resourcemanager.containerservice.ContainerServiceManager;
 import com.azure.resourcemanager.costmanagement.CostManagementManager;
@@ -33,7 +32,10 @@ public class AzureCrlService {
   /** Returns an Azure {@link ResourceManager} configured for use with CRL. */
   public ResourceManager getResourceManager(UUID tenantId, UUID subscriptionId) {
     AzureProfile azureProfile =
-        new AzureProfile(tenantId.toString(), subscriptionId.toString(), AzureEnvironment.AZURE);
+        new AzureProfile(
+            tenantId.toString(),
+            subscriptionId.toString(),
+            azureConfiguration.getAzureEnvironment());
 
     // We must use FQDN because there are two `Defaults` symbols imported otherwise.
     return bio.terra.cloudres.azure.resourcemanager.common.Defaults.crlConfigure(
@@ -44,7 +46,7 @@ public class AzureCrlService {
 
   public ApplicationManager getApplicationManager(UUID subscriptionId) {
     AzureProfile azureProfile =
-        new AzureProfile(null, subscriptionId.toString(), AzureEnvironment.AZURE);
+        new AzureProfile(null, subscriptionId.toString(), azureConfiguration.getAzureEnvironment());
 
     return ApplicationManager.authenticate(
         azureConfiguration.buildManagedAppCredentials(), azureProfile);
@@ -52,7 +54,7 @@ public class AzureCrlService {
 
   public CostManagementManager getCostManagementManager(UUID subscriptionId) {
     AzureProfile azureProfile =
-        new AzureProfile(null, subscriptionId.toString(), AzureEnvironment.AZURE);
+        new AzureProfile(null, subscriptionId.toString(), azureConfiguration.getAzureEnvironment());
 
     return CostManagementManager.authenticate(
         azureConfiguration.buildManagedAppCredentials(), azureProfile);
@@ -60,7 +62,7 @@ public class AzureCrlService {
 
   public ContainerServiceManager getContainerServiceManager(UUID subscriptionId) {
     AzureProfile azureProfile =
-        new AzureProfile(null, subscriptionId.toString(), AzureEnvironment.AZURE);
+        new AzureProfile(null, subscriptionId.toString(), azureConfiguration.getAzureEnvironment());
 
     return ContainerServiceManager.authenticate(
         azureConfiguration.buildManagedAppCredentials(), azureProfile);

@@ -19,6 +19,7 @@ env:
     basePath: ${SAM_ADDRESS:https://sam.dsde-dev.broadinstitute.org/}
     adminsGroupEmail: ${SAM_ADMINS_GROUP_EMAIL:admin-group}
   azure:
+    azureEnvironment: ${AZURE_ENVIRONMENT:AZURE}
     managedAppClientId: ${MANAGED_APP_CLIENT_ID:app-client}
     managedAppClientSecret: ${MANAGED_APP_CLIENT_SECRET:app-secret}
     managedAppTenantId: ${MANAGED_APP_TENANT_ID:app-tenant}
@@ -112,6 +113,9 @@ profile:
     username: ${env.db.profile.user}
 
   azure:
+    # azure hosting environment: AZURE for commercial and AZURE_GOV for govcloud
+    azure-environment: ${env.azure.azureEnvironment}
+
     managed-app-clientId: ${env.azure.managedAppClientId}
     managed-app-client-secret: ${env.azure.managedAppClientSecret}
     managed-app-tenant-id: ${env.azure.managedAppTenantId}

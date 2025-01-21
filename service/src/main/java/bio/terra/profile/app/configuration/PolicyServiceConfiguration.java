@@ -50,7 +50,12 @@ public class PolicyServiceConfiguration {
 
   public String getAccessToken() throws IOException {
     if (azureConfiguration.controlPlaneEnabled()) {
-      TokenCredential credential = new DefaultAzureCredentialBuilder().build();
+
+      TokenCredential credential =
+          new DefaultAzureCredentialBuilder()
+              .authorityHost(azureConfiguration.getAzureEnvironment().getActiveDirectoryEndpoint())
+              .build();
+
       // The Microsoft Authentication Library (MSAL) currently specifies offline_access, openid,
       // profile, and email by default in authorization and token requests.
       com.azure.core.credential.AccessToken token =
