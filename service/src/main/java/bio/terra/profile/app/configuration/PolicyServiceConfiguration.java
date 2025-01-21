@@ -9,7 +9,6 @@ import com.google.auth.oauth2.ServiceAccountCredentials;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -52,7 +51,8 @@ public class PolicyServiceConfiguration {
   public String getAccessToken() throws IOException {
     if (azureConfiguration.controlPlaneEnabled()) {
 
-      TokenCredential credential = new DefaultAzureCredentialBuilder()
+      TokenCredential credential =
+          new DefaultAzureCredentialBuilder()
               .authorityHost(azureConfiguration.getAzureEnvironment().getActiveDirectoryEndpoint())
               .build();
 

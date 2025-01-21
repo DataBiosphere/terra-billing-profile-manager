@@ -12,7 +12,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +26,6 @@ public class ProfileApiController implements ProfileApi {
   private final AuthenticatedUserRequestFactory authenticatedUserRequestFactory;
 
   private static final Logger logger = LoggerFactory.getLogger(ProfileApiController.class);
-
 
   @Autowired
   public ProfileApiController(

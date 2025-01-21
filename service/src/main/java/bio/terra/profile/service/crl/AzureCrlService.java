@@ -2,7 +2,6 @@ package bio.terra.profile.service.crl;
 
 import bio.terra.cloudres.common.ClientConfig;
 import bio.terra.profile.app.configuration.AzureConfiguration;
-import com.azure.core.management.AzureEnvironment;
 import com.azure.core.management.profile.AzureProfile;
 import com.azure.resourcemanager.containerservice.ContainerServiceManager;
 import com.azure.resourcemanager.costmanagement.CostManagementManager;
@@ -33,7 +32,10 @@ public class AzureCrlService {
   /** Returns an Azure {@link ResourceManager} configured for use with CRL. */
   public ResourceManager getResourceManager(UUID tenantId, UUID subscriptionId) {
     AzureProfile azureProfile =
-        new AzureProfile(tenantId.toString(), subscriptionId.toString(), azureConfiguration.getAzureEnvironment());
+        new AzureProfile(
+            tenantId.toString(),
+            subscriptionId.toString(),
+            azureConfiguration.getAzureEnvironment());
 
     // We must use FQDN because there are two `Defaults` symbols imported otherwise.
     return bio.terra.cloudres.azure.resourcemanager.common.Defaults.crlConfigure(

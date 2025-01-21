@@ -1,8 +1,8 @@
 package bio.terra.profile.app.configuration;
 
 import com.azure.core.credential.TokenCredential;
-import com.azure.identity.*;
 import com.azure.core.management.AzureEnvironment;
+import com.azure.identity.*;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,15 +66,10 @@ public record AzureConfiguration(
     }
   }
 
-
-
-
   public TokenCredential buildManagedAppCredentials() {
 
     ManagedIdentityCredential managedIdentityCredential =
-        new ManagedIdentityCredentialBuilder()
-                .clientId(managedAppWorkloadClientId)
-                .build();
+        new ManagedIdentityCredentialBuilder().clientId(managedAppWorkloadClientId).build();
 
     ClientSecretCredential servicePrincipalCredential =
         new ClientSecretCredentialBuilder()
@@ -119,15 +114,14 @@ public record AzureConfiguration(
   }
 
   public AzureEnvironment getAzureEnvironment() {
-    switch(azureEnvironment)
-    {
-      case "AZURE" :
+    switch (azureEnvironment) {
+      case "AZURE":
         return AzureEnvironment.AZURE;
-      case "AZURE_GOV" :
+      case "AZURE_GOV":
         return AzureEnvironment.AZURE_US_GOVERNMENT;
-      default :
-        throw new IllegalArgumentException(String.format("Unknown Azure environment: %s", azureEnvironment));
+      default:
+        throw new IllegalArgumentException(
+            String.format("Unknown Azure environment: %s", azureEnvironment));
     }
   }
-
 }
