@@ -60,6 +60,7 @@ class CreateProfileVerifyDeployedApplicationStepTest extends BaseSpringUnitTest 
             "creator");
     var azureConfiguration =
         new AzureConfiguration(
+            "AZURE",
             "fake_appid",
             "fake_client",
             "fake_secret",
