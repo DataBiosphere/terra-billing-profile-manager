@@ -23,7 +23,7 @@ dependencies {
     // These are not directly included, they are just constrained if they are pulled in as
     // transitive dependencies.
     constraints {
-        implementation('org.graalvm.sdk:graal-sdk:24.1.1')
+        implementation('org.graalvm.sdk:graal-sdk:24.1.2')
         implementation('org.apache.commons:commons-compress:1.27.1')
         implementation('commons-io:commons-io:2.18.0')
     }
