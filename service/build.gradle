@@ -3,7 +3,7 @@ plugins {
 	id 'de.undercouch.download'
 	id 'com.google.cloud.tools.jib'
 
-	id 'com.gorylenko.gradle-git-properties' version '2.4.2'
+	id 'com.gorylenko.gradle-git-properties' version '2.5.0'
 	id 'org.sonarqube' version '6.0.1.5171'
 	id "au.com.dius.pact" version "4.3.19"
 
@@ -32,7 +32,7 @@ dependencies {
 	implementation 'io.micrometer:micrometer-registry-prometheus'
 
 	// Google dependencies
-	implementation platform('com.google.cloud:libraries-bom:26.55.0')
+	implementation platform('com.google.cloud:libraries-bom:26.56.0')
 
 	// Cloud Resource Library
 	implementation group: "com.azure.resourcemanager", name: "azure-resourcemanager-managedapplications", version: "1.0.0"
