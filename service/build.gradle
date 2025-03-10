@@ -3,7 +3,7 @@ plugins {
 	id 'de.undercouch.download'
 	id 'com.google.cloud.tools.jib'
 
-	id 'com.gorylenko.gradle-git-properties' version '2.4.2'
+	id 'com.gorylenko.gradle-git-properties' version '2.5.0'
 	id 'org.sonarqube' version '6.0.1.5171'
 	id "au.com.dius.pact" version "4.3.19"
 
@@ -65,6 +65,11 @@ test {
 	systemProperties['pact.rootDir'] = "$buildDir/pacts"
 	systemProperties['pact.provider.version'] = "$project.version"
 }
+
+gitProperties {
+	dotGitDirectory = project.rootProject.layout.projectDirectory.dir(".git")
+}
+
 sonarqube {
 	properties {
 		property "sonar.projectName", "terra-billing-profile-manager"
