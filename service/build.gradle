@@ -13,7 +13,7 @@ apply from: 'generators.gradle'
 apply from: 'publishing.gradle'
 
 dependencies {
-	implementation 'io.sentry:sentry:8.3.0'
+	implementation 'io.sentry:sentry:8.4.0'
 
 	implementation 'bio.terra:terra-common-lib:1.1.11-SNAPSHOT'
 
