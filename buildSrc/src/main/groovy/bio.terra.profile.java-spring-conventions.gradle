@@ -7,4 +7,4 @@ plugins {
 }
 
 // This version should match the one in terra-common-lib
-ext['opentelemetry.version'] = '1.42.1'
+// ext['opentelemetry.version'] = '1.42.1'
