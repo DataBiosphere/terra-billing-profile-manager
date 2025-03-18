@@ -181,36 +181,6 @@ otel:
   sdk:
     disabled: false # set to true to disable all open telemetry features
 
-  instrumentation:
-    # this is redundant; it sets the default for all following keys.
-    # see https://opentelemetry.io/docs/zero-code/java/spring-boot-starter/out-of-the-box-instrumentation/#common-instrumentation-configuration
-    common:
-      default-enabled: false
-    # these are ok to turn on ...
-    jdbc:
-      enabled: true
-    log4j-appender:
-      enabled: true
-    spring-webmvc:
-      enabled: true
-    kafka:
-      enabled: true
-    mongo:
-      enabled: true
-    r2dbc:
-      enabled: true
-    # these are problematic to turn on ...
-    annotations:
-      enabled: false
-    logback-appender:
-      enabled: false
-    micrometer:
-      enabled: false
-    spring-web:
-      enabled: false
-    spring-webflux:
-      enabled: false
-
   springboot:
     resource:
       attributes:

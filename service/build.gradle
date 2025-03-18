@@ -46,8 +46,10 @@ dependencies {
 	implementation group: "org.broadinstitute.dsde.workbench", name: "sam-client_2.13", version: "v0.0.269"
 
     // TPS
-    implementation group: "bio.terra", name:"terra-policy-client", version:"1.0.9-SNAPSHOT"
-
+    implementation(group: "bio.terra", name:"terra-policy-client", version:"1.0.9-SNAPSHOT") {
+		// this conflicts with TCL-provided otel libraries
+		exclude group: 'io.opentelemetry.instrumentation', module: 'opentelemetry-spring-boot'
+	}
 
     // Test deps
 	testImplementation('org.springframework.boot:spring-boot-starter-test') {
