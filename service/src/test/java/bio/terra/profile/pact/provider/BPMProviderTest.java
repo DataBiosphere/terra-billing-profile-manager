@@ -61,12 +61,12 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.data.jdbc.JdbcRepositoriesAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.cache.CacheManager;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @Tag("provider-test")
 @Provider("bpm")
@@ -91,26 +91,26 @@ public class BPMProviderTest {
 
   @LocalServerPort int port;
 
-  @MockBean ProfileDao profileDao;
-  @MockBean ProfileChangeLogDao changeLogDao;
-  @MockBean SamService samService;
-  @MockBean TpsApiDispatch tpsApiDispatch;
+  @MockitoBean ProfileDao profileDao;
+  @MockitoBean ProfileChangeLogDao changeLogDao;
+  @MockitoBean SamService samService;
+  @MockitoBean TpsApiDispatch tpsApiDispatch;
 
-  @MockBean AuthenticatedUserRequestFactory authenticatedUserRequestFactory;
+  @MockitoBean AuthenticatedUserRequestFactory authenticatedUserRequestFactory;
   @Mock AuthenticatedUserRequest userRequest;
 
   // These mocks are just here so that spring can instantiate beans for the ApplicationContext
-  @MockBean AzureCrlService azureCrlService;
-  @MockBean GcpCrlService gcpCrlService;
-  @MockBean JobService jobService;
-  @MockBean CacheManager cacheManager;
+  @MockitoBean AzureCrlService azureCrlService;
+  @MockitoBean GcpCrlService gcpCrlService;
+  @MockitoBean JobService jobService;
+  @MockitoBean CacheManager cacheManager;
 
   // jdbcTemplate beans are used for profileStatusService when checking CloudSQL status
-  @MockBean NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-  @MockBean JdbcTemplate jdbcTemplate;
+  @MockitoBean NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+  @MockitoBean JdbcTemplate jdbcTemplate;
   @Autowired ProfileStatusService profileStatusService;
-  @MockBean AzureSpendReportingService azureSpendReportingService;
-  @MockBean AzureService azureService;
+  @MockitoBean AzureSpendReportingService azureSpendReportingService;
+  @MockitoBean AzureService azureService;
 
   @PactBrokerConsumerVersionSelectors
   public static SelectorBuilder consumerVersionSelectors() {

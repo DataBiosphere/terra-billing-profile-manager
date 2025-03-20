@@ -25,18 +25,18 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 class DeleteProfileFlightTest extends BaseSpringUnitTest {
 
   @Autowired ProfileService profileService;
   @Autowired AzureConfiguration azureConfiguration;
-  @MockBean GcpCrlService crlService;
+  @MockitoBean GcpCrlService crlService;
 
-  @MockBean ProfileDao profileDao;
-  @MockBean SamService samService;
-  @MockBean AzureService azureService;
-  @MockBean TpsApiDispatch tpsApiDispatch;
+  @MockitoBean ProfileDao profileDao;
+  @MockitoBean SamService samService;
+  @MockitoBean AzureService azureService;
+  @MockitoBean TpsApiDispatch tpsApiDispatch;
 
   AuthenticatedUserRequest userRequest =
       AuthenticatedUserRequest.builder()

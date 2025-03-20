@@ -41,19 +41,19 @@ import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 class CreateProfileFlightTest extends BaseSpringUnitTest {
 
   @Autowired ProfileService profileService;
   @Autowired AzureConfiguration azureConfiguration;
-  @MockBean GcpCrlService crlService;
-  @MockBean GcpConfiguration gcpConfiguration;
+  @MockitoBean GcpCrlService crlService;
+  @MockitoBean GcpConfiguration gcpConfiguration;
 
-  @MockBean SamService samService;
-  @MockBean AzureService azureService;
-  @MockBean TpsApiDispatch tpsApiDispatch;
-  @MockBean EnterpriseConfiguration enterpriseConfiguration;
+  @MockitoBean SamService samService;
+  @MockitoBean AzureService azureService;
+  @MockitoBean TpsApiDispatch tpsApiDispatch;
+  @MockitoBean EnterpriseConfiguration enterpriseConfiguration;
 
   AuthenticatedUserRequest userRequest =
       AuthenticatedUserRequest.builder()
