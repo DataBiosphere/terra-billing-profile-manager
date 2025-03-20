@@ -24,12 +24,11 @@ public class WebConfig implements WebMvcConfigurer {
     addJsFixers(
         registry,
         "/webjars/swagger-ui-dist/swagger-ui-bundle.js",
-        "/webjars/swagger-ui-dist/4.5.0/swagger-ui-bundle.js",
+        "/webjars/swagger-ui-dist/4.5.0",
         "\"response_type=token\"",
         "(t.name === \"b2c\" ? \"response_type=id_token&nonce=defaultNonce&prompt=login\" : \"response_type=token\")");
 
-    addOauth2Redirect(
-        registry, "oauth2-redirect.html", "/webjars/swagger-ui-dist/4.3.0/oauth2-redirect.html");
+    addOauth2Redirect(registry, "oauth2-redirect.html", "/webjars/swagger-ui-dist/4.5.0");
   }
 
   private void addOauth2Redirect(ResourceHandlerRegistry registry, String path, String file) {
