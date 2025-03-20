@@ -28,8 +28,7 @@ public class WebConfig implements WebMvcConfigurer {
         "\"response_type=token\"",
         "(t.name === \"b2c\" ? \"response_type=id_token&nonce=defaultNonce&prompt=login\" : \"response_type=token\")");
 
-    addOauth2Redirect(
-        registry, "oauth2-redirect.html", "/webjars/swagger-ui-dist/4.5.0");
+    addOauth2Redirect(registry, "oauth2-redirect.html", "/webjars/swagger-ui-dist/4.5.0");
   }
 
   private void addOauth2Redirect(ResourceHandlerRegistry registry, String path, String file) {
