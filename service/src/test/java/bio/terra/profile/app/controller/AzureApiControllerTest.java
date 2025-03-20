@@ -14,8 +14,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @AutoConfigureMockMvc
@@ -23,8 +23,8 @@ class AzureApiControllerTest extends BaseSpringUnitTest {
 
   @Autowired MockMvc mockMvc;
 
-  @MockBean SamService samService;
-  @MockBean AzureService azureService;
+  @MockitoBean SamService samService;
+  @MockitoBean AzureService azureService;
   private final AuthenticatedUserRequest userRequest =
       AuthenticatedUserRequest.builder()
           .setEmail("example@example.com")

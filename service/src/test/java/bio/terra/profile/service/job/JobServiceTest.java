@@ -23,8 +23,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 class JobServiceTest extends BaseSpringUnitTest {
   private final AuthenticatedUserRequest testUser =
@@ -36,7 +36,7 @@ class JobServiceTest extends BaseSpringUnitTest {
 
   @Autowired private JobService jobService;
 
-  @MockBean private SamService mockSamService;
+  @MockitoBean private SamService mockSamService;
 
   @BeforeEach
   @SuppressFBWarnings(value = "DE_MIGHT_IGNORE", justification = "Mockito flakiness")

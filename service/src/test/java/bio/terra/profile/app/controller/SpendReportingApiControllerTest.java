@@ -20,15 +20,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @AutoConfigureMockMvc
 class SpendReportingApiControllerTest extends BaseSpringUnitTest {
   @Autowired MockMvc mockMvc;
-  @MockBean SamService samService;
-  @MockBean SpendReportingService spendReportingService;
+  @MockitoBean SamService samService;
+  @MockitoBean SpendReportingService spendReportingService;
   @Autowired SpendReportingConfig spendReportingConfig;
 
   private final AuthenticatedUserRequest userRequest = AuthRequestFixtures.buildAuthRequest();
