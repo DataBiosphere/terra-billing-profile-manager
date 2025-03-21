@@ -181,9 +181,8 @@ otel:
   sdk:
     disabled: false # set to true to disable all open telemetry features
 
-  springboot:
-    resource:
-      attributes:
-        service:
-          name: ${spring.application.name}
-          version: ${bpm.version.gitTag:unknown}
+  resource:
+    attributes:
+      service:
+        name: ${spring.application.name}
+        version: ${bpm.version.gitTag:unknown}
