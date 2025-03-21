@@ -181,11 +181,6 @@ otel:
   sdk:
     disabled: false # set to true to disable all open telemetry features
 
-  # terra-common-lib configures trace exporting to GCP; we need to disable the
-  # built-in otel exporter.
-  traces:
-    exporter: none
-
   resource:
     attributes:
       service:
