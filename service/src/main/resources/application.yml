@@ -181,9 +181,13 @@ otel:
   sdk:
     disabled: false # set to true to disable all open telemetry features
 
-  springboot:
-    resource:
-      attributes:
-        service:
-          name: ${spring.application.name}
-          version: ${bpm.version.gitTag:unknown}
+  # terra-common-lib configures trace exporting to GCP; we need to disable the
+  # built-in otel exporter.
+  traces:
+    exporter: none
+
+  resource:
+    attributes:
+      service:
+        name: ${spring.application.name}
+        version: ${bpm.version.gitTag:unknown}
