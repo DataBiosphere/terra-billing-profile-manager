@@ -2,7 +2,7 @@
 # This is for deployment-specific values, which may be managed by other teams
 env:
   db:
-    host: jdbc:postgresql://${DATABASE_HOSTNAME:127.0.0.1}:${DATABASE_PORT:5432}
+    host: jdbc:postgresql://${DATABASE_HOSTNAME:127.0.0.1}:${DATABASE_PORT:5433}
     init: ${INIT_DB:false}
     stairway:
       name: ${STAIRWAY_DATABASE_NAME:profile_stairway}
