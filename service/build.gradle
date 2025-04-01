@@ -72,7 +72,7 @@ gitProperties {
 	dotGitDirectory = project.rootProject.layout.projectDirectory.dir(".git")
 }
 
-sonarqube {
+sonar {
 	properties {
 		property "sonar.projectName", "terra-billing-profile-manager"
 		property "sonar.projectKey", "DataBiosphere_terra-billing-profile-manager"
