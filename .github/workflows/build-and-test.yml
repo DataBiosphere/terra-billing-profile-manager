@@ -84,9 +84,6 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Workaround for containerized environments
-        run: echo "SONAR_USER_HOME=$HOME/.sonar" >> $GITHUB_ENV
-
       - name: Cache SonarCloud packages
         uses: actions/cache@v4
         with:
