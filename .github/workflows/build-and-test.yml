@@ -101,6 +101,11 @@ jobs:
       - name: Test with coverage
         run: ./gradlew --build-cache test jacocoTestReport --scan
 
+      - name: Set environment variables
+        run: |
+          echo "SONAR_SCANNER_OPTS=-Dorg.bouncycastle.pkcs12.ignore_useless_passwd=true" >> $GITHUB_ENV
+          echo "SONAR_SCANNER_JAVA_OPTS=-Dorg.bouncycastle.pkcs12.ignore_useless_passwd=true" >> $GITHUB_ENV
+
       - name: SonarQube scan
         run: ./gradlew --build-cache sonar
         env:
