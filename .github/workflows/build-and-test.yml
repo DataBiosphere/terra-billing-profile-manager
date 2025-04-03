@@ -105,8 +105,8 @@ jobs:
         run: |
           keytool -J-Dkeystore.pkcs12.certProtectionAlgorithm=NONE \
             -J-Dkeystore.pkcs12.macAlgorithm=NONE \
-            -importkeystore -srckeystore $JAVA_HOME/lib/security/cacerts -srcstorepass changeit \
-            -deststoretype pkcs12 -destkeystore $JAVA_HOME/lib/security/cacerts
+            -importkeystore -srckeystore $(/usr/libexec/java_home)/lib/security/cacerts -srcstorepass changeit \
+            -deststoretype pkcs12 -destkeystore $(/usr/libexec/java_home)/lib/security/cacerts
 
       - name: SonarQube scan
         run: ./gradlew --build-cache sonar
