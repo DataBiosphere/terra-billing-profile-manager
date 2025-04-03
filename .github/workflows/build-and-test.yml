@@ -101,12 +101,18 @@ jobs:
       - name: Test with coverage
         run: ./gradlew --build-cache test jacocoTestReport --scan
 
+      - name: Print JAVA_HOME
+        run: echo $JAVA_HOME
+
+      - name: Print JDK_HOME
+        run: echo $JDK_HOME
+
       - name: Convert keystore type from JKS to password-less PKCS12
         run: |
           keytool -J-Dkeystore.pkcs12.certProtectionAlgorithm=NONE \
             -J-Dkeystore.pkcs12.macAlgorithm=NONE \
-            -importkeystore -srckeystore $(/usr/libexec/java_home)/lib/security/cacerts -srcstorepass changeit \
-            -deststoretype pkcs12 -destkeystore $(/usr/libexec/java_home)/lib/security/cacerts
+            -importkeystore -srckeystore /usr/lib/jvm/temurin-17-jdk-amd64/lib/security/cacerts -srcstorepass changeit \
+            -deststoretype pkcs12 -destkeystore /usr/lib/jvm/temurin-17-jdk-amd64/lib/security/cacerts
 
       - name: SonarQube scan
         run: ./gradlew --build-cache sonar
