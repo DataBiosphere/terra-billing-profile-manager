@@ -115,7 +115,7 @@ jobs:
           keytool -J-Dkeystore.pkcs12.certProtectionAlgorithm=NONE \
             -J-Dkeystore.pkcs12.macAlgorithm=NONE \
             -importkeystore -srckeystore $TEMP_CACERTS -srcstorepass changeit \
-            -deststoretype pkcs12 -destkeystore $TEMP_CACERTS -deststorepass ""
+            -deststoretype pkcs12 -destkeystore $TEMP_CACERTS
           
           echo "Converted keystore saved at: $TEMP_CACERTS"
           
