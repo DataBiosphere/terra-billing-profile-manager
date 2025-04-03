@@ -78,7 +78,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          java-version: '18'
+          java-version: '17'
           distribution: 'temurin'
 
       - name: Setup Gradle
@@ -106,6 +106,8 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_SCANNER_OPTS: "-Dorg.bouncycastle.pkcs12.ignore_useless_passwd=true"
+          SONAR_SCANNER_JAVA_OPTS: "-Dorg.bouncycastle.pkcs12.ignore_useless_passwd=true"
 
   notify-slack:
     needs: [ build, jib, unit-tests ]
