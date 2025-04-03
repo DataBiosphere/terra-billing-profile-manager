@@ -101,6 +101,13 @@ jobs:
       - name: Test with coverage
         run: ./gradlew --build-cache test jacocoTestReport --scan
 
+      - name: Convert keystore type from JKS to password-less PKCS12
+        run: |
+          keytool -J-Dkeystore.pkcs12.certProtectionAlgorithm=NONE \
+            -J-Dkeystore.pkcs12.macAlgorithm=NONE \
+            -importkeystore -srckeystore $JAVA_HOME/lib/security/cacerts -srcstorepass changeit \
+            -deststoretype pkcs12 -destkeystore $JAVA_HOME/lib/security/cacerts
+
       - name: SonarQube scan
         run: ./gradlew --build-cache sonar
         env:
