@@ -101,30 +101,18 @@ jobs:
       - name: Test with coverage
         run: ./gradlew --build-cache test jacocoTestReport --scan
 
-      - name: Convert keystore type from JKS to password-less PKCS12
+      # Install Java 18 but don't activate it globally
+      - name: Set up JDK 18 (for SonarQube)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '18'
+          distribution: 'temurin'
+      - name: SonarQube scan (Java 18)
         run: |
-          # Get the default Java cacerts path
-          CACERTS_PATH=$(java -XshowSettings:properties -version 2>&1 | grep 'java.home' | awk '{print $3}')/lib/security/cacerts
-          echo "Using cacerts from: $CACERTS_PATH"
-          
-          # Copy to a writable location
-          TEMP_CACERTS=${{ runner.temp }}/cacerts.pkcs12
-          cp $CACERTS_PATH $TEMP_CACERTS
-          
-          # Convert to password-less PKCS12
-          keytool -J-Dkeystore.pkcs12.certProtectionAlgorithm=NONE \
-            -J-Dkeystore.pkcs12.macAlgorithm=NONE \
-            -importkeystore -srckeystore $TEMP_CACERTS -srcstorepass changeit \
-            -deststoretype pkcs12 -destkeystore $TEMP_CACERTS
-          
-          echo "Converted keystore saved at: $TEMP_CACERTS"
-          
-          # Override Java security path to use the modified keystore
-          export JVM_OPTS="-Djavax.net.ssl.trustStore=$TEMP_CACERTS -Djavax.net.ssl.trustStoreType=pkcs12"
-          echo "Java will now use the updated keystore."
-
-      - name: SonarQube scan
-        run: ./gradlew --build-cache sonar
+          export JAVA_HOME=$(echo $JAVA_HOME_18_X64)
+          echo "Switched to Java 18 for Sonar: $JAVA_HOME"
+          java -version  # Verify Java 18 is active
+          ./gradlew --build-cache sonar
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
