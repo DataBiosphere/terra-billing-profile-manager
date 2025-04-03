@@ -101,18 +101,27 @@ jobs:
       - name: Test with coverage
         run: ./gradlew --build-cache test jacocoTestReport --scan
 
-      - name: Print JAVA_HOME
-        run: echo $JAVA_HOME
-
-      - name: Print JDK_HOME
-        run: echo $JDK_HOME
-
       - name: Convert keystore type from JKS to password-less PKCS12
         run: |
+          # Get the default Java cacerts path
+          CACERTS_PATH=$(java -XshowSettings:properties -version 2>&1 | grep 'java.home' | awk '{print $3}')/lib/security/cacerts
+          echo "Using cacerts from: $CACERTS_PATH"
+          
+          # Copy to a writable location
+          TEMP_CACERTS=${{ runner.temp }}/cacerts.pkcs12
+          cp $CACERTS_PATH $TEMP_CACERTS
+          
+          # Convert to password-less PKCS12
           keytool -J-Dkeystore.pkcs12.certProtectionAlgorithm=NONE \
             -J-Dkeystore.pkcs12.macAlgorithm=NONE \
-            -importkeystore -srckeystore /usr/lib/jvm/temurin-17-jdk-amd64/lib/security/cacerts -srcstorepass changeit \
-            -deststoretype pkcs12 -destkeystore /usr/lib/jvm/temurin-17-jdk-amd64/lib/security/cacerts
+            -importkeystore -srckeystore $TEMP_CACERTS -srcstorepass changeit \
+            -deststoretype pkcs12 -destkeystore $TEMP_CACERTS -deststorepass ""
+          
+          echo "Converted keystore saved at: $TEMP_CACERTS"
+          
+          # Override Java security path to use the modified keystore
+          export JVM_OPTS="-Djavax.net.ssl.trustStore=$TEMP_CACERTS -Djavax.net.ssl.trustStoreType=pkcs12"
+          echo "Java will now use the updated keystore."
 
       - name: SonarQube scan
         run: ./gradlew --build-cache sonar
