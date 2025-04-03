@@ -101,8 +101,18 @@ jobs:
       - name: Test with coverage
         run: ./gradlew --build-cache test jacocoTestReport --scan
 
-      - name: SonarQube scan
-        run: ./gradlew --build-cache sonar
+      # Install Java 18 but don't activate it globally
+      - name: Set up JDK 18 (for SonarQube)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '18'
+          distribution: 'temurin'
+      - name: SonarQube scan (Java 18)
+        run: |
+          export JAVA_HOME=$(echo $JAVA_HOME_18_X64)
+          echo "Switched to Java 18 for Sonar: $JAVA_HOME"
+          java -version  # Verify Java 18 is active
+          ./gradlew --build-cache sonar
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
