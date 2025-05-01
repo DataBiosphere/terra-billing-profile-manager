@@ -10,7 +10,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.diffplug.spotless:spotless-plugin-gradle:7.0.2'
+    implementation 'com.diffplug.spotless:spotless-plugin-gradle:7.0.3'
     implementation 'com.google.cloud.tools.jib:com.google.cloud.tools.jib.gradle.plugin:3.4.0'
     implementation 'de.undercouch.download:de.undercouch.download.gradle.plugin:5.6.0'
     implementation 'io.spring.dependency-management:io.spring.dependency-management.gradle.plugin:1.1.7'
@@ -23,9 +23,9 @@ dependencies {
     // These are not directly included, they are just constrained if they are pulled in as
     // transitive dependencies.
     constraints {
-        implementation('org.graalvm.sdk:graal-sdk:24.2.0')
+        implementation('org.graalvm.sdk:graal-sdk:24.2.1')
         implementation('org.apache.commons:commons-compress:1.27.1')
-        implementation('commons-io:commons-io:2.18.0')
+        implementation('commons-io:commons-io:2.19.0')
     }
 }
 
