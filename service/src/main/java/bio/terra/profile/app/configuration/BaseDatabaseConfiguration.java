@@ -8,7 +8,6 @@ import org.apache.commons.dbcp2.PoolableConnectionFactory;
 import org.apache.commons.dbcp2.PoolingDataSource;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 
 /** Base class for accessing database connection configuration properties. */
@@ -64,10 +63,11 @@ public class BaseDatabaseConfiguration {
 
     PoolableConnectionFactory poolableConnectionFactory =
         new PoolableConnectionFactory(connectionFactory, null);
+    poolableConnectionFactory.setValidationQuery("SELECT 1");
 
-    ObjectPool<PoolableConnection> connectionPool =
+    GenericObjectPool<PoolableConnection> connectionPool =
         new GenericObjectPool<>(poolableConnectionFactory);
-
+    connectionPool.setTestOnBorrow(true);
     poolableConnectionFactory.setPool(connectionPool);
 
     dataSource = new PoolingDataSource<>(connectionPool);
